@@ -12,7 +12,7 @@
     :options="suggestions"
     @filter="searchFilterFn"
     @filter-abort="abortFilterFn"
-    @keydown.enter="selectFirstSuggestion"
+    @keyup.enter="onEnterPress"
     hide-dropdown-icon
     :style="searchbarStyle"
     class="q-ma-none q-py-none q-px-lg"
@@ -56,37 +56,49 @@ const mapStore = useMapStore();
 const suggestions = ref<{ label: string; value: string; id: number }[]>([]);
 const regionSelected = ref<{ label: string; value: string; id: number } | null>(null);
 
+const fetchSuggestions = async (val: string) => {
+  if (val.length < 2) return;
+
+  try {
+    const response = await regionsApi.list({
+      regionName: val,
+      pageSize: 5,
+      ordering: 'name',
+    });
+    if (response.status === 200 && response.data.results) {
+      suggestions.value = response.data.results.map((region: any) => ({
+        label: `${region.name}, ${region.province}`,
+        value: region.code,
+        id: region.id,
+      }));
+    } else {
+      suggestions.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching regions:', error);
+    suggestions.value = [];
+  }
+};
 const searchFilterFn = async (val: string, update: any, abort: any) => {
-  if (val.length < 2) {
+  if (val.length < 3) {
     abort();
     return;
   }
-  update(async () => {
-    try {
-      const response = await regionsApi.list({
-        regionName: val,
-        pageSize: 5,
-        ordering: 'name',
-      });
-      if (response.status === 200 && response.data.results) {
-        suggestions.value = response.data.results.map((region: any) => ({
-          label: `${region.name}, ${region.province}`,
-          value: region.code,
-          id: region.id,
-        }));
-      } else {
-        throw new Error('Failed to fetch regions');
-      }
-    } catch (error) {
-      console.error('Error fetching regions:', error);
-      abort();
-    }
-  });
+  update(() => fetchSuggestions(val));
 };
 const selectFirstSuggestion = () => {
   if (suggestions.value.length > 0) {
     regionSelected.value = suggestions.value[0] as { label: string; value: string; id: number };
   }
+};
+const onEnterPress = async (e: KeyboardEvent) => {
+  const target = e.target as HTMLInputElement;
+  const inputValue = target?.value?.trim() ?? '';
+  if (inputValue.length < 3) return;
+
+  await fetchSuggestions(inputValue);
+
+  selectFirstSuggestion();
 };
 
 const abortFilterFn = () => {
