@@ -136,8 +136,8 @@ const anomalyLayer = computed(() => {
   };
 });
 
-function loadTiles(tile: any, url: string) {
-  tile.setLoader(function (extent: number[] | undefined, resolution: number, projection: string) {
+const loadTiles = (tile: any, url: string) => {
+  tile.setLoader((extent: number[] | undefined, resolution: number, projection: string) => {
     const tileCoord = tile.getTileCoord();
     const z = tileCoord[0];
     const x = tileCoord[1];
@@ -152,7 +152,7 @@ function loadTiles(tile: any, url: string) {
         },
         { responseType: 'arraybuffer' }, // Ensure we get the data as an ArrayBuffer
       )
-      .then(async function (response) {
+      .then(async (response) => {
         const format = tile.getFormat(); // ol/format/MVT configured as source format
         const features = format.readFeatures(response.data, {
           extent: extent,
@@ -161,7 +161,7 @@ function loadTiles(tile: any, url: string) {
         tile.setFeatures(features);
       });
   });
-}
+};
 
 const handleSourceTileLoadStart = () => {
   $q.loading.show({ message: 'Loading data...' });
