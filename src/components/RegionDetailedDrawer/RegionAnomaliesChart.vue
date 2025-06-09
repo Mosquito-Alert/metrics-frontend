@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white rounded-borders">
-    <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Time Series</h6>
+    <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Bite Index Time Series</h6>
     <!-- TODO: Button to show/conceal points that aren't anomalies -->
     <v-chart style="height: 250px" :option="option" :loading="loading" />
   </div>

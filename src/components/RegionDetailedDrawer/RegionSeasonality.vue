@@ -1,5 +1,7 @@
 <template>
-  <h6 class="q-mt-lg q-mb-none q-ml-sm text-weight-regular" style="color: #333">Seasonality</h6>
+  <h6 class="q-mt-lg q-mb-none q-ml-sm text-weight-regular" style="color: #333">
+    Seasonality Component
+  </h6>
   <v-chart style="height: 250px" :option="option" :loading="loading" />
 </template>
 
