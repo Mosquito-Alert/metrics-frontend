@@ -39,7 +39,7 @@ export default defineConfig((ctx) => {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
     build: {
       env: {
-        API_BASE_URL: isDev ? '/api' : undefined,
+        API_BASE_URL: isDev ? 'http://localhost:8000/api/v1' : undefined,
       },
       target: {
         browser: ['es2022', 'firefox115', 'chrome115', 'safari14'],
@@ -135,16 +135,16 @@ export default defineConfig((ctx) => {
     devServer: {
       // https: true,
       open: true, // opens browser window automatically
-      ...(isDev && {
-        proxy: {
-          '/api': {
-            target: 'http://api:8000/api/v1/',
-            changeOrigin: true,
-            secure: false,
-            rewrite: (path) => path.replace(/^\/api/, ''),
-          },
-        },
-      }),
+      // ...(isDev && {
+      //   proxy: {
+      //     '/api': {
+      //       target: 'http://localhost:8000/api',
+      //       changeOrigin: true,
+      //       secure: false,
+      //       rewrite: (path) => path.replace(/^\/api/, ''),
+      //     },
+      //   },
+      // }),
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
