@@ -13,7 +13,7 @@
         :center="center"
         :zoom="zoom"
         :maxZoom="maxZoom"
-        :projection="projection"
+        :projection="mapStore.projection"
       />
 
       <ol-tile-layer>
@@ -29,7 +29,7 @@
         <ol-source-vector-tile
           ref="sourceRef"
           :format="anomalyLayer.format"
-          :projection="projection"
+          :projection="mapStore.projection"
           :tileLoadFunction="loadTiles"
           :url="anomalyLayer.url"
           @tileloadstart="handleSourceTileLoadStart"
@@ -94,6 +94,7 @@ const props = defineProps({
 const mapStore = useMapStore();
 
 const hoveredFeatures = ref([] as FeatureLike[]);
+const selectedFeatures = computed(() => mapStore.selectedFeatures);
 
 const mapRef = ref<{ map: MapRef } | null>(null);
 const viewRef = ref();
@@ -107,8 +108,7 @@ const $q = useQuasar();
 /**
  * Base config
  */
-const projection = ref('EPSG:3857');
-const center = ref(fromLonLat([-3.6, 40.0], projection.value));
+const center = ref(fromLonLat([-3.6, 40.0], mapStore.projection));
 const zoom = ref(6.8);
 const maxZoom = ref(17);
 
@@ -126,13 +126,13 @@ const labelsLayer = ref({
   opaque: false,
 });
 const format = inject('ol-format');
-const MVTFormat = new format.MVT({ idProperty: 'id' });
+mapStore.format = new format.MVT({ idProperty: 'id' }); // Store the format in the mapStore for later use
 
 const anomalyLayer = computed(() => {
   return {
     // We need a deafult URL
     url: `https://localhost:8000/api/v1/metrics/tiles/{z}/{x}/{y}/?date=${props.date}`,
-    format: MVTFormat,
+    format: mapStore.format,
   };
 });
 
@@ -159,6 +159,7 @@ const loadTiles = (tile: any, url: string) => {
           featureProjection: projection,
         });
         tile.setFeatures(features);
+        mapStore.extent = extent || [];
       });
   });
 };
@@ -256,8 +257,8 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
 
 // Zoom to selectedFeature
 watchEffect(() => {
-  if (mapStore.isRegionSelected && mapStore.selectedFeatures.length > 0) {
-    const feature = mapStore.selectedFeatures[0] as FeatureLike;
+  if (mapStore.isRegionSelected && selectedFeatures.value.length > 0) {
+    const feature = selectedFeatures.value[0] as FeatureLike;
     const geometry = feature.getGeometry() as Geometry;
     viewRef.value.view.fit(geometry.getExtent(), {
       padding: [250, 250, 250, 250], //Padding around the feature
@@ -275,8 +276,7 @@ watchEffect(() => {
 watch(hoveredFeatures, () => {
   hoverLayerRef.value?.vectorTileLayer.changed();
 });
-
-watch(mapStore.selectedFeatures, () => {
+watch(selectedFeatures, () => {
   selectedLayerRef.value?.vectorTileLayer.changed();
 });
 
@@ -301,9 +301,10 @@ const styleFn = (feature: Feature) => {
 };
 
 const selectedStyleFn = (feature: any) => {
-  const selectedFeaturesIds = mapStore.selectedFeatures.map((f) => f.getId());
+  const selectedFeaturesIds = selectedFeatures.value.map((f) => f.getId());
   if (!selectedFeaturesIds.includes(feature.getId())) return;
 
+  console.log(feature); // DELETE:
   const style = styleFn(feature);
   style.setStroke(
     new Stroke({
