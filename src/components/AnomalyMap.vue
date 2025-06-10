@@ -28,14 +28,28 @@
       <ol-vector-tile-layer ref="layerRef" class-name="feature-layer">
         <ol-source-vector-tile
           ref="sourceRef"
-          :format="anomalyLayer.format"
+          :format="mapStore.format"
           :projection="mapStore.projection"
           :tileLoadFunction="loadTiles"
-          :url="anomalyLayer.url"
+          :url="`https://localhost:8000/api/v1/metrics/tiles/{z}/{x}/{y}/?date=${props.date}`"
           @tileloadstart="handleSourceTileLoadStart"
           @tileloadend="handleSourceTileLoadEnd"
         />
         <ol-style :overrideStyleFunction="styleFn"></ol-style>
+      </ol-vector-tile-layer>
+
+      <ol-vector-tile-layer
+        ref="autonomousCommunitiesLayerRef"
+        class-name="autonomous-communities-layer"
+      >
+        <ol-source-vector-tile
+          ref="autonomousCommunitiesSourceRef"
+          :format="mapStore.format"
+          :projection="mapStore.projection"
+          :tileLoadFunction="loadAutonomousCommunitiesTiles"
+          :url="`https://localhost:8000/api/v1/regions/autonomous_communities/tiles/{z}/{x}/{y}`"
+        />
+        <ol-style :overrideStyleFunction="AutonomousCommunitiesStyleFn"></ol-style>
       </ol-vector-tile-layer>
 
       <ol-vector-tile-layer
@@ -81,7 +95,7 @@ import { fromLonLat } from 'ol/proj';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
 import { ANOMALY_COLORS } from 'src/constants/colors';
-import { metricsApi } from 'src/services/apiService';
+import { metricsApi, regionsApi } from 'src/services/apiService';
 import { useMapStore } from 'src/stores/mapStore';
 import { computed, inject, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
 
@@ -128,28 +142,12 @@ const labelsLayer = ref({
 const format = inject('ol-format');
 mapStore.format = new format.MVT({ idProperty: 'id' }); // Store the format in the mapStore for later use
 
-const anomalyLayer = computed(() => {
-  return {
-    // We need a deafult URL
-    url: `https://localhost:8000/api/v1/metrics/tiles/{z}/{x}/{y}/?date=${props.date}`,
-    format: mapStore.format,
-  };
-});
-
 const loadTiles = (tile: any, url: string) => {
   tile.setLoader((extent: number[] | undefined, resolution: number, projection: string) => {
-    const tileCoord = tile.getTileCoord();
-    const z = tileCoord[0];
-    const x = tileCoord[1];
-    const y = tileCoord[2];
+    const [z, x, y] = tile.getTileCoord();
     metricsApi
       .tilesRetrieve(
-        {
-          date: props.date,
-          x: x.toString(),
-          y: y.toString(),
-          z: z.toString(),
-        },
+        { date: props.date, x: x.toString(), y: y.toString(), z: z.toString() },
         { responseType: 'arraybuffer' }, // Ensure we get the data as an ArrayBuffer
       )
       .then(async (response) => {
@@ -160,6 +158,24 @@ const loadTiles = (tile: any, url: string) => {
         });
         tile.setFeatures(features);
         mapStore.extent = extent || [];
+      });
+  });
+};
+const loadAutonomousCommunitiesTiles = (tile: any, url: string) => {
+  tile.setLoader((extent: number[] | undefined, resolution: number, projection: string) => {
+    const [z, x, y] = tile.getTileCoord();
+    regionsApi
+      .autonomousCommunitiesTilesRetrieve(
+        { x: x.toString(), y: y.toString(), z: z.toString() },
+        { responseType: 'arraybuffer' }, // Ensure we get the data as an ArrayBuffer
+      )
+      .then(async (response) => {
+        const format = tile.getFormat(); // ol/format/MVT configured as source format
+        const features = format.readFeatures(response.data, {
+          extent: extent,
+          featureProjection: projection,
+        });
+        tile.setFeatures(features);
       });
   });
 };
@@ -300,11 +316,19 @@ const styleFn = (feature: Feature) => {
   });
 };
 
+const AutonomousCommunitiesStyleFn = (feature: Feature) => {
+  return new Style({
+    stroke: new Stroke({
+      color: '#aaa',
+      width: 0.2,
+    }),
+  });
+};
+
 const selectedStyleFn = (feature: any) => {
   const selectedFeaturesIds = selectedFeatures.value.map((f) => f.getId());
   if (!selectedFeaturesIds.includes(feature.getId())) return;
 
-  console.log(feature); // DELETE:
   const style = styleFn(feature);
   style.setStroke(
     new Stroke({
