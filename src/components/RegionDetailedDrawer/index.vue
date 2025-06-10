@@ -53,7 +53,10 @@
       </div>
     </div>
     <!-- * CONTENT -->
-    <q-scroll-area class="drawer-content full-height q-px-md q-py-xs col overflow-auto">
+    <q-scroll-area
+      ref="drawerScrollArea"
+      class="drawer-content full-height q-px-md q-py-xs col overflow-auto"
+    >
       <RegionAnomaliesChart class="q-pt-sm" />
       <RegionSeasonality />
       <RegionSummary />
@@ -72,10 +75,12 @@ import {
   anomalyClassificationStyle,
   classifyAnomaly,
 } from 'src/utils/anomalyClassification';
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const uiStore = useUIStore();
 const mapStore = useMapStore();
+
+const drawerScrollArea = ref(null as any);
 
 const updateDataHook = async () => {
   if (!mapStore.selectedRegionMetricId) return;
@@ -93,6 +98,10 @@ watch(
   () => mapStore.selectedRegionMetricId,
   async (newValue, oldValue) => {
     if (newValue !== oldValue) {
+      // Also, reset the scroll position of the drawer
+      if (drawerScrollArea.value) {
+        drawerScrollArea.value?.setScrollPosition('vertical', 0, 150);
+      }
       await updateDataHook();
     }
   },
