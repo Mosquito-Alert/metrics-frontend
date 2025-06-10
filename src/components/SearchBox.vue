@@ -134,7 +134,7 @@ watch(
       if (regionSelected.value && metric) {
         // Set the selected metric ID in the map store
         mapStore.selectedRegionMetricId = metric.id;
-        await mapStore.fetchSelectedRegion(regionSelected.value.id);
+        await mapStore.fetchSelectedRegion(regionSelected.value.id, metric.id);
         regionSelected.value = null; // Reset the selection after setting
         suggestions.value = []; // Clear suggestions after selection
       }

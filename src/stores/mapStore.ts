@@ -9,10 +9,13 @@ import {
 } from 'anomaly-detection';
 import { historyPageSize } from '../constants/config';
 import { FeatureLike } from 'ol/Feature';
-import { GeoJSON } from 'ol/format';
+import { GeoJSON, MVT } from 'ol/format';
 
 export const useMapStore = defineStore('mapStore', {
   state: () => ({
+    format: null as MVT | null,
+    projection: 'EPSG:3857' as string,
+    extent: [] as number[],
     selectedRegionMetricId: '',
     selectedFeatures: [] as FeatureLike[],
     selectedRegion: null as Municipality | null,
@@ -47,14 +50,16 @@ export const useMapStore = defineStore('mapStore', {
   },
 
   actions: {
-    async fetchSelectedRegion(id: number): Promise<void> {
+    async fetchSelectedRegion(id: number, metricId: string): Promise<void> {
       try {
         const response = await regionsApi.retrieve({ id: id });
         if (response.status === 200 && response.data) {
           const format = new GeoJSON();
           const feature = format.readFeature(response.data.geometry, {
-            featureProjection: 'EPSG:3857',
-          });
+            extent: this.extent,
+            featureProjection: this.projection,
+          }) as any;
+          feature.setId(metricId);
           this.selectedFeatures = [feature as FeatureLike];
         } else {
           throw new Error('Failed to fetch selected region');
