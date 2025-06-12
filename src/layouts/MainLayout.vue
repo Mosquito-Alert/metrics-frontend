@@ -1,8 +1,8 @@
 <template>
   <q-layout view="lHh lpR lFf">
-    <MainHeader v-if="!mapStore.isRegionSelected" />
+    <!-- <MainHeader /> -->
 
-    <RegionDetailedDrawer v-if="mapStore.isRegionSelected" />
+    <MainDrawer />
 
     <q-page-container>
       <router-view />
@@ -10,13 +10,4 @@
   </q-layout>
 </template>
 
-<script setup lang="ts">
-import { useMapStore } from 'src/stores/mapStore';
-import { useUIStore } from 'src/stores/uiStore';
-
-const mapStore = useMapStore();
-const uiStore = useUIStore();
-
-uiStore.appWidth = window.innerWidth;
-uiStore.drawerWidth = Math.max(Math.floor(uiStore.appWidth / 2.75), 500);
-</script>
+<script setup lang="ts"></script>

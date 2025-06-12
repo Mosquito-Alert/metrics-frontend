@@ -143,7 +143,7 @@ watch(
   { immediate: true },
 );
 
-const width = computed(() => uiStore.drawerWidth);
+const width = computed(() => uiStore.regionDetailDrawerWidth);
 
 const searchbarStyle = computed(() => {
   return {

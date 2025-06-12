@@ -1,5 +1,6 @@
 <template>
   <q-page>
+    <RegionDetailedDrawer v-if="mapStore.isRegionSelected" />
     <!-- MAP -->
     <AnomalyMap v-if="dateFetched" :date="uiStore.date" />
 
@@ -52,6 +53,8 @@ onMounted(async () => {
   dateFetched.value = true;
   $q.loading.hide();
 });
+uiStore.appWidth = window.innerWidth;
+uiStore.regionDetailDrawerWidth = Math.max(Math.floor(uiStore.appWidth / 2.75), 500);
 </script>
 <style lang="scss">
 .ol-zoom {

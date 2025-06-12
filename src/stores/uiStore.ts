@@ -6,7 +6,7 @@ export const useUIStore = defineStore('uiStore', {
     date: '2025-01-01',
     fetchingDate: true,
     appWidth: window.innerWidth as number,
-    drawerWidth: 0,
+    regionDetailDrawerWidth: 0,
   }),
 
   getters: {

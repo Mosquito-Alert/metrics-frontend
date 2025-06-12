@@ -1,11 +1,5 @@
 <template>
-  <q-drawer
-    show-if-above
-    side="left"
-    :width="width"
-    v-model="mapStore.isRegionSelected"
-    class="bg-white overflow-hidden column"
-  >
+  <div class="region-detail-drawer bg-white overflow-hidden" :style="{ width: width + 'px' }">
     <div class="drawer-header q-pt-lg q-pb-sm q-px-lg q-ma-none" style="background-color: #f9e7b5">
       <q-btn
         dense
@@ -53,16 +47,13 @@
       </div>
     </div>
     <!-- * CONTENT -->
-    <q-scroll-area
-      ref="drawerScrollArea"
-      class="drawer-content full-height q-px-md q-py-xs col overflow-auto"
-    >
+    <q-scroll-area ref="drawerScrollArea" class="drawer-content col q-px-md q-py-xs">
       <RegionAnomaliesChart class="q-pt-sm" />
       <RegionSeasonality />
       <RegionSummary />
       <RegionAnomaliesHistoryTable />
     </q-scroll-area>
-  </q-drawer>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -145,5 +136,17 @@ const statusColorName = computed(() => {
   return anomalyClassificationStyle(status.value || AnomalyClassificationEnum.N_A);
 });
 
-const width = computed(() => uiStore.drawerWidth);
+const width = computed(() => uiStore.regionDetailDrawerWidth);
 </script>
+<style lang="scss">
+.region-detail-drawer {
+  z-index: 1000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+</style>
