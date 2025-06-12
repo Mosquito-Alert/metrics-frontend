@@ -8,7 +8,7 @@
         size="0.85rem"
         class="q-drawer-hide absolute"
         style="top: 1rem; right: 1rem"
-        @click="() => mapStore.$reset()"
+        @click="() => regionDetailedStore.$reset()"
       />
       <p class="text-h3 q-ma-none q-mb-xs">
         {{ municipalityName }}
@@ -59,7 +59,6 @@
 <script setup lang="ts">
 import { MetricDetail } from 'anomaly-detection';
 import { historyPageSize } from 'src/constants/config';
-import { useMapStore } from 'src/stores/mapStore';
 import { useUIStore } from 'src/stores/uiStore';
 import {
   AnomalyClassificationEnum,
@@ -67,26 +66,29 @@ import {
   classifyAnomaly,
 } from 'src/utils/anomalyClassification';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
 
 const uiStore = useUIStore();
-const mapStore = useMapStore();
+const regionDetailedStore = useRegionDetailedStore();
 
 const drawerScrollArea = ref(null as any);
 
 const updateDataHook = async () => {
-  if (!mapStore.selectedRegionMetricId) return;
-  await mapStore.fetchSelectedMetric(mapStore.selectedRegionMetricId!);
-  await mapStore.fetchSelectedMetricSeasonality();
-  await mapStore.fetchSelectedMetricAll();
-  await mapStore.fetchSelectedMetricTrend();
-  await mapStore.fetchSelectedMetricHistory({ page: 1, pageSize: historyPageSize });
+  if (!regionDetailedStore.selectedRegionMetricId) return;
+  await regionDetailedStore.fetchSelectedMetric(regionDetailedStore.selectedRegionMetricId!);
+  await regionDetailedStore.fetchSelectedMetricSeasonality();
+  await regionDetailedStore.fetchSelectedMetricAll();
+  await regionDetailedStore.fetchSelectedMetricTrend();
+  await regionDetailedStore.fetchSelectedMetricHistory({ page: 1, pageSize: historyPageSize });
 };
 
-const metric = computed<MetricDetail>(() => mapStore.getFormattedRegionMetric as MetricDetail);
-const loading = computed(() => mapStore.fetchingRegionMetric);
+const metric = computed<MetricDetail>(
+  () => regionDetailedStore.getFormattedRegionMetric as MetricDetail,
+);
+const loading = computed(() => regionDetailedStore.fetchingRegionMetric);
 
 watch(
-  () => mapStore.selectedRegionMetricId,
+  () => regionDetailedStore.selectedRegionMetricId,
   async (newValue, oldValue) => {
     if (newValue !== oldValue) {
       // Also, reset the scroll position of the drawer
@@ -99,14 +101,14 @@ watch(
   { immediate: true },
 );
 onMounted(async () => {
-  if (mapStore.selectedRegionMetricId) {
+  if (regionDetailedStore.selectedRegionMetricId) {
     await updateDataHook();
   }
 });
 
 const municipalityName = computed(() => {
   const defaultTitle = 'Municipality Unknown';
-  const selectedRegionMetric = mapStore.selectedRegionMetric;
+  const selectedRegionMetric = regionDetailedStore.selectedRegionMetric;
   if (!selectedRegionMetric) {
     return defaultTitle;
   }
@@ -114,7 +116,7 @@ const municipalityName = computed(() => {
 });
 const provinceName = computed(() => {
   const defaultTitle = 'Province Unknown';
-  const selectedRegionMetric = mapStore.selectedRegionMetric;
+  const selectedRegionMetric = regionDetailedStore.selectedRegionMetric;
   if (!selectedRegionMetric) {
     return defaultTitle;
   }

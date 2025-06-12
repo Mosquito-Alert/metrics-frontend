@@ -16,9 +16,9 @@ import {
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { date, getCssVar } from 'quasar';
-import { useMapStore } from 'src/stores/mapStore';
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
+import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
 
 use([
   TooltipComponent,
@@ -30,11 +30,11 @@ use([
   DataZoomComponent,
 ]);
 
-const mapStore = useMapStore();
+const regionDetailedStore = useRegionDetailedStore();
 
-const loading = computed(() => mapStore.fetchingRegionMetricSeasonality);
+const loading = computed(() => regionDetailedStore.fetchingRegionMetricSeasonality);
 const data = computed(() => {
-  const seasonality = mapStore.selectedRegionMetricSeasonality?.yearly || [];
+  const seasonality = regionDetailedStore.selectedRegionMetricSeasonality?.yearly || [];
   return seasonality.map((seasonalityItem: string, index: number) => ({
     date: new Date(2017, 0, index + 1), // Assuming index starts from 0 for January
     value: (Number(seasonalityItem) * 100).toFixed(2), // Convert to percentage

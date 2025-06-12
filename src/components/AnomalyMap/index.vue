@@ -11,8 +11,8 @@
       <ol-view
         ref="viewRef"
         :center="center"
-        :zoom="zoom"
-        :maxZoom="maxZoom"
+        :zoom="mapStore.zoom"
+        :maxZoom="mapStore.maxZoom"
         :projection="mapStore.projection"
       />
 
@@ -84,6 +84,7 @@ import { ANOMALY_COLORS } from 'src/constants/colors';
 import { metricsApi } from 'src/services/apiService';
 import { useMapStore } from 'src/stores/mapStore';
 import { computed, inject, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
+import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
 
 const props = defineProps({
   date: {
@@ -92,6 +93,7 @@ const props = defineProps({
   },
 });
 const mapStore = useMapStore();
+const regionDetailedStore = useRegionDetailedStore();
 
 const hoveredFeatures = ref([] as FeatureLike[]);
 const selectedFeatures = computed(() => mapStore.selectedFeatures);
@@ -108,9 +110,7 @@ const $q = useQuasar();
 /**
  * Base config
  */
-const center = ref(fromLonLat([-3.6, 40.0], mapStore.projection));
-const zoom = ref(6.8);
-const maxZoom = ref(17);
+const center = computed(() => fromLonLat(mapStore.center, mapStore.projection));
 
 // * Map layers
 const basemapLayer = ref({
@@ -218,7 +218,7 @@ const selectFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   // So only one feature is selected
   const firstFeature = features[0] as Feature;
   mapStore.selectedFeatures = [firstFeature];
-  mapStore.selectedRegionMetricId = firstFeature.getId() as string;
+  regionDetailedStore.selectedRegionMetricId = firstFeature.getId() as string;
 };
 
 const tooltipEl = document.createElement('div');
@@ -257,17 +257,17 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
 
 // Zoom to selectedFeature
 watchEffect(() => {
-  if (mapStore.isRegionSelected && selectedFeatures.value.length > 0) {
+  if (regionDetailedStore.isRegionSelected && selectedFeatures.value.length > 0) {
     const feature = selectedFeatures.value[0] as FeatureLike;
     const geometry = feature.getGeometry() as Geometry;
     viewRef.value.view.fit(geometry.getExtent(), {
       padding: [250, 250, 250, 250], //Padding around the feature
       duration: 600, // duration of the zoom animation in milliseconds
     });
-  } else if (viewRef.value && !mapStore.isRegionSelected) {
+  } else if (viewRef.value && !regionDetailedStore.isRegionSelected) {
     viewRef.value.view.animate({
       center: center.value,
-      zoom: zoom.value,
+      zoom: mapStore.zoom,
       duration: 600, // duration of the zoom animation in milliseconds
     });
   }
@@ -304,7 +304,6 @@ const selectedStyleFn = (feature: any) => {
   const selectedFeaturesIds = selectedFeatures.value.map((f) => f.getId());
   if (!selectedFeaturesIds.includes(feature.getId())) return;
 
-  console.log(feature); // DELETE:
   const style = styleFn(feature);
   style.setStroke(
     new Stroke({

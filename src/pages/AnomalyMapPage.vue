@@ -1,12 +1,12 @@
 <template>
   <q-page>
-    <RegionDetailedDrawer v-if="mapStore.isRegionSelected" />
+    <RegionDetailedDrawer v-if="drawerRegionDetailed.isRegionSelected" />
     <!-- MAP -->
     <AnomalyMap v-if="dateFetched" :date="uiStore.date" />
 
     <!-- SEARCH BAR -->
     <q-page-sticky position="top-left" :offset="[0, 20]">
-      <SearchBox v-if="!mapStore.selectedRegionMetricId" />
+      <SearchBox v-if="!drawerRegionDetailed.selectedRegionMetricId" />
     </q-page-sticky>
 
     <!-- DATE -->
@@ -35,14 +35,14 @@
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import { useMapStore } from 'src/stores/mapStore';
+import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import { useUIStore } from 'src/stores/uiStore';
 import { onMounted, ref } from 'vue';
 
 const $q = useQuasar();
 
 const uiStore = useUIStore();
-const mapStore = useMapStore();
+const drawerRegionDetailed = useRegionDetailedStore();
 
 const dateFetched = ref(false);
 

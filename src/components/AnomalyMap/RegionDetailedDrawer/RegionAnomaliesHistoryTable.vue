@@ -27,10 +27,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Metric, PaginatedMetricList } from 'anomaly-detection';
-import { useMapStore } from 'src/stores/mapStore';
 import { date, QTableProps } from 'quasar';
 import { anomalyClassificationStyle, classifyAnomaly } from 'src/utils/anomalyClassification';
 import { historyPageSize } from 'src/constants/config';
+import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
 
 const columns: QTableProps['columns'] = [
   {
@@ -75,11 +75,11 @@ const columns: QTableProps['columns'] = [
   },
 ];
 
-const mapStore = useMapStore();
+const regionDetailedStore = useRegionDetailedStore();
 
-const loading = computed(() => mapStore.fetchingRegionMetricsHistory);
+const loading = computed(() => regionDetailedStore.fetchingRegionMetricsHistory);
 const history = computed<PaginatedMetricList>(
-  () => mapStore.selectedRegionMetricsHistory as PaginatedMetricList,
+  () => regionDetailedStore.selectedRegionMetricsHistory as PaginatedMetricList,
 );
 const data = computed<Array<Metric>>(() => {
   if (!history.value || !history.value.results) {
@@ -109,7 +109,7 @@ watch(
 const onRequest = async (props: any) => {
   const { page, rowsPerPage } = props.pagination;
 
-  const returnedData = await mapStore.fetchSelectedMetricHistory({
+  const returnedData = await regionDetailedStore.fetchSelectedMetricHistory({
     page: page,
     pageSize: rowsPerPage,
   });
