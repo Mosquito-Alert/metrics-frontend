@@ -1,10 +1,26 @@
 import type { RouteRecordRaw } from 'vue-router';
+import routesNames from './routesNames';
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/AnomalyMapPage.vue') }],
+    children: [
+      {
+        path: '',
+        component: () => import('pages/AnomalyMapPage.vue'),
+      },
+      {
+        path: routesNames.anomalyMap,
+        name: routesNames.anomalyMap,
+        component: () => import('pages/AnomalyMapPage.vue'),
+      },
+      {
+        path: routesNames.playback,
+        name: routesNames.playback,
+        component: () => import('pages/PlaybackPage.vue'),
+      },
+    ],
   },
 
   // Always leave this as last one,

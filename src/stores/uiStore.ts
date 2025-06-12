@@ -1,5 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { metricsApi } from '../services/apiService';
+import routesNames from '../router/routesNames';
 
 export const useUIStore = defineStore('uiStore', {
   state: () => ({
@@ -7,6 +8,7 @@ export const useUIStore = defineStore('uiStore', {
     fetchingDate: true,
     appWidth: window.innerWidth as number,
     regionDetailDrawerWidth: 0,
+    currentTab: routesNames.anomalyMap,
   }),
 
   getters: {

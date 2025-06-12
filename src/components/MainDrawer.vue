@@ -26,7 +26,12 @@
 
         <q-separator class="q-mb-md" />
 
-        <q-item active clickable v-ripple>
+        <q-item
+          clickable
+          v-ripple
+          @click="navigateTo(routesNames.anomalyMap)"
+          :active="uiStore.currentTab === routesNames.anomalyMap"
+        >
           <q-item-section avatar>
             <q-icon name="map" />
           </q-item-section>
@@ -36,7 +41,12 @@
           </q-item-section>
         </q-item>
 
-        <q-item clickable v-ripple>
+        <q-item
+          clickable
+          v-ripple
+          @click="navigateTo(routesNames.playback)"
+          :active="uiStore.currentTab === routesNames.playback"
+        >
           <q-item-section avatar>
             <q-icon name="replay_30" />
           </q-item-section>
@@ -63,10 +73,18 @@
 </template>
 <script setup lang="ts">
 import { useUIStore } from 'src/stores/uiStore';
+import routesNames from 'src/router/routesNames';
 import { computed } from 'vue';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 const miniState = ref(true);
 const uiStore = useUIStore();
+const router = useRouter();
 
 const width = computed(() => Math.max(Math.floor(uiStore.appWidth / 6), 100));
+
+const navigateTo = (routeName: string) => {
+  router.push({ name: routeName });
+  uiStore.currentTab = routeName;
+};
 </script>
