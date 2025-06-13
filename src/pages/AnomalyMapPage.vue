@@ -1,6 +1,6 @@
 <template>
   <q-page>
-    <RegionDetailedDrawer v-if="drawerRegionDetailed.isRegionSelected" />
+    <!-- <RegionDetailedDrawer v-if="drawerRegionDetailed.isRegionSelected" /> -->
     <!-- MAP -->
     <AnomalyMap v-if="dateFetched" :date="uiStore.date" />
 
@@ -9,16 +9,37 @@
       <SearchBox v-if="!drawerRegionDetailed.selectedRegionMetricId" />
     </q-page-sticky>
 
-    <!-- DATE -->
+    <!-- RIGHT SIDE OPTIONS -->
     <q-page-sticky position="top-right" :offset="[20, 20]">
       <span
-        class="q-px-md q-py-xs text-weight-medium text-subtitle1"
+        class="q-px-lg q-py-sm text-weight-medium text-subtitle1"
         id="map-date"
         v-if="!uiStore.fetchingDate"
       >
         {{ uiStore.formattedDate }}
       </span>
       <q-skeleton type="QBadge" v-if="uiStore.fetchingDate" />
+    </q-page-sticky>
+
+    <q-page-sticky position="top-right" :offset="[20, 80]" class="map-tools">
+      <div class="playback sidemap-option" :class="{ active: sideOptionActive === 'active' }">
+        <div @click="() => (playbackStore.playbackEnabled = !playbackStore.playbackEnabled)">
+          <span v-if="!uiStore.fetchingDate" class="column items-center">
+            <q-icon name="history"></q-icon>
+            <p class="q-pa-none q-ma-none">Playback</p>
+            <!-- <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+              <q-date v-model="rangeDate" range>
+                <div class="row items-center justify-end q-gutter-sm">
+                  <q-btn label="Cancel" color="primary" flat v-close-popup />
+                  <q-btn label="OK" color="primary" flat v-close-popup />
+                </div>
+              </q-date>
+            </q-popup-proxy> -->
+          </span>
+          <q-skeleton type="QBadge" v-if="uiStore.fetchingDate" />
+          <q-tooltip anchor="center left" self="center end"> Playback last 30 days </q-tooltip>
+        </div>
+      </div>
     </q-page-sticky>
 
     <!-- LOGO -->
@@ -37,14 +58,20 @@
 import { useQuasar } from 'quasar';
 import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import { useUIStore } from 'src/stores/uiStore';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { usePlaybackStore } from '../stores/playbackStore';
 
 const $q = useQuasar();
 
 const uiStore = useUIStore();
 const drawerRegionDetailed = useRegionDetailedStore();
+const playbackStore = usePlaybackStore();
 
 const dateFetched = ref(false);
+const sideOptionActive = computed(() => {
+  return playbackStore.playbackEnabled ? 'active' : 'inactive';
+});
+// const rangeDate = ref([new Date(), new Date()]);
 
 // * Lifecycle
 onMounted(async () => {
@@ -57,6 +84,47 @@ uiStore.appWidth = window.innerWidth;
 uiStore.regionDetailDrawerWidth = Math.max(Math.floor(uiStore.appWidth / 2.75), 500);
 </script>
 <style lang="scss">
+#map-date {
+  background-color: #f0f0f0;
+  color: #444;
+  border-radius: 4px;
+  border: 1px solid #444;
+}
+.map-tools {
+  background-color: #393939cc;
+  color: #e1e1e1;
+  border: 1px solid #393939;
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.1rem;
+  .sidemap-option {
+    padding: 0.6rem 0.5rem;
+    margin: 0.1rem 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    p {
+      font-size: 0.8rem;
+    }
+    &.active {
+      color: #f3c954;
+      i {
+        color: #f3c954;
+      }
+    }
+
+    &:hover {
+      color: #f3c954;
+      i {
+        color: #f3c954;
+      }
+    }
+
+    i {
+      font-size: 1.8rem;
+      color: #e1e1e1;
+    }
+  }
+}
+
 .ol-zoom {
   top: auto !important;
   bottom: 5em !important;

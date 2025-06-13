@@ -12,6 +12,7 @@ declare module 'vue' {
     Components: typeof import('./src/components/index.vue')['default']
     MainDrawer: typeof import('./src/components/MainDrawer.vue')['default']
     MainHeader: typeof import('./src/components/MainHeader.vue')['default']
+    PlaybackMap: typeof import('./src/components/PlaybackMap/index.vue')['default']
     RegionAnomaliesChart: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/RegionAnomaliesChart.vue')['default']
     RegionAnomaliesHistoryTable: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/RegionAnomaliesHistoryTable.vue')['default']
     RegionDetailedDrawer: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/index.vue')['default']

@@ -15,11 +15,6 @@ const routes: RouteRecordRaw[] = [
         name: routesNames.anomalyMap,
         component: () => import('pages/AnomalyMapPage.vue'),
       },
-      {
-        path: routesNames.playback,
-        name: routesNames.playback,
-        component: () => import('pages/PlaybackPage.vue'),
-      },
     ],
   },
 

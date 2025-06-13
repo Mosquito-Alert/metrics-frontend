@@ -1,8 +1,10 @@
 <template>
-  <q-layout view="lHh lpR lFf">
+  <q-layout view="lHh LpR fFf">
     <!-- <MainHeader /> -->
 
-    <MainDrawer />
+    <RegionDetailedDrawer v-if="drawerRegionDetailed.isRegionSelected" />
+
+    <!-- <MainDrawer /> -->
 
     <q-page-container>
       <router-view />
@@ -10,4 +12,8 @@
   </q-layout>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
+
+const drawerRegionDetailed = useRegionDetailedStore();
+</script>

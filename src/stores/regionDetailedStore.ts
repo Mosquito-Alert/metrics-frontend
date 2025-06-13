@@ -9,7 +9,7 @@ import {
 } from 'anomaly-detection';
 import { historyPageSize } from '../constants/config';
 import { FeatureLike } from 'ol/Feature';
-import { GeoJSON, MVT } from 'ol/format';
+import { GeoJSON } from 'ol/format';
 import { useMapStore } from './mapStore';
 
 export const useRegionDetailedStore = defineStore('regionDetailedStore', {

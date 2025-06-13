@@ -18,10 +18,10 @@
 
       <ol-tile-layer>
         <ol-source-xyz
-          :url="basemapLayer.url"
-          :preload="basemapLayer.preload"
-          :attributions-collapsible="basemapLayer.attributionsCollapsible"
-          :attributions="basemapLayer.attributions"
+          :url="mapStore.basemapLayer.url"
+          :preload="mapStore.basemapLayer.preload"
+          :attributions-collapsible="mapStore.basemapLayer.attributionsCollapsible"
+          :attributions="mapStore.basemapLayer.attributions"
         />
       </ol-tile-layer>
 
@@ -58,9 +58,9 @@
 
       <ol-tile-layer :z-index="15">
         <ol-source-xyz
-          :url="labelsLayer.url"
-          :preload="labelsLayer.preload"
-          :opaque="labelsLayer.opaque"
+          :url="mapStore.labelsLayer.url"
+          :preload="mapStore.labelsLayer.preload"
+          :opaque="mapStore.labelsLayer.opaque"
         />
       </ol-tile-layer>
 
@@ -81,7 +81,6 @@ import { fromLonLat } from 'ol/proj';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
 import { ANOMALY_COLORS } from 'src/constants/colors';
-import { metricsApi } from 'src/services/apiService';
 import { useMapStore } from 'src/stores/mapStore';
 import { computed, inject, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
 import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
@@ -113,18 +112,6 @@ const $q = useQuasar();
 const center = computed(() => fromLonLat(mapStore.center, mapStore.projection));
 
 // * Map layers
-const basemapLayer = ref({
-  url: 'https://basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}.png',
-  attributions:
-    "© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap </a> contributors, © <a href='https://carto.com/about-carto'>Carto</a>",
-  attributionsCollapsible: false,
-  preload: Infinity,
-});
-const labelsLayer = ref({
-  url: 'https://basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}.png',
-  preload: Infinity,
-  opaque: false,
-});
 const format = inject('ol-format');
 mapStore.format = new format.MVT({ idProperty: 'id' }); // Store the format in the mapStore for later use
 
@@ -137,30 +124,20 @@ const anomalyLayer = computed(() => {
 });
 
 const loadTiles = (tile: any, url: string) => {
-  tile.setLoader((extent: number[] | undefined, resolution: number, projection: string) => {
+  tile.setLoader(async (extent: number[] | undefined, resolution: number, projection: string) => {
     const tileCoord = tile.getTileCoord();
-    const z = tileCoord[0];
-    const x = tileCoord[1];
-    const y = tileCoord[2];
-    metricsApi
-      .tilesRetrieve(
-        {
-          date: props.date,
-          x: x.toString(),
-          y: y.toString(),
-          z: z.toString(),
-        },
-        { responseType: 'arraybuffer' }, // Ensure we get the data as an ArrayBuffer
-      )
-      .then(async (response) => {
-        const format = tile.getFormat(); // ol/format/MVT configured as source format
-        const features = format.readFeatures(response.data, {
-          extent: extent,
-          featureProjection: projection,
-        });
-        tile.setFeatures(features);
-        mapStore.extent = extent || [];
-      });
+    const z = tileCoord[0].toString();
+    const x = tileCoord[1].toString();
+    const y = tileCoord[2].toString();
+    const data = await mapStore.fetchData(props.date, x, y, z);
+
+    const format = tile.getFormat(); // ol/format/MVT configured as source format
+    const features = format.readFeatures(data, {
+      extent: extent,
+      featureProjection: projection,
+    });
+    tile.setFeatures(features);
+    mapStore.extent = extent || [];
   });
 };
 
@@ -329,12 +306,6 @@ const hoveredStyleFn = (feature: any) => {
 };
 </script>
 <style lang="scss">
-#map-date {
-  background-color: #f3c954;
-  color: #444;
-  border-radius: 4px;
-  border: 1px solid #edb20c;
-}
 .custom-tooltip {
   position: relative; /* Needed for the arrow positioning */
   background-color: rgba(0, 0, 0, 0.75); /* dark with transparency */

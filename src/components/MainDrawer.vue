@@ -6,6 +6,7 @@
     @mouseleave="miniState = true"
     mini-to-overlay
     :width="width"
+    :mini-width="70"
     :breakpoint="500"
     bordered
     :class="$q.dark.isActive ? 'bg-grey-9' : 'bg-grey-3'"
@@ -15,12 +16,15 @@
         <q-item v-ripple class="q-mb-lg">
           <q-item-section avatar>
             <q-avatar square>
-              <img src="~assets/logo.png" />
+              <img
+                src="~assets/mosquito_alert_squared_logo.png"
+                style="width: 40px; height: 40px"
+              />
             </q-avatar>
           </q-item-section>
           <q-item-section>
-            <q-item-label class="text-h6">Anomaly Detection</q-item-label>
-            <q-item-label caption>Version 1.0.0</q-item-label>
+            <q-item-label class="text-h6">Metrics</q-item-label>
+            <q-item-label caption>Mosquito Alert insights</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -38,21 +42,6 @@
 
           <q-item-section>
             <q-item-label class="text-subtitle2"> Anomaly Map</q-item-label>
-          </q-item-section>
-        </q-item>
-
-        <q-item
-          clickable
-          v-ripple
-          @click="navigateTo(routesNames.playback)"
-          :active="uiStore.currentTab === routesNames.playback"
-        >
-          <q-item-section avatar>
-            <q-icon name="replay_30" />
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label class="text-subtitle2">Playback last 30 days</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -81,7 +70,7 @@ const miniState = ref(true);
 const uiStore = useUIStore();
 const router = useRouter();
 
-const width = computed(() => Math.max(Math.floor(uiStore.appWidth / 6), 100));
+const width = computed(() => Math.max(Math.floor(uiStore.appWidth / 6.8), 100));
 
 const navigateTo = (routeName: string) => {
   router.push({ name: routeName });
