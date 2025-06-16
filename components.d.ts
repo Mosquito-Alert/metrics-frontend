@@ -10,8 +10,10 @@ declare module 'vue' {
   export interface GlobalComponents {
     AnomalyMap: typeof import('./src/components/AnomalyMap/index.vue')['default']
     Components: typeof import('./src/components/index.vue')['default']
+    CurrentStateLayer: typeof import('./src/components/AnomalyMap/CurrentStateLayer.vue')['default']
     MainDrawer: typeof import('./src/components/MainDrawer.vue')['default']
     MainHeader: typeof import('./src/components/MainHeader.vue')['default']
+    PlaybackControl: typeof import('./src/components/PlaybackControl.vue')['default']
     PlaybackMap: typeof import('./src/components/PlaybackMap/index.vue')['default']
     RegionAnomaliesChart: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/RegionAnomaliesChart.vue')['default']
     RegionAnomaliesHistoryTable: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/RegionAnomaliesHistoryTable.vue')['default']

@@ -16,14 +16,14 @@
         id="map-date"
         v-if="!uiStore.fetchingDate"
       >
-        {{ uiStore.formattedDate }}
+        {{ currentDate }}
       </span>
       <q-skeleton type="QBadge" v-if="uiStore.fetchingDate" />
     </q-page-sticky>
 
     <q-page-sticky position="top-right" :offset="[20, 80]" class="map-tools">
       <div class="playback sidemap-option" :class="{ active: sideOptionActive === 'active' }">
-        <div @click="() => (playbackStore.playbackEnabled = !playbackStore.playbackEnabled)">
+        <div @click="playback">
           <span v-if="!uiStore.fetchingDate" class="column items-center">
             <q-icon name="history"></q-icon>
             <p class="q-pa-none q-ma-none">Playback</p>
@@ -37,9 +37,14 @@
             </q-popup-proxy> -->
           </span>
           <q-skeleton type="QBadge" v-if="uiStore.fetchingDate" />
-          <q-tooltip anchor="center left" self="center end"> Playback last 30 days </q-tooltip>
+          <q-tooltip anchor="center left" self="center end">{{ playbackTooltipMsg }}</q-tooltip>
         </div>
       </div>
+    </q-page-sticky>
+
+    <!-- PLAYBACK CONTROL -->
+    <q-page-sticky position="bottom-left" :offset="[40, 20]" class="playback-control">
+      <PlaybackControl v-if="playbackStore.playbackEnabled" />
     </q-page-sticky>
 
     <!-- LOGO -->
@@ -80,6 +85,23 @@ onMounted(async () => {
   dateFetched.value = true;
   $q.loading.hide();
 });
+
+const playback = () => {
+  playbackStore.togglePlayback();
+  if (!playbackStore.playbackEnabled) {
+    uiStore.fetchLastDate();
+  }
+};
+
+const currentDate = computed(() => {
+  return playbackStore.playbackEnabled
+    ? playbackStore.formattedPlaybackCurrentDate
+    : uiStore.formattedDate;
+});
+const playbackTooltipMsg = computed(() => {
+  return playbackStore.playbackEnabled ? 'Return to current date' : 'Playback last 30 days';
+});
+
 uiStore.appWidth = window.innerWidth;
 uiStore.regionDetailDrawerWidth = Math.max(Math.floor(uiStore.appWidth / 2.75), 500);
 </script>
@@ -122,6 +144,13 @@ uiStore.regionDetailDrawerWidth = Math.max(Math.floor(uiStore.appWidth / 2.75), 
       font-size: 1.8rem;
       color: #e1e1e1;
     }
+  }
+}
+.playback-control {
+  width: 30%;
+  > div {
+    width: 100%;
+    height: 100%;
   }
 }
 

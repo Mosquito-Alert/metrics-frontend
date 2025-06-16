@@ -25,7 +25,11 @@
         />
       </ol-tile-layer>
 
-      <ol-vector-tile-layer ref="layerRef" class-name="feature-layer">
+      <ol-vector-tile-layer
+        v-if="!playbackStore.playbackEnabled"
+        ref="layerRef"
+        class-name="feature-layer"
+      >
         <ol-source-vector-tile
           ref="sourceRef"
           :format="anomalyLayer.format"
@@ -36,6 +40,23 @@
           @tileloadend="handleSourceTileLoadEnd"
         />
         <ol-style :overrideStyleFunction="styleFn"></ol-style>
+      </ol-vector-tile-layer>
+
+      <ol-vector-tile-layer
+        v-if="playbackStore.playbackEnabled"
+        ref="playbackLayerRef"
+        class-name="playback-layer"
+      >
+        <ol-source-vector-tile
+          ref="sourceRef"
+          :format="anomalyLayer.format"
+          :projection="mapStore.projection"
+          :tileLoadFunction="loadPlaybackTiles"
+          :url="anomalyLayer.url"
+          @tileloadstart="handleSourceTileLoadStart"
+          @tileloadend="handleSourceTileLoadEnd"
+        />
+        <ol-style :overrideStyleFunction="stylePlaybackFn"></ol-style>
       </ol-vector-tile-layer>
 
       <ol-vector-tile-layer
@@ -84,6 +105,8 @@ import { ANOMALY_COLORS } from 'src/constants/colors';
 import { useMapStore } from 'src/stores/mapStore';
 import { computed, inject, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
 import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
+import { usePlaybackStore } from 'src/stores/playbackStore';
+import { useUIStore } from 'src/stores/uiStore';
 
 const props = defineProps({
   date: {
@@ -91,8 +114,10 @@ const props = defineProps({
     required: true,
   },
 });
+const uiStore = useUIStore();
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
+const playbackStore = usePlaybackStore();
 
 const hoveredFeatures = ref([] as FeatureLike[]);
 const selectedFeatures = computed(() => mapStore.selectedFeatures);
@@ -130,6 +155,24 @@ const loadTiles = (tile: any, url: string) => {
     const x = tileCoord[1].toString();
     const y = tileCoord[2].toString();
     const data = await mapStore.fetchData(props.date, x, y, z);
+
+    const format = tile.getFormat(); // ol/format/MVT configured as source format
+    const features = format.readFeatures(data, {
+      extent: extent,
+      featureProjection: projection,
+    });
+    tile.setFeatures(features);
+    mapStore.extent = extent || [];
+  });
+};
+
+const loadPlaybackTiles = (tile: any, url: string) => {
+  tile.setLoader(async (extent: number[] | undefined, resolution: number, projection: string) => {
+    const tileCoord = tile.getTileCoord();
+    const z = tileCoord[0].toString();
+    const x = tileCoord[1].toString();
+    const y = tileCoord[2].toString();
+    const data = await playbackStore.fetchData(props.date, x, y, z);
 
     const format = tile.getFormat(); // ol/format/MVT configured as source format
     const features = format.readFeatures(data, {
@@ -261,9 +304,12 @@ watch(selectedFeatures, () => {
  * Styles
  */
 const styleFn = (feature: Feature) => {
+  return styleProperties(feature.get('anomaly_degree'));
+};
+
+const styleProperties = (anomaly_degree: number) => {
   // TODO: Add a gradient to the fill color based on the anomaly degree
   let fillColor;
-  const anomaly_degree = feature.get('anomaly_degree');
   if (anomaly_degree && anomaly_degree !== 0) {
     fillColor = anomaly_degree > 0 ? ANOMALY_COLORS.HIGH : ANOMALY_COLORS.LOW;
   } else {
@@ -303,6 +349,14 @@ const hoveredStyleFn = (feature: any) => {
     }),
   );
   return style;
+};
+
+const stylePlaybackFn = (feature: Feature) => {
+  const featureTimeseries = JSON.parse(feature.get('timeseries'));
+  const featurePropertiesForDate = featureTimeseries.find(
+    (item: any) => item.date === uiStore.date,
+  );
+  return styleProperties(featurePropertiesForDate.anomaly_degree);
 };
 </script>
 <style lang="scss">
