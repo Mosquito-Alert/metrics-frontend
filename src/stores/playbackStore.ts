@@ -7,7 +7,7 @@ export const usePlaybackStore = defineStore('playbackStore', {
   state: () => ({
     playbackEnabled: false as boolean,
     playbackDays: 30 as number,
-    playbackDaysAxis: {} as Record<number, string>, // Axis for playback days, indexed by day
+    playbackDaysObject: {} as Record<number, string>, // Axis for playback days, indexed by day
     // playbackSpeed: 0.5 as number, // Speed in seconds per day
     // playbackStartDate: new Date() as Date,
     // playbackEndDate: new Date() as Date,
@@ -15,6 +15,7 @@ export const usePlaybackStore = defineStore('playbackStore', {
     playbackCurrentIndex: 0 as number,
     playbackCurrentDate: '2025-01-01' as string, // Default date, can be updated later
     data: null as Metric | any, // Replace with actual type if known
+    fetchingData: false as boolean, // Flag to indicate if data is being fetched
   }),
 
   getters: {
@@ -25,6 +26,7 @@ export const usePlaybackStore = defineStore('playbackStore', {
 
   actions: {
     async fetchData(date: string, x: string, y: string, z: string) {
+      this.fetchingData = true; // Set fetching flag to true
       const response = await metricsApi.timeseriesTilesRetrieve(
         {
           date: date,
@@ -37,9 +39,10 @@ export const usePlaybackStore = defineStore('playbackStore', {
       );
       this.data = response.data;
       const firstDate = subtractDays(date, this.playbackDays - 1);
-      this.playbackDaysAxis = getDatesBetween(firstDate, date);
+      this.playbackDaysObject = getDatesBetween(firstDate, date);
       this.playbackCurrentDate = firstDate;
       this.playbackCurrentIndex = 0; // Reset index to the start
+      this.fetchingData = false; // Reset fetching flag
       return response.data;
     },
     togglePlayback() {
@@ -49,9 +52,8 @@ export const usePlaybackStore = defineStore('playbackStore', {
         this.playbackCurrentIndex = 0;
       }
     },
-    updateCurrentIndex(index: number) {
-      this.playbackCurrentIndex = index;
-      this.playbackCurrentDate = this.playbackDaysAxis[index] || '';
+    updateCurrentDate(index: number) {
+      this.playbackCurrentDate = this.playbackDaysObject[index] || '';
     },
   },
 });

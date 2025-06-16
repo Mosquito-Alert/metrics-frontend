@@ -2,7 +2,7 @@
   <q-layout view="lHh LpR fFf">
     <!-- <MainHeader /> -->
 
-    <RegionDetailedDrawer v-if="drawerRegionDetailed.isRegionSelected" />
+    <!-- <RegionDetailedDrawer v-if="drawerRegionDetailed.isRegionSelected" /> -->
 
     <!-- <MainDrawer /> -->
 

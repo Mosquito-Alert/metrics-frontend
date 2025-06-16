@@ -48,7 +48,7 @@
         class-name="playback-layer"
       >
         <ol-source-vector-tile
-          ref="sourceRef"
+          ref="playbackSourceRef"
           :format="anomalyLayer.format"
           :projection="mapStore.projection"
           :tileLoadFunction="loadPlaybackTiles"
@@ -108,12 +108,6 @@ import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
 import { usePlaybackStore } from 'src/stores/playbackStore';
 import { useUIStore } from 'src/stores/uiStore';
 
-const props = defineProps({
-  date: {
-    type: String,
-    required: true,
-  },
-});
 const uiStore = useUIStore();
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
@@ -128,6 +122,7 @@ const sourceRef = ref();
 const layerRef = ref(null);
 const hoverLayerRef = ref<{ vectorTileLayer: VectorTileLayer } | null>(null);
 const selectedLayerRef = ref<{ vectorTileLayer: VectorTileLayer } | null>(null);
+const playbackLayerRef = ref<{ vectorTileLayer: VectorTileLayer } | null>(null);
 
 const $q = useQuasar();
 
@@ -143,7 +138,7 @@ mapStore.format = new format.MVT({ idProperty: 'id' }); // Store the format in t
 const anomalyLayer = computed(() => {
   return {
     // We need a deafult URL
-    url: `https://localhost:8000/api/v1/metrics/tiles/{z}/{x}/{y}/?date=${props.date}`,
+    url: `https://localhost:8000/api/v1/metrics/tiles/{z}/{x}/{y}/?date=${uiStore.date}`,
     format: mapStore.format,
   };
 });
@@ -154,7 +149,7 @@ const loadTiles = (tile: any, url: string) => {
     const z = tileCoord[0].toString();
     const x = tileCoord[1].toString();
     const y = tileCoord[2].toString();
-    const data = await mapStore.fetchData(props.date, x, y, z);
+    const data = await mapStore.fetchData(uiStore.date, x, y, z);
 
     const format = tile.getFormat(); // ol/format/MVT configured as source format
     const features = format.readFeatures(data, {
@@ -172,7 +167,7 @@ const loadPlaybackTiles = (tile: any, url: string) => {
     const z = tileCoord[0].toString();
     const x = tileCoord[1].toString();
     const y = tileCoord[2].toString();
-    const data = await playbackStore.fetchData(props.date, x, y, z);
+    const data = await playbackStore.fetchData(uiStore.date, x, y, z);
 
     const format = tile.getFormat(); // ol/format/MVT configured as source format
     const features = format.readFeatures(data, {
@@ -299,6 +294,18 @@ watch(hoveredFeatures, () => {
 watch(selectedFeatures, () => {
   selectedLayerRef.value?.vectorTileLayer.changed();
 });
+watch(
+  () => playbackStore.playbackCurrentDate,
+  (newDate, oldDate) => {
+    if (playbackStore.playbackEnabled && playbackLayerRef.value) {
+      const vectorTileLayer = playbackLayerRef.value.vectorTileLayer;
+      const source = vectorTileLayer.getSource();
+      if (source) {
+        source.refresh();
+      }
+    }
+  },
+);
 
 /**
  * Styles
@@ -354,7 +361,7 @@ const hoveredStyleFn = (feature: any) => {
 const stylePlaybackFn = (feature: Feature) => {
   const featureTimeseries = JSON.parse(feature.get('timeseries'));
   const featurePropertiesForDate = featureTimeseries.find(
-    (item: any) => item.date === uiStore.date,
+    (item: any) => item.date === playbackStore.playbackCurrentDate,
   );
   return styleProperties(featurePropertiesForDate.anomaly_degree);
 };

@@ -12,14 +12,14 @@
 <script setup lang="ts">
 import { usePlaybackStore } from 'src/stores/playbackStore';
 import { formattedDate } from 'src/utils/date';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const playbackStore = usePlaybackStore();
 
-const maxIndex = ref(Object.keys(playbackStore.playbackDaysAxis).length - 1);
+const maxIndex = ref(Object.keys(playbackStore.playbackDaysObject).length - 1);
 // Only show first and last markers
 const markerLabels = computed(() => {
-  const labels = playbackStore.playbackDaysAxis;
+  const labels = playbackStore.playbackDaysObject;
   return Object.keys(labels).reduce((acc: any, key: any, index) => {
     if (index === 0 || index === Object.keys(labels).length - 1) {
       acc[key] = formattedDate(labels[key] as string);
@@ -28,10 +28,12 @@ const markerLabels = computed(() => {
   }, {});
 });
 
-// const updateIndex = (value: any) => {
-//   playbackStore.playbackCurrentIndex = value;
-//   uiStore.date = playbackStore.playbackDaysAxis[value] || '';
-// };
+watch(
+  () => playbackStore.playbackCurrentIndex,
+  (newValue) => {
+    playbackStore.updateCurrentDate(newValue);
+  },
+);
 </script>
 <style lang="scss">
 .q-slider {

@@ -1,12 +1,14 @@
 <template>
   <q-page>
-    <!-- <RegionDetailedDrawer v-if="drawerRegionDetailed.isRegionSelected" /> -->
+    <RegionDetailedDrawer
+      v-if="regionDetailedStore.isRegionSelected && !playbackStore.playbackEnabled"
+    />
     <!-- MAP -->
-    <AnomalyMap v-if="dateFetched" :date="uiStore.date" />
+    <AnomalyMap v-if="dateFetched" />
 
     <!-- SEARCH BAR -->
     <q-page-sticky position="top-left" :offset="[0, 20]">
-      <SearchBox v-if="!drawerRegionDetailed.selectedRegionMetricId" />
+      <SearchBox v-if="!regionDetailedStore.selectedRegionMetricId" />
     </q-page-sticky>
 
     <!-- RIGHT SIDE OPTIONS -->
@@ -43,8 +45,15 @@
     </q-page-sticky>
 
     <!-- PLAYBACK CONTROL -->
-    <q-page-sticky position="bottom-left" :offset="[40, 20]" class="playback-control">
-      <PlaybackControl v-if="playbackStore.playbackEnabled" />
+    <q-page-sticky position="bottom-left" :offset="[50, 20]" class="playback-control">
+      <PlaybackControl
+        v-if="
+          playbackStore.playbackEnabled &&
+          !regionDetailedStore.selectedRegionMetricId &&
+          !playbackStore.fetchingData
+        "
+      />
+      <q-skeleton type="QBadge" v-if="playbackStore.fetchingData" />
     </q-page-sticky>
 
     <!-- LOGO -->
@@ -69,7 +78,7 @@ import { usePlaybackStore } from '../stores/playbackStore';
 const $q = useQuasar();
 
 const uiStore = useUIStore();
-const drawerRegionDetailed = useRegionDetailedStore();
+const regionDetailedStore = useRegionDetailedStore();
 const playbackStore = usePlaybackStore();
 
 const dateFetched = ref(false);
@@ -90,6 +99,8 @@ const playback = () => {
   playbackStore.togglePlayback();
   if (!playbackStore.playbackEnabled) {
     uiStore.fetchLastDate();
+  } else {
+    regionDetailedStore.$reset();
   }
 };
 
