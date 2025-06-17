@@ -170,9 +170,6 @@ const loadPlaybackTiles = (tile: any, url: string) => {
 
     for (const feature of features) {
       const timeseries = JSON.parse(feature.get('timeseries'));
-      // feature.properties_ = feature.getProperties() || {};
-      // feature.properties_.timeseries = timeseries;
-      // For each feature, set a new property: "day-YYYY-MM-DD: anomaly_degree"
       timeseries.forEach((item: any) => {
         // const dayKey = `day-${item.date}`;
         const dayKey = new Date(item.date).getTime();
@@ -185,10 +182,6 @@ const loadPlaybackTiles = (tile: any, url: string) => {
   });
 };
 
-// const playbackWebGLStyleVariables = computed(() => ({
-//   selectedDate: playbackStore.playbackCurrentDate,
-//   selectedProperty: 'day-' + playbackStore.playbackCurrentDate,
-// }));
 const playbackWebGLStyle = computed(() => [
   {
     style: {
@@ -218,7 +211,6 @@ const playbackLayer = new WebGLVectorTileLayer({
     url: 'http://dummy.url/{z}/{x}/{y}/',
   }) as any,
   style: playbackWebGLStyle.value,
-  // variables: playbackWebGLStyleVariables.value,
 });
 
 watch(playbackWebGLStyle, (newVariables) => {

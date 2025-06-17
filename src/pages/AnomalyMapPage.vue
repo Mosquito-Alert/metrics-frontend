@@ -45,7 +45,11 @@
     </q-page-sticky>
 
     <!-- PLAYBACK CONTROL -->
-    <q-page-sticky position="bottom-left" :offset="[50, 20]" class="playback-control">
+    <q-page-sticky
+      position="bottom-left"
+      :offset="[50, 20]"
+      class="sticky-playback-control flex justify-center"
+    >
       <PlaybackControl
         v-if="
           playbackStore.playbackEnabled &&
@@ -63,7 +67,7 @@
       position="calc(50% - 11px) center"
       fit="contain"
       src="~assets/logo_horizontal_black.png"
-      height="2.5rem"
+      height="1.8rem"
     />
   </q-page>
 </template>
@@ -157,7 +161,7 @@ uiStore.regionDetailDrawerWidth = Math.max(Math.floor(uiStore.appWidth / 2.75), 
     }
   }
 }
-.playback-control {
+.sticky-playback-control {
   width: 30%;
   > div {
     width: 100%;
