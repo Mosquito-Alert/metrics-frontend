@@ -43,23 +43,6 @@
       </ol-vector-tile-layer>
 
       <ol-vector-tile-layer
-        v-if="playbackStore.playbackEnabled"
-        ref="playbackLayerRef"
-        class-name="playback-layer"
-      >
-        <ol-source-vector-tile
-          ref="playbackSourceRef"
-          :format="anomalyLayer.format"
-          :projection="mapStore.projection"
-          :tileLoadFunction="loadPlaybackTiles"
-          :url="anomalyLayer.url"
-          @tileloadstart="handleSourceTileLoadStart"
-          @tileloadend="handleSourceTileLoadEnd"
-        />
-        <ol-style :overrideStyleFunction="stylePlaybackFn"></ol-style>
-      </ol-vector-tile-layer>
-
-      <ol-vector-tile-layer
         ref="hoverLayerRef"
         :z-index="9"
         render-mode="vector"
@@ -103,10 +86,22 @@ import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
 import { ANOMALY_COLORS } from 'src/constants/colors';
 import { useMapStore } from 'src/stores/mapStore';
-import { computed, inject, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
+import {
+  computed,
+  inject,
+  onBeforeUnmount,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+  watchEffect,
+} from 'vue';
 import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
 import { usePlaybackStore } from 'src/stores/playbackStore';
 import { useUIStore } from 'src/stores/uiStore';
+import MVT from 'ol/format/MVT.js';
+import WebGLVectorTileLayer from 'ol/layer/WebGLVectorTile.js';
+import VectorTileSource from 'ol/source/VectorTile.js';
 
 const uiStore = useUIStore();
 const mapStore = useMapStore();
@@ -119,13 +114,11 @@ const selectedFeatures = computed(() => mapStore.selectedFeatures);
 const mapRef = ref<{ map: MapRef } | null>(null);
 const viewRef = ref();
 const sourceRef = ref();
-const layerRef = ref(null);
+const layerRef = ref<{ vectorTileLayer: VectorTileLayer } | null>(null);
 const hoverLayerRef = ref<{ vectorTileLayer: VectorTileLayer } | null>(null);
 const selectedLayerRef = ref<{ vectorTileLayer: VectorTileLayer } | null>(null);
-const playbackLayerRef = ref<{ vectorTileLayer: VectorTileLayer } | null>(null);
 
 const $q = useQuasar();
-
 /**
  * Base config
  */
@@ -138,7 +131,7 @@ mapStore.format = new format.MVT({ idProperty: 'id' }); // Store the format in t
 const anomalyLayer = computed(() => {
   return {
     // We need a deafult URL
-    url: `https://localhost:8000/api/v1/metrics/tiles/{z}/{x}/{y}/?date=${uiStore.date}`,
+    url: `http://dummy.url/{z}/{x}/{y}/`,
     format: mapStore.format,
   };
 });
@@ -174,10 +167,63 @@ const loadPlaybackTiles = (tile: any, url: string) => {
       extent: extent,
       featureProjection: projection,
     });
+
+    for (const feature of features) {
+      const timeseries = JSON.parse(feature.get('timeseries'));
+      // feature.properties_ = feature.getProperties() || {};
+      // feature.properties_.timeseries = timeseries;
+      // For each feature, set a new property: "day-YYYY-MM-DD: anomaly_degree"
+      timeseries.forEach((item: any) => {
+        // const dayKey = `day-${item.date}`;
+        const dayKey = new Date(item.date).getTime();
+        feature.properties_[dayKey] = item.anomaly_degree;
+      });
+    }
+
     tile.setFeatures(features);
     mapStore.extent = extent || [];
   });
 };
+
+// const playbackWebGLStyleVariables = computed(() => ({
+//   selectedDate: playbackStore.playbackCurrentDate,
+//   selectedProperty: 'day-' + playbackStore.playbackCurrentDate,
+// }));
+const playbackWebGLStyle = computed(() => [
+  {
+    style: {
+      'fill-color': [
+        'case',
+        ['>', ['get', new Date(playbackStore.playbackCurrentDate).getTime()], 0],
+        ANOMALY_COLORS.HIGH,
+        ['<', ['get', new Date(playbackStore.playbackCurrentDate).getTime()], 0],
+        ANOMALY_COLORS.LOW,
+        ANOMALY_COLORS.USUAL_LIGHT + '48', // with alpha 0.7
+      ],
+      'fill-opacity': 1,
+      'stroke-color': 'rgba(255, 255, 255, 0.3)',
+      'stroke-width': 0.5,
+    },
+  },
+]);
+
+const playbackLayer = new WebGLVectorTileLayer({
+  className: 'feature-layer',
+  zIndex: 8,
+  source: new VectorTileSource({
+    format: mapStore.format as MVT,
+    projection: mapStore.projection,
+    tileLoadFunction: loadPlaybackTiles,
+    // We need a deafult URL
+    url: 'http://dummy.url/{z}/{x}/{y}/',
+  }) as any,
+  style: playbackWebGLStyle.value,
+  // variables: playbackWebGLStyleVariables.value,
+});
+
+watch(playbackWebGLStyle, (newVariables) => {
+  playbackLayer.setStyle(newVariables);
+});
 
 const handleSourceTileLoadStart = () => {
   $q.loading.show({ message: 'Loading data...' });
@@ -207,6 +253,12 @@ onUnmounted(() => {
 
   // .clear();
   mapStore.selectedFeatures = [];
+});
+
+onBeforeUnmount(() => {
+  // See: https://github.com/openlayers/openlayers/blob/29c58d08fb8ddc22b4b7384b38851323359c5706/src/ol/layer/WebGLPoints.js#L58-L59
+  // See: https://stackoverflow.com/questions/69295838/how-to-properly-release-webgl-resources-of-removed-layers-in-openlayers
+  playbackLayer.dispose();
 });
 
 /**
@@ -294,12 +346,36 @@ watch(hoveredFeatures, () => {
 watch(selectedFeatures, () => {
   selectedLayerRef.value?.vectorTileLayer.changed();
 });
+// Switch between normal and playback layers
+watch(
+  () => playbackStore.playbackEnabled,
+  (playbackEnabled) => {
+    const map = mapRef.value?.map;
+    if (!map) {
+      return;
+    }
+
+    if (playbackEnabled) {
+      // Remove the normal layer and add the playback layer
+      if (layerRef.value) {
+        // map.removeLayer(layerRef.value);
+        layerRef.value.vectorTileLayer.setVisible(false);
+      }
+      map.addLayer(playbackLayer);
+    } else {
+      // Remove the playback layer and add the normal layer
+      map.removeLayer(playbackLayer);
+      if (layerRef.value) {
+        layerRef.value.vectorTileLayer.setVisible(true);
+      }
+    }
+  },
+);
 watch(
   () => playbackStore.playbackCurrentDate,
-  (newDate, oldDate) => {
-    if (playbackStore.playbackEnabled && playbackLayerRef.value) {
-      const vectorTileLayer = playbackLayerRef.value.vectorTileLayer;
-      const source = vectorTileLayer.getSource();
+  () => {
+    if (playbackStore.playbackEnabled && playbackLayer) {
+      const source = playbackLayer.getSource();
       if (source) {
         source.refresh();
       }
@@ -310,6 +386,7 @@ watch(
 /**
  * Styles
  */
+
 const styleFn = (feature: Feature) => {
   return styleProperties(feature.get('anomaly_degree'));
 };
@@ -357,13 +434,22 @@ const hoveredStyleFn = (feature: any) => {
   );
   return style;
 };
-
-const stylePlaybackFn = (feature: Feature) => {
+const stylePlayback = (feature: Feature) => {
   const featureTimeseries = JSON.parse(feature.get('timeseries'));
   const featurePropertiesForDate = featureTimeseries.find(
     (item: any) => item.date === playbackStore.playbackCurrentDate,
   );
-  return styleProperties(featurePropertiesForDate.anomaly_degree);
+  const featureStyleProperties = styleProperties(featurePropertiesForDate.anomaly_degree) as any;
+  if (!featureStyleProperties) return;
+  return {
+    fill: {
+      color: featureStyleProperties.getFill().getColor(),
+    },
+    stroke: {
+      color: 'rgba(255, 255, 255, 0.3)',
+      width: 0.5,
+    },
+  };
 };
 </script>
 <style lang="scss">

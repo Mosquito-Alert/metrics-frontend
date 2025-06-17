@@ -15,6 +15,7 @@ export const usePlaybackStore = defineStore('playbackStore', {
     playbackCurrentIndex: 0 as number,
     playbackCurrentDate: '2025-01-01' as string, // Default date, can be updated later
     data: null as Metric | any, // Replace with actual type if known
+    tileCache: {} as Record<string, any>,
     fetchingData: false as boolean, // Flag to indicate if data is being fetched
   }),
 
@@ -50,6 +51,8 @@ export const usePlaybackStore = defineStore('playbackStore', {
       if (this.playbackEnabled) {
         // Reset playback state when enabling playback
         this.playbackCurrentIndex = 0;
+        this.data = null; // Clear previous data
+        this.tileCache = {};
       }
     },
     updateCurrentDate(index: number) {
