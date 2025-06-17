@@ -2,13 +2,19 @@
   <div class="playback-control">
     <div class="playback-buttons q-gutter-md row items-center justify-between">
       <div class="playback-step-buttons">
-        <q-btn class="control-button q-mr-sm" icon="replay_5" @click="playbackStore.goBackDays(5)">
+        <q-btn
+          class="control-button q-mr-sm"
+          icon="replay_5"
+          @click="playbackStore.goBackDays(5)"
+          :disabled="playbackStore.playbackCurrentIndex <= 0"
+        >
           <q-tooltip anchor="top middle" self="bottom middle">Go back 5 days</q-tooltip>
         </q-btn>
         <q-btn
           class="control-button q-mr-sm"
           icon="navigate_before"
           @click="playbackStore.goBackDays(1)"
+          :disabled="playbackStore.playbackCurrentIndex <= 0"
         >
           <q-tooltip anchor="top middle" self="bottom middle">Go back 1 day</q-tooltip>
         </q-btn>
@@ -27,6 +33,7 @@
           class="control-button q-ml-sm"
           icon="navigate_next"
           @click="playbackStore.goForwardDays(1)"
+          :disabled="playbackStore.playbackCurrentIndex >= maxIndex"
         >
           <q-tooltip anchor="top middle" self="bottom middle">Go forward 1 day</q-tooltip>
         </q-btn>
@@ -34,6 +41,7 @@
           class="control-button q-ml-sm"
           icon="forward_5"
           @click="playbackStore.goForwardDays(5)"
+          :disabled="playbackStore.playbackCurrentIndex >= maxIndex"
         >
           <q-tooltip anchor="top middle" self="bottom middle">Go forward 5 days</q-tooltip>
         </q-btn>
