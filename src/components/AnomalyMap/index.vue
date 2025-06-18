@@ -250,6 +250,17 @@ onMounted(() => {
   }
 
   map.addOverlay(hoverOverlay);
+
+  // Cursor pointer on feature hover
+  map.on('pointermove', (evt: any) => {
+    if (!evt.dragging) {
+      map.getTargetElement().style.cursor = map.hasFeatureAtPixel(
+        map.getEventPixel(evt.originalEvent),
+      )
+        ? 'pointer'
+        : '';
+    }
+  });
 });
 
 onUnmounted(() => {

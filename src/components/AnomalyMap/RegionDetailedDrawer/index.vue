@@ -104,11 +104,6 @@ watch(
   },
   { immediate: true },
 );
-onMounted(async () => {
-  if (regionDetailedStore.selectedRegionMetricId) {
-    await updateDataHook();
-  }
-});
 
 const municipalityName = computed(() => {
   const defaultTitle = 'Municipality Unknown';
