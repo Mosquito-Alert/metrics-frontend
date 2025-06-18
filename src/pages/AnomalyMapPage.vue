@@ -1,8 +1,6 @@
 <template>
   <q-page>
-    <RegionDetailedDrawer
-      v-if="regionDetailedStore.isRegionSelected && !playbackStore.playbackEnabled"
-    />
+    <RegionDetailedDrawer v-if="regionDetailedStore.isRegionSelected" />
     <!-- MAP -->
     <AnomalyMap v-if="dateFetched" />
 

@@ -17,7 +17,7 @@
         <div class="col-10">
           <p class="text-h6 text-weight-regular" style="color: #333">{{ provinceName }}</p>
           <p class="text-subtitle-1 text-weight-regular q-ma-none" style="color: #333">
-            {{ uiStore.formattedDate }}
+            {{ currentDate }}
           </p>
         </div>
         <div class="col self-end">
@@ -67,11 +67,19 @@ import {
 } from 'src/utils/anomalyClassification';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
+import { usePlaybackStore } from 'src/stores/playbackStore';
 
 const uiStore = useUIStore();
 const regionDetailedStore = useRegionDetailedStore();
+const playbackStore = usePlaybackStore();
 
 const drawerScrollArea = ref(null as any);
+
+const currentDate = computed(() => {
+  return playbackStore.playbackEnabled
+    ? playbackStore.formattedPlaybackCurrentDate
+    : uiStore.formattedDate;
+});
 
 const updateDataHook = async () => {
   if (!regionDetailedStore.selectedRegionMetricId) return;
