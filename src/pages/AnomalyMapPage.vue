@@ -23,7 +23,7 @@
 
     <q-page-sticky position="top-right" :offset="[20, 80]" class="map-tools">
       <div class="playback sidemap-option" :class="{ active: sideOptionActive === 'active' }">
-        <div @click="playback">
+        <div @click="playbackStore.togglePlayback()">
           <span v-if="!uiStore.fetchingDate" class="column items-center">
             <q-icon name="history"></q-icon>
             <p class="q-pa-none q-ma-none">Playback</p>
@@ -97,15 +97,6 @@ onMounted(async () => {
   $q.loading.hide();
 });
 
-const playback = () => {
-  playbackStore.togglePlayback();
-  if (!playbackStore.playbackEnabled) {
-    uiStore.fetchLastDate();
-  } else {
-    regionDetailedStore.$reset();
-  }
-};
-
 const currentDate = computed(() => {
   return playbackStore.playbackEnabled
     ? playbackStore.formattedPlaybackCurrentDate
@@ -160,7 +151,7 @@ uiStore.regionDetailDrawerWidth = Math.max(Math.floor(uiStore.appWidth / 2.75), 
   }
 }
 .sticky-playback-control {
-  width: 30%;
+  width: 32%;
   > div {
     width: 100%;
     height: 100%;

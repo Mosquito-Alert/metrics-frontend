@@ -2,6 +2,8 @@ import { Metric } from 'anomaly-detection';
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { metricsApi } from '../services/apiService';
 import { formattedDate, getDatesBetween, subtractDays } from '../utils/date';
+import { useUIStore } from './uiStore';
+import { useRegionDetailedStore } from './regionDetailedStore';
 
 export const usePlaybackStore = defineStore('playbackStore', {
   state: () => ({
@@ -44,11 +46,16 @@ export const usePlaybackStore = defineStore('playbackStore', {
       return response.data;
     },
     togglePlayback() {
+      const uiStore = useUIStore();
+      const regionDetailedStore = useRegionDetailedStore();
       this.playbackEnabled = !this.playbackEnabled;
       if (this.playbackEnabled) {
         // Reset playback state when enabling playback
         this.playbackCurrentIndex = 0;
         this.data = null; // Clear previous data
+        regionDetailedStore.$reset(); // Reset region detailed store
+      } else {
+        uiStore.fetchLastDate();
       }
     },
     updateCurrentDate(index: number) {

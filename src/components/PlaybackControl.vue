@@ -1,9 +1,18 @@
 <template>
   <div class="playback-control">
-    <div class="playback-buttons q-gutter-md row items-center justify-between">
+    <q-btn
+      dense
+      flat
+      icon="close"
+      size="0.85rem"
+      class="q-drawer-hide absolute"
+      style="top: 1rem; right: 1rem"
+      @click="() => playbackStore.togglePlayback()"
+    />
+    <div class="playback-buttons q-mr-sm row items-center justify-between">
       <div class="playback-step-buttons">
         <q-btn
-          class="control-button q-mr-sm"
+          class="control-button q-mr-sm gt-md"
           icon="replay_5"
           @click="playbackStore.goBackDays(5)"
           :disabled="playbackStore.playbackCurrentIndex <= 0"
@@ -38,7 +47,7 @@
           <q-tooltip anchor="top middle" self="bottom middle">Go forward 1 day</q-tooltip>
         </q-btn>
         <q-btn
-          class="control-button q-ml-sm"
+          class="control-button q-ml-sm gt-md"
           icon="forward_5"
           @click="playbackStore.goForwardDays(5)"
           :disabled="playbackStore.playbackCurrentIndex >= maxIndex"
