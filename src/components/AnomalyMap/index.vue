@@ -81,7 +81,7 @@ import { Geometry } from 'ol/geom';
 import { Layer } from 'ol/layer';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import type MapRef from 'ol/Map';
-import { fromLonLat } from 'ol/proj';
+import { get as getProjection, fromLonLat } from 'ol/proj';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
 import { ANOMALY_COLORS } from 'src/constants/colors';
@@ -182,23 +182,13 @@ const loadPlaybackTiles = (tile: any, url: string) => {
   });
 };
 
-const playbackWebGLStyle = computed(() => [
-  {
-    style: {
-      'fill-color': [
-        'case',
-        ['>', ['get', new Date(playbackStore.playbackCurrentDate).getTime()], 0],
-        ANOMALY_COLORS.HIGH,
-        ['<', ['get', new Date(playbackStore.playbackCurrentDate).getTime()], 0],
-        ANOMALY_COLORS.LOW,
-        ANOMALY_COLORS.USUAL_LIGHT + '48', // with alpha 0.7
-      ],
-      'fill-opacity': 1,
-      'stroke-color': 'rgba(255, 255, 255, 0.3)',
-      'stroke-width': 0.5,
-    },
-  },
-]);
+const getTimeseriesValueByDate = ({ feature, date }: { feature: Feature; date: string }) => {
+  const featureTimeseries = JSON.parse(feature.get('timeseries'));
+  const featurePropertiesForDate = featureTimeseries.find(
+    (item: any) => item.date === date,
+  );
+  return featurePropertiesForDate.anomaly_degree
+};
 
 const playbackLayer = new WebGLVectorTileLayer({
   className: 'feature-layer',
@@ -210,12 +200,33 @@ const playbackLayer = new WebGLVectorTileLayer({
     // We need a deafult URL
     url: 'http://dummy.url/{z}/{x}/{y}/',
   }) as any,
-  style: playbackWebGLStyle.value,
+  style: {
+    'fill-color': [
+      'case',
+      ['>', ['get', 'value'], 0],
+      ANOMALY_COLORS.HIGH,
+      ['<', ['get', 'value'], 0],
+      ANOMALY_COLORS.LOW,
+      ANOMALY_COLORS.USUAL_LIGHT + '48', // with alpha 0.7
+    ],
+    'fill-opacity': 1,
+    'stroke-color': 'rgba(255, 255, 255, 0.3)',
+    'stroke-width': 0.5,
+  },
 });
 
-watch(playbackWebGLStyle, (newVariables) => {
-  playbackLayer.setStyle(newVariables);
-});
+playbackLayer.getSource().on('tileloadend', (evt) => {
+  const features = evt.tile.getFeatures();
+  features.forEach(feature => {
+    feature.set(
+      'value',
+      getTimeseriesValueByDate({
+        feature: feature,
+        date: playbackStore.playbackCurrentDate
+      })
+    )
+  });
+})
 
 const handleSourceTileLoadStart = () => {
   $q.loading.show({ message: 'Loading data...' });
@@ -365,12 +376,16 @@ watch(
 );
 watch(
   () => playbackStore.playbackCurrentDate,
-  () => {
+  (newDate) => {
     if (playbackStore.playbackEnabled && playbackLayer) {
-      const source = playbackLayer.getSource();
-      if (source) {
-        source.refresh();
-      }
+      // Get all features
+      const extent = getProjection(mapStore.projection).getExtent();
+      const features = playbackLayer.getFeaturesInExtent(extent) ?? [];
+      features.forEach(feature => {
+        const value = getTimeseriesValueByDate({ feature, date: newDate });
+        feature.set('value', value);
+      });
+      playbackLayer.changed();
     }
   },
 );
@@ -426,23 +441,7 @@ const hoveredStyleFn = (feature: any) => {
   );
   return style;
 };
-const stylePlayback = (feature: Feature) => {
-  const featureTimeseries = JSON.parse(feature.get('timeseries'));
-  const featurePropertiesForDate = featureTimeseries.find(
-    (item: any) => item.date === playbackStore.playbackCurrentDate,
-  );
-  const featureStyleProperties = styleProperties(featurePropertiesForDate.anomaly_degree) as any;
-  if (!featureStyleProperties) return;
-  return {
-    fill: {
-      color: featureStyleProperties.getFill().getColor(),
-    },
-    stroke: {
-      color: 'rgba(255, 255, 255, 0.3)',
-      width: 0.5,
-    },
-  };
-};
+
 </script>
 <style lang="scss">
 .custom-tooltip {
