@@ -1,22 +1,20 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { metricsApi } from '../services/apiService';
+import routesNames from '../router/routesNames';
+import { formattedDate } from '../utils/date';
 
 export const useUIStore = defineStore('uiStore', {
   state: () => ({
     date: '2025-01-01',
     fetchingDate: true,
     appWidth: window.innerWidth as number,
-    drawerWidth: 0,
+    regionDetailDrawerWidth: 0,
+    currentTab: routesNames.anomalyMap,
   }),
 
   getters: {
     formattedDate: (state) => {
-      const date = new Date(state.date);
-      return date.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
+      return formattedDate(state.date);
     },
   },
 

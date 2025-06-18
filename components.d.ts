@@ -8,15 +8,20 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AnomalyMap: typeof import('./src/components/AnomalyMap.vue')['default']
+    AnomalyMap: typeof import('./src/components/AnomalyMap/index.vue')['default']
+    Components: typeof import('./src/components/index.vue')['default']
+    CurrentStateLayer: typeof import('./src/components/AnomalyMap/CurrentStateLayer.vue')['default']
+    MainDrawer: typeof import('./src/components/MainDrawer.vue')['default']
     MainHeader: typeof import('./src/components/MainHeader.vue')['default']
-    RegionAnomaliesChart: typeof import('./src/components/RegionDetailedDrawer/RegionAnomaliesChart.vue')['default']
-    RegionAnomaliesHistoryTable: typeof import('./src/components/RegionDetailedDrawer/RegionAnomaliesHistoryTable.vue')['default']
-    RegionDetailedDrawer: typeof import('./src/components/RegionDetailedDrawer/index.vue')['default']
-    RegionSeasonality: typeof import('./src/components/RegionDetailedDrawer/RegionSeasonality.vue')['default']
-    RegionSummary: typeof import('./src/components/RegionDetailedDrawer/RegionSummary.vue')['default']
+    PlaybackControl: typeof import('./src/components/PlaybackControl.vue')['default']
+    PlaybackMap: typeof import('./src/components/PlaybackMap/index.vue')['default']
+    RegionAnomaliesChart: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/RegionAnomaliesChart.vue')['default']
+    RegionAnomaliesHistoryTable: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/RegionAnomaliesHistoryTable.vue')['default']
+    RegionDetailedDrawer: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/index.vue')['default']
+    RegionSeasonality: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/RegionSeasonality.vue')['default']
+    RegionSummary: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/RegionSummary.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    SearchBox: typeof import('./src/components/SearchBox.vue')['default']
+    SearchBox: typeof import('./src/components/AnomalyMap/SearchBox.vue')['default']
   }
 }

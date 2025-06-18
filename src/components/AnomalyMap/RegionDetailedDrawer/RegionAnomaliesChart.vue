@@ -9,7 +9,6 @@
 <script setup lang="ts">
 import VChart from 'vue-echarts';
 import { date, getCssVar } from 'quasar';
-import { useMapStore } from 'src/stores/mapStore';
 import { computed } from 'vue';
 import { use } from 'echarts/core';
 import {
@@ -26,9 +25,10 @@ import { ANOMALY_COLORS } from 'src/constants/colors';
 import { Metric } from 'anomaly-detection';
 import { trendDataCorrection } from 'src/utils/trendDataCorrection';
 import { useUIStore } from 'src/stores/uiStore';
+import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
 
 const uiStore = useUIStore();
-const mapStore = useMapStore();
+const regionDetailedStore = useRegionDetailedStore();
 use([
   TooltipComponent,
   LineChart,
@@ -41,16 +41,16 @@ use([
   MarkLineComponent,
 ]);
 
-const anomaliesLoading = computed(() => mapStore.fetchingRegionMetricsAll);
-const anomaliesData = computed(() => mapStore.selectedRegionMetricsAll?.results || []);
-const trendLoading = computed(() => mapStore.fetchingRegionMetricTrend);
+const anomaliesLoading = computed(() => regionDetailedStore.fetchingRegionMetricsAll);
+const anomaliesData = computed(() => regionDetailedStore.selectedRegionMetricsAll?.results || []);
+const trendLoading = computed(() => regionDetailedStore.fetchingRegionMetricTrend);
 const trendDate = computed((): Date => {
-  return mapStore.selectedRegionMetricTrend?.date
-    ? new Date(mapStore.selectedRegionMetricTrend.date)
+  return regionDetailedStore.selectedRegionMetricTrend?.date
+    ? new Date(regionDetailedStore.selectedRegionMetricTrend.date)
     : new Date(uiStore.date); // Default to the data date if no trend date is available
 });
 const trend = computed(() => {
-  const data = mapStore.selectedRegionMetricTrend?.trend || [];
+  const data = regionDetailedStore.selectedRegionMetricTrend?.trend || [];
   return trendDataCorrection(data, trendDate.value);
 });
 const loading = computed(() => anomaliesLoading.value || trendLoading.value);

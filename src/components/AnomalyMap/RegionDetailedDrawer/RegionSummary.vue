@@ -38,17 +38,19 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { MetricDetail } from 'anomaly-detection';
-import { useMapStore } from 'src/stores/mapStore';
 import {
   AnomalyClassificationEnum,
   anomalyClassificationStyle,
   classifyAnomaly,
 } from 'src/utils/anomalyClassification';
+import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
 
-const mapStore = useMapStore();
+const regionDetailedStore = useRegionDetailedStore();
 
-const metric = computed<MetricDetail>(() => mapStore.getFormattedRegionMetric as MetricDetail);
-const loading = computed(() => mapStore.fetchingRegionMetric);
+const metric = computed<MetricDetail>(
+  () => regionDetailedStore.getFormattedRegionMetric as MetricDetail,
+);
+const loading = computed(() => regionDetailedStore.fetchingRegionMetric);
 
 const status = computed(() => {
   if (

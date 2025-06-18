@@ -1,11 +1,5 @@
 <template>
-  <q-drawer
-    show-if-above
-    side="left"
-    :width="width"
-    v-model="mapStore.isRegionSelected"
-    class="bg-white overflow-hidden column"
-  >
+  <div class="region-detail-drawer bg-white overflow-hidden" :style="{ width: width + 'px' }">
     <div class="drawer-header q-pt-lg q-pb-sm q-px-lg q-ma-none" style="background-color: #f9e7b5">
       <q-btn
         dense
@@ -14,7 +8,7 @@
         size="0.85rem"
         class="q-drawer-hide absolute"
         style="top: 1rem; right: 1rem"
-        @click="() => mapStore.$reset()"
+        @click="() => resetSelectedRegionMetricId()"
       />
       <p class="text-h3 q-ma-none q-mb-xs">
         {{ municipalityName }}
@@ -23,7 +17,7 @@
         <div class="col-10">
           <p class="text-h6 text-weight-regular" style="color: #333">{{ provinceName }}</p>
           <p class="text-subtitle-1 text-weight-regular q-ma-none" style="color: #333">
-            {{ uiStore.formattedDate }}
+            {{ currentDate }}
           </p>
         </div>
         <div class="col self-end">
@@ -53,22 +47,18 @@
       </div>
     </div>
     <!-- * CONTENT -->
-    <q-scroll-area
-      ref="drawerScrollArea"
-      class="drawer-content full-height q-px-md q-py-xs col overflow-auto"
-    >
+    <q-scroll-area ref="drawerScrollArea" class="drawer-content col q-px-md q-py-xs">
       <RegionAnomaliesChart class="q-pt-sm" />
       <RegionSeasonality />
       <RegionSummary />
       <RegionAnomaliesHistoryTable />
     </q-scroll-area>
-  </q-drawer>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { MetricDetail } from 'anomaly-detection';
 import { historyPageSize } from 'src/constants/config';
-import { useMapStore } from 'src/stores/mapStore';
 import { useUIStore } from 'src/stores/uiStore';
 import {
   AnomalyClassificationEnum,
@@ -76,26 +66,33 @@ import {
   classifyAnomaly,
 } from 'src/utils/anomalyClassification';
 import { computed, onMounted, ref, watch } from 'vue';
+import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
+import { usePlaybackStore } from 'src/stores/playbackStore';
+import { useMapStore } from 'src/stores/mapStore';
 
 const uiStore = useUIStore();
+const regionDetailedStore = useRegionDetailedStore();
+const playbackStore = usePlaybackStore();
 const mapStore = useMapStore();
 
 const drawerScrollArea = ref(null as any);
 
 const updateDataHook = async () => {
-  if (!mapStore.selectedRegionMetricId) return;
-  await mapStore.fetchSelectedMetric(mapStore.selectedRegionMetricId!);
-  await mapStore.fetchSelectedMetricSeasonality();
-  await mapStore.fetchSelectedMetricAll();
-  await mapStore.fetchSelectedMetricTrend();
-  await mapStore.fetchSelectedMetricHistory({ page: 1, pageSize: historyPageSize });
+  if (!regionDetailedStore.selectedRegionMetricId) return;
+  await regionDetailedStore.fetchSelectedMetric(regionDetailedStore.selectedRegionMetricId!);
+  await regionDetailedStore.fetchSelectedMetricSeasonality();
+  await regionDetailedStore.fetchSelectedMetricAll();
+  await regionDetailedStore.fetchSelectedMetricTrend();
+  await regionDetailedStore.fetchSelectedMetricHistory({ page: 1, pageSize: historyPageSize });
 };
 
-const metric = computed<MetricDetail>(() => mapStore.getFormattedRegionMetric as MetricDetail);
-const loading = computed(() => mapStore.fetchingRegionMetric);
+const metric = computed<MetricDetail>(
+  () => regionDetailedStore.getFormattedRegionMetric as MetricDetail,
+);
+const loading = computed(() => regionDetailedStore.fetchingRegionMetric);
 
 watch(
-  () => mapStore.selectedRegionMetricId,
+  () => regionDetailedStore.selectedRegionMetricId,
   async (newValue, oldValue) => {
     if (newValue !== oldValue) {
       // Also, reset the scroll position of the drawer
@@ -108,14 +105,14 @@ watch(
   { immediate: true },
 );
 onMounted(async () => {
-  if (mapStore.selectedRegionMetricId) {
+  if (regionDetailedStore.selectedRegionMetricId) {
     await updateDataHook();
   }
 });
 
 const municipalityName = computed(() => {
   const defaultTitle = 'Municipality Unknown';
-  const selectedRegionMetric = mapStore.selectedRegionMetric;
+  const selectedRegionMetric = regionDetailedStore.selectedRegionMetric;
   if (!selectedRegionMetric) {
     return defaultTitle;
   }
@@ -123,11 +120,17 @@ const municipalityName = computed(() => {
 });
 const provinceName = computed(() => {
   const defaultTitle = 'Province Unknown';
-  const selectedRegionMetric = mapStore.selectedRegionMetric;
+  const selectedRegionMetric = regionDetailedStore.selectedRegionMetric;
   if (!selectedRegionMetric) {
     return defaultTitle;
   }
   return selectedRegionMetric.region.province;
+});
+
+const currentDate = computed(() => {
+  return playbackStore.playbackEnabled
+    ? playbackStore.formattedPlaybackCurrentDate
+    : uiStore.formattedDate;
 });
 
 const status = computed(() => {
@@ -145,5 +148,22 @@ const statusColorName = computed(() => {
   return anomalyClassificationStyle(status.value || AnomalyClassificationEnum.N_A);
 });
 
-const width = computed(() => uiStore.drawerWidth);
+const resetSelectedRegionMetricId = () => {
+  regionDetailedStore.$reset();
+  mapStore.selectedFeatures = [];
+};
+
+const width = computed(() => uiStore.regionDetailDrawerWidth);
 </script>
+<style lang="scss">
+.region-detail-drawer {
+  z-index: 1000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+</style>

@@ -46,12 +46,12 @@
 <script setup lang="ts">
 import { Metric } from 'anomaly-detection';
 import { metricsApi, regionsApi } from 'src/services/apiService';
-import { useMapStore } from 'src/stores/mapStore';
 import { useUIStore } from 'src/stores/uiStore';
 import { computed, ref, watch } from 'vue';
+import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
 
 const uiStore = useUIStore();
-const mapStore = useMapStore();
+const regionDetailedStore = useRegionDetailedStore();
 
 const suggestions = ref<{ label: string; value: string; id: number }[]>([]);
 const regionSelected = ref<{ label: string; value: string; id: number } | null>(null);
@@ -133,8 +133,8 @@ watch(
       const metric = await fetchMetricFromRegion(newValue.value);
       if (regionSelected.value && metric) {
         // Set the selected metric ID in the map store
-        mapStore.selectedRegionMetricId = metric.id;
-        await mapStore.fetchSelectedRegion(regionSelected.value.id, metric.id);
+        regionDetailedStore.selectedRegionMetricId = metric.id;
+        await regionDetailedStore.fetchSelectedRegion(regionSelected.value.id, metric.id);
         regionSelected.value = null; // Reset the selection after setting
         suggestions.value = []; // Clear suggestions after selection
       }
@@ -143,7 +143,7 @@ watch(
   { immediate: true },
 );
 
-const width = computed(() => uiStore.drawerWidth);
+const width = computed(() => uiStore.regionDetailDrawerWidth);
 
 const searchbarStyle = computed(() => {
   return {
