@@ -434,12 +434,12 @@ const styleProperties = (anomaly_degree: number) => {
 const selectedStyleFn = (feature: any) => {
   if (playbackStore.playbackEnabled) {
     const timeseries = JSON.parse(feature.get('timeseries'));
-    const hoveredFeature = timeseries.find(
+    const selectedFeature = timeseries.find(
       (item: any) => item.date === playbackStore.playbackCurrentDate,
     );
-    if (!hoveredFeature) return;
-    feature.id_ = hoveredFeature.id; // Set the id directly
-    feature.properties_.anomaly_degree = hoveredFeature.anomaly_degree;
+    if (!selectedFeature) return;
+    feature.id_ = selectedFeature.id; // Set the id directly
+    feature.properties_.anomaly_degree = selectedFeature.anomaly_degree;
   }
   const selectedFeaturesIds = selectedFeatures.value.map((f) => f.getId());
   if (!selectedFeaturesIds.includes(feature.getId())) return;
