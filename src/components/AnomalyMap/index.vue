@@ -154,6 +154,16 @@ const loadTiles = (tile: any, url: string) => {
   });
 };
 
+const handleSourceTileLoadStart = () => {
+  $q.loading.show({ message: 'Loading data...' });
+};
+const handleSourceTileLoadEnd = () => {
+  $q.loading.hide();
+};
+
+/**
+ * Playback
+ */
 const loadPlaybackTiles = (tile: any, url: string) => {
   tile.setLoader(async (extent: number[] | undefined, resolution: number, projection: string) => {
     const tileCoord = tile.getTileCoord();
@@ -181,7 +191,6 @@ const loadPlaybackTiles = (tile: any, url: string) => {
     mapStore.extent = extent || [];
   });
 };
-
 const playbackWebGLStyle = computed(() => [
   {
     style: {
@@ -199,31 +208,41 @@ const playbackWebGLStyle = computed(() => [
     },
   },
 ]);
-
+const playbackSource = new VectorTileSource({
+  format: mapStore.format as MVT,
+  projection: mapStore.projection,
+  tileLoadFunction: loadPlaybackTiles,
+  // We need a deafult URL
+  url: 'http://dummy.url/{z}/{x}/{y}/',
+}) as any;
 const playbackLayer = new WebGLVectorTileLayer({
-  className: 'feature-layer',
+  className: 'playback-layer',
   zIndex: 8,
-  source: new VectorTileSource({
-    format: mapStore.format as MVT,
-    projection: mapStore.projection,
-    tileLoadFunction: loadPlaybackTiles,
-    // We need a deafult URL
-    url: 'http://dummy.url/{z}/{x}/{y}/',
-  }) as any,
+  source: playbackSource,
   style: playbackWebGLStyle.value,
+});
+const playbackInteractionLayer = new VectorTileLayer({
+  className: 'playback-interaction-layer',
+  source: playbackSource,
+  visible: true, // invisible but still interactive
+  style: new Style({
+    fill: new Fill({
+      color: 'rgba(0, 0, 0, 0)', // transparent fill
+    }),
+    stroke: new Stroke({
+      color: 'rgba(0, 0, 0, 0)', // transparent stroke
+      width: 0,
+    }),
+  }),
 });
 
 watch(playbackWebGLStyle, (newVariables) => {
   playbackLayer.setStyle(newVariables);
 });
 
-const handleSourceTileLoadStart = () => {
-  $q.loading.show({ message: 'Loading data...' });
-};
-const handleSourceTileLoadEnd = () => {
-  $q.loading.hide();
-};
-
+/**
+ * Vue lyfecycle hooks
+ */
 onMounted(() => {
   const map = mapRef.value?.map;
   if (!map) {
@@ -231,9 +250,6 @@ onMounted(() => {
   }
 
   map.addOverlay(hoverOverlay);
-  if (!layerRef) {
-    return;
-  }
 });
 
 onUnmounted(() => {
@@ -257,7 +273,10 @@ onBeforeUnmount(() => {
  * Select and hover features
  */
 const layerFilter = (layerCandidate: Layer) => {
-  return layerCandidate.getClassName().includes('feature-layer');
+  const className = layerCandidate.getClassName?.() || '';
+  return className.includes(
+    playbackStore.playbackEnabled ? 'playback-interaction-layer' : 'feature-layer',
+  );
 };
 
 const selectFeature = async (event: MapBrowserEvent<PointerEvent>) => {
@@ -309,6 +328,15 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   hoveredFeatures.value = features as Feature[];
 
   const feature = features[0] as FeatureLike;
+  if (playbackStore.playbackEnabled) {
+    const timeseries = JSON.parse(feature.get('timeseries'));
+    const hoveredFeature = timeseries.find(
+      (item: any) => item.date === playbackStore.playbackCurrentDate,
+    );
+    if (!hoveredFeature) return;
+    (feature as any).properties_.id_ = hoveredFeature.id; // Set the id directly
+    (feature as any).properties_.region__name = hoveredFeature.region__name;
+  }
   tooltipEl.innerHTML = feature.get('region__name');
   tooltipEl.classList.add('visible');
   hoverOverlay.setPosition(event.coordinate);
@@ -353,23 +381,21 @@ watch(
         // map.removeLayer(layerRef.value);
         layerRef.value.vectorTileLayer.setVisible(false);
       }
+      // Set the source to the hover and selected layers
       map.addLayer(playbackLayer);
+      map.addLayer(playbackInteractionLayer);
+      hoverLayerRef.value?.vectorTileLayer.setSource(playbackSource);
+      selectedLayerRef.value?.vectorTileLayer.setSource(playbackSource);
     } else {
       // Remove the playback layer and add the normal layer
       map.removeLayer(playbackLayer);
+      map.removeLayer(playbackInteractionLayer);
       if (layerRef.value) {
         layerRef.value.vectorTileLayer.setVisible(true);
-      }
-    }
-  },
-);
-watch(
-  () => playbackStore.playbackCurrentDate,
-  () => {
-    if (playbackStore.playbackEnabled && playbackLayer) {
-      const source = playbackLayer.getSource();
-      if (source) {
-        source.refresh();
+        hoverLayerRef.value?.vectorTileLayer.setSource(layerRef.value.vectorTileLayer.getSource());
+        selectedLayerRef.value?.vectorTileLayer.setSource(
+          layerRef.value.vectorTileLayer.getSource(),
+        );
       }
     }
   },
@@ -380,6 +406,13 @@ watch(
  */
 
 const styleFn = (feature: Feature) => {
+  if (playbackStore.playbackEnabled) {
+    const timeseries = JSON.parse(feature.get('timeseries'));
+    return styleProperties(
+      timeseries.find((item: any) => item.date === playbackStore.playbackCurrentDate)
+        ?.anomaly_degree || 0,
+    );
+  }
   return styleProperties(feature.get('anomaly_degree'));
 };
 
@@ -400,6 +433,15 @@ const styleProperties = (anomaly_degree: number) => {
 };
 
 const selectedStyleFn = (feature: any) => {
+  if (playbackStore.playbackEnabled) {
+    const timeseries = JSON.parse(feature.get('timeseries'));
+    const hoveredFeature = timeseries.find(
+      (item: any) => item.date === playbackStore.playbackCurrentDate,
+    );
+    if (!hoveredFeature) return;
+    feature.id_ = hoveredFeature.id; // Set the id directly
+    feature.properties_.anomaly_degree = hoveredFeature.anomaly_degree;
+  }
   const selectedFeaturesIds = selectedFeatures.value.map((f) => f.getId());
   if (!selectedFeaturesIds.includes(feature.getId())) return;
 
@@ -414,6 +456,15 @@ const selectedStyleFn = (feature: any) => {
 };
 
 const hoveredStyleFn = (feature: any) => {
+  if (playbackStore.playbackEnabled) {
+    const timeseries = JSON.parse(feature.get('timeseries'));
+    const hoveredFeature = timeseries.find(
+      (item: any) => item.date === playbackStore.playbackCurrentDate,
+    );
+    if (!hoveredFeature) return;
+    feature.id_ = hoveredFeature.id; // Set the id directly
+    feature.properties_.anomaly_degree = hoveredFeature.anomaly_degree;
+  }
   const hoveredFeaturesIds = hoveredFeatures.value.map((f) => f.getId());
   if (!hoveredFeaturesIds.includes(feature.getId())) return;
   const style = styleFn(feature);
@@ -425,23 +476,6 @@ const hoveredStyleFn = (feature: any) => {
     }),
   );
   return style;
-};
-const stylePlayback = (feature: Feature) => {
-  const featureTimeseries = JSON.parse(feature.get('timeseries'));
-  const featurePropertiesForDate = featureTimeseries.find(
-    (item: any) => item.date === playbackStore.playbackCurrentDate,
-  );
-  const featureStyleProperties = styleProperties(featurePropertiesForDate.anomaly_degree) as any;
-  if (!featureStyleProperties) return;
-  return {
-    fill: {
-      color: featureStyleProperties.getFill().getColor(),
-    },
-    stroke: {
-      color: 'rgba(255, 255, 255, 0.3)',
-      width: 0.5,
-    },
-  };
 };
 </script>
 <style lang="scss">
