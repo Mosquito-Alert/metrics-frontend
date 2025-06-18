@@ -291,6 +291,7 @@ const selectFeature = async (event: MapBrowserEvent<PointerEvent>) => {
     layerFilter,
   });
   if (!features.length) {
+    mapStore.selectedFeatures = [];
     return;
   }
   // So only one feature is selected

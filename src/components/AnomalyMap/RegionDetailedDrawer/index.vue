@@ -8,7 +8,7 @@
         size="0.85rem"
         class="q-drawer-hide absolute"
         style="top: 1rem; right: 1rem"
-        @click="() => regionDetailedStore.$reset()"
+        @click="() => resetSelectedRegionMetricId()"
       />
       <p class="text-h3 q-ma-none q-mb-xs">
         {{ municipalityName }}
@@ -68,18 +68,14 @@ import {
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
 import { usePlaybackStore } from 'src/stores/playbackStore';
+import { useMapStore } from 'src/stores/mapStore';
 
 const uiStore = useUIStore();
 const regionDetailedStore = useRegionDetailedStore();
 const playbackStore = usePlaybackStore();
+const mapStore = useMapStore();
 
 const drawerScrollArea = ref(null as any);
-
-const currentDate = computed(() => {
-  return playbackStore.playbackEnabled
-    ? playbackStore.formattedPlaybackCurrentDate
-    : uiStore.formattedDate;
-});
 
 const updateDataHook = async () => {
   if (!regionDetailedStore.selectedRegionMetricId) return;
@@ -131,6 +127,12 @@ const provinceName = computed(() => {
   return selectedRegionMetric.region.province;
 });
 
+const currentDate = computed(() => {
+  return playbackStore.playbackEnabled
+    ? playbackStore.formattedPlaybackCurrentDate
+    : uiStore.formattedDate;
+});
+
 const status = computed(() => {
   if (
     Object.keys(metric).length === 0 ||
@@ -145,6 +147,11 @@ const status = computed(() => {
 const statusColorName = computed(() => {
   return anomalyClassificationStyle(status.value || AnomalyClassificationEnum.N_A);
 });
+
+const resetSelectedRegionMetricId = () => {
+  regionDetailedStore.$reset();
+  mapStore.selectedFeatures = [];
+};
 
 const width = computed(() => uiStore.regionDetailDrawerWidth);
 </script>
