@@ -168,15 +168,6 @@ const loadPlaybackTiles = (tile: any, url: string) => {
       featureProjection: projection,
     });
 
-    for (const feature of features) {
-      const timeseries = JSON.parse(feature.get('timeseries'));
-      timeseries.forEach((item: any) => {
-        // const dayKey = `day-${item.date}`;
-        const dayKey = new Date(item.date).getTime();
-        feature.properties_[dayKey] = item.anomaly_degree;
-      });
-    }
-
     tile.setFeatures(features);
     mapStore.extent = extent || [];
   });
