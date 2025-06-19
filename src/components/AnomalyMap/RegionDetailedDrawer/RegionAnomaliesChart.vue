@@ -1,8 +1,7 @@
 <template>
   <div class="bg-white rounded-borders">
     <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Bite Index Time Series</h6>
-    <!-- TODO: Button to show/conceal points that aren't anomalies -->
-    <v-chart style="height: 250px" :option="option" :loading="loading" />
+    <v-chart style="height: 330px" :option="option" :loading="loading" />
   </div>
 </template>
 
@@ -26,9 +25,11 @@ import { Metric } from 'anomaly-detection';
 import { trendDataCorrection } from 'src/utils/trendDataCorrection';
 import { useUIStore } from 'src/stores/uiStore';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
+import { usePlaybackStore } from 'src/stores/playbackStore';
 
 const uiStore = useUIStore();
 const regionDetailedStore = useRegionDetailedStore();
+const playbackStore = usePlaybackStore();
 use([
   TooltipComponent,
   LineChart,
@@ -41,13 +42,16 @@ use([
   MarkLineComponent,
 ]);
 
+const currentDate = computed(
+  () => (playbackStore.playbackEnabled ? playbackStore.playbackCurrentDate : uiStore.date), // Use playback date if playback is enabled, otherwise use UI date
+);
 const anomaliesLoading = computed(() => regionDetailedStore.fetchingRegionMetricsAll);
 const anomaliesData = computed(() => regionDetailedStore.selectedRegionMetricsAll?.results || []);
 const trendLoading = computed(() => regionDetailedStore.fetchingRegionMetricTrend);
 const trendDate = computed((): Date => {
   return regionDetailedStore.selectedRegionMetricTrend?.date
     ? new Date(regionDetailedStore.selectedRegionMetricTrend.date)
-    : new Date(uiStore.date); // Default to the data date if no trend date is available
+    : new Date(currentDate.value); // Default to the data date if no trend date is available
 });
 const trend = computed(() => {
   const data = regionDetailedStore.selectedRegionMetricTrend?.trend || [];
@@ -58,7 +62,7 @@ const percentageLastMonth = computed(() => {
   return 100 - ((365 * 2) / anomaliesData.value.length) * 100; // Assuming the last month has 30 days
 });
 const indexToday = computed(() => {
-  const today = new Date(uiStore.date);
+  const today = new Date(currentDate.value);
   const todayString = date.formatDate(today, 'YYYY-MM-DD');
   return anomaliesData.value.findIndex(
     (item) => date.formatDate(item.date, 'YYYY-MM-DD') === todayString,
@@ -91,7 +95,7 @@ const option = computed(() => {
             ? `${(params[1].value + params[2].value).toFixed(2)}%`
             : 'N/A';
         const trend = params[4]?.value ? `${params[4].value.toFixed(2)}%` : 'N/A';
-        // TODO: Conditionally show forecast and trend depending if they are disabled or not in the UI
+        // TODO: Conditionally show trend depending if it is disabled or not in the UI
         return `
           <strong>${date}</strong>
           <br/><hr>
@@ -103,13 +107,43 @@ const option = computed(() => {
       },
     },
     legend: {
-      // TODO: Trend to Interannual Trend
-      data: ['Actuals', 'Forecast', 'Trend'],
+      data: [
+        {
+          name: 'Actuals',
+          itemStyle: {
+            color: '#909090',
+          },
+        },
+        {
+          name: 'Trend',
+          itemStyle: {
+            color: '#006400',
+          },
+        },
+        {
+          name: 'Confidence band',
+          icon: 'rect',
+          itemStyle: {
+            color: '#6dad6d66',
+          },
+        },
+        {
+          name: 'Anomalies',
+          icon: 'circle',
+          itemStyle: {
+            color: ANOMALY_COLORS.HIGH,
+            borderWidth: 0.25,
+          },
+        },
+      ],
+      selected: {
+        Trend: false,
+      },
     },
     grid: {
       left: '3%',
       right: '4%',
-      bottom: '3%',
+      bottom: '15%',
       containLabel: true,
     },
     xAxis: {
@@ -135,6 +169,27 @@ const option = computed(() => {
         xAxisIndex: [0],
         start: percentageLastMonth.value,
         end: 100,
+        // Change background color to red
+        backgroundColor: '#a8a8a809',
+        fillerColor: '#a8a8a844',
+        dataBackground: {
+          lineStyle: {
+            color: '#a8a8a8',
+          },
+          areaStyle: {
+            color: '#a8a8a866',
+          },
+        },
+        selectedDataBackground: {
+          lineStyle: {
+            color: '#a8a8a8',
+          },
+          areaStyle: {
+            color: '#000',
+          },
+        },
+        moveHandleStyle: { color: '#a8a8a8aa' },
+        emphasis: { moveHandleStyle: { color: '#a8a8a8' } },
       },
       {
         type: 'inside',
@@ -144,29 +199,13 @@ const option = computed(() => {
     series: [
       {
         name: 'Actuals',
-        type: 'scatter',
-        symbolSize: (value: any, params: any) => {
-          const defaultSize = 2; // Default size for the symbol
-          const minAnomalySize = 12; // Minimum size for the symbol
-          const maxAnomalySize = 25; // Maximum size for the symbol
-          const anomalyDegree = params.data.anomalyDegree || 0;
-          if (anomalyDegree === 0) return defaultSize; // Return minimum size for non-anomalous points
-          return minAnomalySize + Math.abs(anomalyDegree) * (maxAnomalySize - minAnomalySize);
-        }, // Adjust size based on anomaly degree
-        itemStyle: {
-          color: '#909090',
+        type: 'line',
+        lineStyle: {
+          color: '#a8a8a8',
+          width: 1.2,
         },
         data: anomaliesData.value.map((item: Metric) => ({
           value: (item.value || 0) * 100,
-          anomalyDegree: item.anomaly_degree,
-          itemStyle: {
-            color:
-              item.anomaly_degree === null || item.anomaly_degree === 0
-                ? '#909090'
-                : item.anomaly_degree > 0
-                  ? ANOMALY_COLORS.HIGH
-                  : ANOMALY_COLORS.LOW,
-          },
         })),
         showSymbol: false,
         markLine: {
@@ -176,8 +215,12 @@ const option = computed(() => {
               xAxis: indexToday.value,
               label: {
                 padding: [0, 58, 0, 0],
-                formatter: () => uiStore.formattedDate,
-                color: getCssVar('accent'),
+                formatter: () => date.formatDate(currentDate.value, 'MMM D, YYYY'),
+                color: '#605158',
+              },
+              lineStyle: {
+                color: '#909198',
+                width: 1,
               },
             },
           ],
@@ -195,7 +238,7 @@ const option = computed(() => {
         symbol: 'none',
       },
       {
-        name: 'Uncertainty interval area',
+        name: 'Confidence band',
         type: 'line',
         data: anomaliesData.value.map(
           (item) => (item.upper_value || 0) * 100 - (item.lower_value || 0) * 100,
@@ -204,18 +247,37 @@ const option = computed(() => {
           opacity: 0,
         },
         areaStyle: {
-          color: 'rgba(237, 178, 12, 0.3)',
+          color: '#6dad6d66',
         },
         stack: 'confidence-band',
         symbol: 'none',
       },
       {
-        name: 'Forecast',
-        type: 'line',
-        data: anomaliesData.value.map((item) => (item.predicted_value || 0) * 100),
+        name: 'Anomalies',
+        type: 'scatter',
+        // Put this above the confidence band
+        z: 10,
+        symbolSize: (value: any, params: any) => {
+          const anomalyDegree = params.data.anomalyDegree || 0;
+          if (anomalyDegree === 0) return 0; // Don't show symbols for non-anomalies
+          return 6;
+        }, // Adjust size based on anomaly degree
         itemStyle: {
-          color: 'rgba(237, 178, 12, 0.5)',
+          color: '#909090',
+          width: 1,
+          borderColor: '#333333',
+          borderWidth: 0.25,
+          opacity: 1,
         },
+        data: anomaliesData.value
+          // .filter((item: Metric) => item.anomaly_degree !== null && item.anomaly_degree !== 0)
+          .map((item: Metric) => ({
+            value: (item.value as number) * 100,
+            anomalyDegree: item.anomaly_degree,
+            itemStyle: {
+              color: (item.anomaly_degree as number) > 0 ? ANOMALY_COLORS.HIGH : ANOMALY_COLORS.LOW,
+            },
+          })),
         showSymbol: false,
       },
       {
@@ -224,6 +286,12 @@ const option = computed(() => {
         data: trend.value.map((item) => item.value * 1.0),
         itemStyle: {
           color: getCssVar('accent'),
+        },
+        lineStyle: {
+          color: '#006400',
+          width: 2,
+          opacity: 0.8,
+          type: 'dashed',
         },
         showSymbol: false,
       },

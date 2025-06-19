@@ -11,6 +11,7 @@ import { historyPageSize } from '../constants/config';
 import { FeatureLike } from 'ol/Feature';
 import { GeoJSON } from 'ol/format';
 import { useMapStore } from './mapStore';
+import { usePlaybackStore } from './playbackStore';
 
 export const useRegionDetailedStore = defineStore('regionDetailedStore', {
   state: () => ({
@@ -177,6 +178,13 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
         }
       } catch (error) {
         console.error('Error fetching selected region seasonality:', error);
+      }
+    },
+    async selectRegionMetric(metricId: string) {
+      const playbackStore = usePlaybackStore();
+      this.selectedRegionMetricId = metricId;
+      if (!playbackStore.playbackPaused) {
+        playbackStore.pause();
       }
     },
   },

@@ -133,7 +133,7 @@ watch(
       const metric = await fetchMetricFromRegion(newValue.value);
       if (regionSelected.value && metric) {
         // Set the selected metric ID in the map store
-        regionDetailedStore.selectedRegionMetricId = metric.id;
+        regionDetailedStore.selectRegionMetric(metric.id);
         await regionDetailedStore.fetchSelectedRegion(regionSelected.value.id, metric.id);
         regionSelected.value = null; // Reset the selection after setting
         suggestions.value = []; // Clear suggestions after selection

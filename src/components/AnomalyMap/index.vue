@@ -308,7 +308,7 @@ const selectFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   // So only one feature is selected
   const firstFeature = features[0] as Feature;
   mapStore.selectedFeatures = [firstFeature];
-  regionDetailedStore.selectedRegionMetricId = firstFeature.getId() as string;
+  regionDetailedStore.selectRegionMetric(firstFeature.getId() as string);
 };
 
 const tooltipEl = document.createElement('div');

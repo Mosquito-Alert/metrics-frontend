@@ -13,7 +13,7 @@ export const usePlaybackStore = defineStore('playbackStore', {
     playbackSpeed: 2 as number, // Speed in seconds per day
     playbackPaused: true as boolean,
     playbackCurrentIndex: 0 as number,
-    playbackCurrentDate: '2025-01-01' as string, // Default date, can be updated later
+    playbackCurrentDate: '' as string, // Default date, can be updated later
     data: null as Metric | any, // Replace with actual type if known
     fetchingData: false as boolean, // Flag to indicate if data is being fetched
   }),
@@ -37,10 +37,9 @@ export const usePlaybackStore = defineStore('playbackStore', {
         },
         { responseType: 'arraybuffer' }, // Ensure we get the data as an ArrayBuffer
       );
-      this.data = response.data;
       const firstDate = subtractDays(date, this.playbackDays - 1);
       this.playbackDaysObject = getDatesBetween(firstDate, date);
-      this.playbackCurrentDate = firstDate;
+      this.playbackCurrentDate = this.playbackCurrentDate || firstDate;
       // this.playbackCurrentIndex = 0; // Reset index to the start
       this.fetchingData = false; // Reset fetching flag
       return response.data;
@@ -50,11 +49,14 @@ export const usePlaybackStore = defineStore('playbackStore', {
       const regionDetailedStore = useRegionDetailedStore();
       this.playbackEnabled = !this.playbackEnabled;
       if (this.playbackEnabled) {
+        // Enabling playback
         // Reset playback state when enabling playback
+        this.playbackCurrentDate = this.playbackDaysObject[0] || '';
         this.playbackCurrentIndex = 0;
         this.data = null; // Clear previous data
         regionDetailedStore.$reset(); // Reset region detailed store
       } else {
+        // Disabling playback
         uiStore.fetchLastDate();
       }
     },
