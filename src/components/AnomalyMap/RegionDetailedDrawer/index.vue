@@ -21,7 +21,6 @@
           </p>
         </div>
         <div class="col self-end">
-          <!-- <span>Anomaly</span> -->
           <q-badge
             :label="status"
             :color="statusColorName"
