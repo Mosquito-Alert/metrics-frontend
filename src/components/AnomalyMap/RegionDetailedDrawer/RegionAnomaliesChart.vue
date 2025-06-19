@@ -103,8 +103,39 @@ const option = computed(() => {
       },
     },
     legend: {
-      // TODO: Trend to Interannual Trend
-      data: ['Actuals', 'Forecast', 'Trend'],
+      // data: ['Actuals', 'Trend', 'Confidence band', 'Anomalies'],
+      data: [
+        {
+          name: 'Actuals',
+          itemStyle: {
+            color: '#909090',
+          },
+        },
+        {
+          name: 'Trend',
+          itemStyle: {
+            color: '#006400',
+          },
+        },
+        {
+          name: 'Confidence band',
+          icon: 'rect',
+          itemStyle: {
+            color: '#6dad6d66',
+          },
+        },
+        {
+          name: 'Anomalies',
+          icon: 'circle',
+          itemStyle: {
+            color: ANOMALY_COLORS.HIGH,
+            borderWidth: 0.25,
+          },
+        },
+      ],
+      selected: {
+        Trend: false,
+      },
     },
     grid: {
       left: '3%',
@@ -144,29 +175,13 @@ const option = computed(() => {
     series: [
       {
         name: 'Actuals',
-        type: 'scatter',
-        symbolSize: (value: any, params: any) => {
-          const defaultSize = 2; // Default size for the symbol
-          const minAnomalySize = 12; // Minimum size for the symbol
-          const maxAnomalySize = 25; // Maximum size for the symbol
-          const anomalyDegree = params.data.anomalyDegree || 0;
-          if (anomalyDegree === 0) return defaultSize; // Return minimum size for non-anomalous points
-          return minAnomalySize + Math.abs(anomalyDegree) * (maxAnomalySize - minAnomalySize);
-        }, // Adjust size based on anomaly degree
-        itemStyle: {
-          color: '#909090',
+        type: 'line',
+        lineStyle: {
+          color: '#a8a8a8',
+          width: 1.2,
         },
         data: anomaliesData.value.map((item: Metric) => ({
           value: (item.value || 0) * 100,
-          anomalyDegree: item.anomaly_degree,
-          itemStyle: {
-            color:
-              item.anomaly_degree === null || item.anomaly_degree === 0
-                ? '#909090'
-                : item.anomaly_degree > 0
-                  ? ANOMALY_COLORS.HIGH
-                  : ANOMALY_COLORS.LOW,
-          },
         })),
         showSymbol: false,
         markLine: {
@@ -176,8 +191,12 @@ const option = computed(() => {
               xAxis: indexToday.value,
               label: {
                 padding: [0, 58, 0, 0],
-                formatter: () => uiStore.formattedDate,
-                color: getCssVar('accent'),
+                formatter: () => date.formatDate(uiStore.date, 'MMM D, YYYY'),
+                color: '#605158',
+              },
+              lineStyle: {
+                color: '#909198',
+                width: 1,
               },
             },
           ],
@@ -195,7 +214,7 @@ const option = computed(() => {
         symbol: 'none',
       },
       {
-        name: 'Uncertainty interval area',
+        name: 'Confidence band',
         type: 'line',
         data: anomaliesData.value.map(
           (item) => (item.upper_value || 0) * 100 - (item.lower_value || 0) * 100,
@@ -204,18 +223,37 @@ const option = computed(() => {
           opacity: 0,
         },
         areaStyle: {
-          color: 'rgba(237, 178, 12, 0.3)',
+          color: '#6dad6d66',
         },
         stack: 'confidence-band',
         symbol: 'none',
       },
       {
-        name: 'Forecast',
-        type: 'line',
-        data: anomaliesData.value.map((item) => (item.predicted_value || 0) * 100),
+        name: 'Anomalies',
+        type: 'scatter',
+        // Put this above the confidence band
+        z: 10,
+        symbolSize: (value: any, params: any) => {
+          const anomalyDegree = params.data.anomalyDegree || 0;
+          if (anomalyDegree === 0) return 0; // Don't show symbols for non-anomalies
+          return 6;
+        }, // Adjust size based on anomaly degree
         itemStyle: {
-          color: 'rgba(237, 178, 12, 0.5)',
+          color: '#909090',
+          width: 1,
+          borderColor: '#333333',
+          borderWidth: 0.25,
+          opacity: 1,
         },
+        data: anomaliesData.value
+          // .filter((item: Metric) => item.anomaly_degree !== null && item.anomaly_degree !== 0)
+          .map((item: Metric) => ({
+            value: (item.value as number) * 100,
+            anomalyDegree: item.anomaly_degree,
+            itemStyle: {
+              color: (item.anomaly_degree as number) > 0 ? ANOMALY_COLORS.HIGH : ANOMALY_COLORS.LOW,
+            },
+          })),
         showSymbol: false,
       },
       {
@@ -224,6 +262,12 @@ const option = computed(() => {
         data: trend.value.map((item) => item.value * 1.0),
         itemStyle: {
           color: getCssVar('accent'),
+        },
+        lineStyle: {
+          color: '#006400',
+          width: 2,
+          opacity: 0.8,
+          type: 'dashed',
         },
         showSymbol: false,
       },
