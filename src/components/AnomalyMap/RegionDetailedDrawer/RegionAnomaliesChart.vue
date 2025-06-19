@@ -1,8 +1,7 @@
 <template>
   <div class="bg-white rounded-borders">
     <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Bite Index Time Series</h6>
-    <!-- TODO: Button to show/conceal points that aren't anomalies -->
-    <v-chart style="height: 250px" :option="option" :loading="loading" />
+    <v-chart style="height: 330px" :option="option" :loading="loading" />
   </div>
 </template>
 
@@ -91,7 +90,7 @@ const option = computed(() => {
             ? `${(params[1].value + params[2].value).toFixed(2)}%`
             : 'N/A';
         const trend = params[4]?.value ? `${params[4].value.toFixed(2)}%` : 'N/A';
-        // TODO: Conditionally show forecast and trend depending if they are disabled or not in the UI
+        // TODO: Conditionally show trend depending if it is disabled or not in the UI
         return `
           <strong>${date}</strong>
           <br/><hr>
@@ -103,7 +102,6 @@ const option = computed(() => {
       },
     },
     legend: {
-      // data: ['Actuals', 'Trend', 'Confidence band', 'Anomalies'],
       data: [
         {
           name: 'Actuals',
@@ -140,7 +138,7 @@ const option = computed(() => {
     grid: {
       left: '3%',
       right: '4%',
-      bottom: '3%',
+      bottom: '15%',
       containLabel: true,
     },
     xAxis: {
@@ -166,6 +164,27 @@ const option = computed(() => {
         xAxisIndex: [0],
         start: percentageLastMonth.value,
         end: 100,
+        // Change background color to red
+        backgroundColor: '#a8a8a809',
+        fillerColor: '#a8a8a844',
+        dataBackground: {
+          lineStyle: {
+            color: '#a8a8a8',
+          },
+          areaStyle: {
+            color: '#a8a8a866',
+          },
+        },
+        selectedDataBackground: {
+          lineStyle: {
+            color: '#a8a8a8',
+          },
+          areaStyle: {
+            color: '#000',
+          },
+        },
+        moveHandleStyle: { color: '#a8a8a8aa' },
+        emphasis: { moveHandleStyle: { color: '#a8a8a8' } },
       },
       {
         type: 'inside',

@@ -1,8 +1,8 @@
 <template>
-  <h6 class="q-mt-lg q-mb-none q-ml-sm text-weight-regular" style="color: #333">
+  <h6 class="q-mt-lg q-my-sm q-mb-none q-ml-sm text-weight-regular" style="color: #333">
     Seasonality Component
   </h6>
-  <v-chart style="height: 250px" :option="option" :loading="loading" />
+  <v-chart style="height: 300px" :option="option" :loading="loading" />
 </template>
 
 <script setup lang="ts">
@@ -45,7 +45,6 @@ const anomaliesData = computed(() => {
 
     if (!groups[year]) groups[year] = [];
     let trendValue = trend.value?.[entry_i];
-    // if (trendValue == null || isNaN(trendValue)) continue; // Skip empty trend value
     if (trendValue == null || isNaN(trendValue)) {
       trendValue = lastUsedTrendValue; // Use last used trend value if current is null
     }
@@ -113,11 +112,12 @@ const seriesData = computed(() => {
     }
 
     return {
-      name: String(year),
+      name: isLastYear ? 'Present Year' : 'Previous Years',
       type: 'line',
       data: sortedData,
       z: isLastYear ? 10 : 1,
       showSymbol: false,
+      silent: true,
       lineStyle: {
         color,
         width: isLastYear ? 1 : 0.8,
@@ -135,6 +135,7 @@ const seriesData = computed(() => {
     itemStyle: {
       color: '#333333',
     },
+    silent: true,
     z: 8,
     showSymbol: false,
     lineStyle: {
@@ -150,21 +151,45 @@ const seriesData = computed(() => {
 
 const option = computed(() => {
   return {
-    tooltip: {
-      trigger: 'axis',
-      formatter: (params: any) => {
-        return '<strong>' + params[0].name + '</strong>' + '<br />' + params[0].value;
-      },
-    },
     xAxis: {
       type: 'category',
       data: seasonalityData.value.map((item: any) => date.formatDate(item.date, 'MMM')),
       axisTick: {
         show: false,
       },
+      axisLine: {
+        lineStyle: {
+          color: '#a8a8a8',
+        },
+      },
     },
     yAxis: {
       type: 'value',
+      axisLabel: {
+        formatter: (val: any) => val.toFixed(0) + '%', // Converts fractions to percentages
+      },
+    },
+    legend: {
+      data: [
+        {
+          name: 'Seasonality',
+          itemStyle: {
+            color: '#006400',
+          },
+        },
+        {
+          name: 'Present Year',
+          itemStyle: {
+            color: '#000',
+          },
+        },
+        {
+          name: 'Previous Years',
+          itemStyle: {
+            color: '#a8a8a8',
+          },
+        },
+      ],
     },
     grid: {
       top: '20%',
