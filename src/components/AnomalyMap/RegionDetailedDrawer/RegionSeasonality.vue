@@ -112,7 +112,7 @@ const seriesData = computed(() => {
     }
 
     return {
-      name: isLastYear ? 'Present Year' : 'Previous Years',
+      name: isLastYear ? 'Values Present Year' : 'Values Previous Years',
       type: 'line',
       data: sortedData,
       z: isLastYear ? 10 : 1,
@@ -178,13 +178,13 @@ const option = computed(() => {
           },
         },
         {
-          name: 'Present Year',
+          name: 'Values Present Year',
           itemStyle: {
             color: '#000',
           },
         },
         {
-          name: 'Previous Years',
+          name: 'Values Previous Years',
           itemStyle: {
             color: '#a8a8a8',
           },
