@@ -15,7 +15,7 @@
     @keyup.enter="onEnterPress"
     hide-dropdown-icon
     :style="searchbarStyle"
-    class="q-ma-none q-py-none q-px-lg"
+    class="q-ma-none q-py-none"
     bg-color="white"
     color="primary"
     label-color="black"
