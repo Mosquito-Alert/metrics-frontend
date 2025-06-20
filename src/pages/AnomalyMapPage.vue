@@ -5,7 +5,7 @@
     <AnomalyMap v-if="dateFetched" />
 
     <!-- SEARCH BAR -->
-    <q-page-sticky position="top-left" :offset="[0, 20]">
+    <q-page-sticky position="top-left" :offset="[20, 20]">
       <SearchBox v-if="!regionDetailedStore.selectedRegionMetricId" />
     </q-page-sticky>
 
@@ -45,7 +45,7 @@
     <!-- PLAYBACK CONTROL -->
     <q-page-sticky
       position="bottom-left"
-      :offset="[50, 20]"
+      :offset="[20, 20]"
       class="sticky-playback-control flex justify-center"
     >
       <PlaybackControl
@@ -67,6 +67,13 @@
       src="~assets/logo_horizontal_black.png"
       height="1.8rem"
     />
+
+    <!-- LEGEND -->
+    <q-page-sticky position="bottom-left" :offset="[20, 20]">
+      <MapLegend
+        v-if="!regionDetailedStore.selectedRegionMetricId && !playbackStore.playbackEnabled"
+      />
+    </q-page-sticky>
   </q-page>
 </template>
 
