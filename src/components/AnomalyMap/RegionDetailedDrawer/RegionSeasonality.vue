@@ -70,8 +70,7 @@ const seriesData = computed(() => {
     if (isLastYear) {
       color = '#000'; // Highlight the last year's data
     } else {
-      const grayLevel = Math.floor(215 - (idx / (totalYears - 1)) * 100);
-      color = `rgb(${grayLevel}, ${grayLevel}, ${grayLevel})`; // Grayscale for other years
+      color = '#c4c4c4'; // Use a fixed gray color for previous years
     }
 
     const sortedData = anomaliesData.value[year]?.sort((a, b) => a[0] - b[0]);
@@ -120,7 +119,7 @@ const seriesData = computed(() => {
       silent: true,
       lineStyle: {
         color,
-        width: isLastYear ? 1 : 0.8,
+        width: isLastYear ? 1.2 : 0.8,
         opacity: isLastYear ? 1 : 0.8,
       },
       ...markLine,
