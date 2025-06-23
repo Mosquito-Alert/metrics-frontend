@@ -14,6 +14,7 @@ import { date } from 'quasar';
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
+import { ANOMALY_COLORS } from 'src/constants/colors';
 
 use([TooltipComponent, LineChart, CanvasRenderer, GridComponent, TitleComponent]);
 
@@ -32,7 +33,13 @@ const trend = computed(() => regionDetailedStore.selectedRegionMetricTrend?.tren
 const anomaliesData = computed(() => {
   const rawData = regionDetailedStore.selectedRegionMetricsAll?.results || [];
   const groups: {
-    [year: number]: { dayOfYear: number; value: any; upper_band?: any; lower_band?: any }[];
+    [year: number]: {
+      dayOfYear: number;
+      value: number | undefined;
+      upper_band: number | undefined;
+      lower_band: number | undefined;
+      anomaly_degree: number | undefined;
+    }[];
   } = {};
 
   // Group anomalies by year and convert date to day of the year
@@ -41,8 +48,9 @@ const anomaliesData = computed(() => {
     const entry = rawData[entry_i] as {
       date: string;
       value: number;
-      upper_value: number; //| undefined;
-      lower_value: number; //| undefined;
+      upper_value: number | undefined;
+      lower_value: number | undefined;
+      anomaly_degree: number | undefined;
     };
     const date = new Date(entry.date);
     const year = date.getFullYear();
@@ -61,8 +69,9 @@ const anomaliesData = computed(() => {
     const values = {
       dayOfYear,
       value: (entry.value - trendValue) * 100, // Convert to percentage
-      upper_band: entry.upper_value * 100 - trendValue * 100,
-      lower_band: -(entry.upper_value - entry.lower_value) * 100,
+      upper_band: (entry.upper_value || 0) * 100 - trendValue * 100,
+      lower_band: -((entry.upper_value || 0) - (entry.lower_value || 0)) * 100,
+      anomaly_degree: entry.anomaly_degree || 0, // Default to 0 if undefined
     };
     groups[year].push(values);
   }
@@ -75,7 +84,8 @@ const seriesValuesData = computed(() => {
     .map(Number)
     .sort((a, b) => a - b);
   const mostRecentYear = Math.max(...years);
-  let confidenceBand: any[] = [];
+  let confidenceBandSeries: any[] = [];
+  let anomaliesSeries: any = {};
 
   const series = years.map((year: number) => {
     const isLastYear = year === mostRecentYear;
@@ -123,7 +133,7 @@ const seriesValuesData = computed(() => {
         : {};
 
       // // Confidence band for the last year
-      confidenceBand = [
+      confidenceBandSeries = [
         {
           name: 'Uncertainty interval upper bound',
           type: 'line',
@@ -148,6 +158,34 @@ const seriesValuesData = computed(() => {
           symbol: 'none',
         },
       ];
+
+      // Anomalies for the last year
+      anomaliesSeries = {
+        name: 'Anomalies',
+        type: 'scatter',
+        z: 11,
+        showSymbol: false,
+        symbolSize: (value: any, params: any) => {
+          const anomalyDegree = params.data.anomalyDegree || 0;
+          if (anomalyDegree === 0) return 0; // Don't show symbols for non-anomalies
+          return 6;
+        },
+        itemStyle: {
+          color: '#909090',
+          width: 1,
+          borderColor: '#333333',
+          borderWidth: 0.25,
+          opacity: 1,
+        },
+        data: sortedData.map((item) => ({
+          value: item.value as number,
+          anomalyDegree: item.anomaly_degree || 0,
+          itemStyle: {
+            color:
+              ((item.anomaly_degree || 0) as number) > 0 ? ANOMALY_COLORS.HIGH : ANOMALY_COLORS.LOW,
+          },
+        })),
+      };
 
       return {
         name: 'Values Present Year',
@@ -181,7 +219,26 @@ const seriesValuesData = computed(() => {
     };
   });
 
-  return [...series, ...confidenceBand];
+  const seasonalitySeries = {
+    name: 'Seasonality',
+    type: 'line',
+    smooth: true,
+    data: seasonalityData.value.map((item: any) => item),
+    itemStyle: {
+      color: '#333333',
+    },
+    silent: true,
+    z: 8,
+    showSymbol: false,
+    lineStyle: {
+      color: '#006400',
+      width: 2,
+      opacity: 0.8,
+      type: 'dashed',
+    },
+  };
+
+  return [...series, ...confidenceBandSeries, seasonalitySeries, anomaliesSeries];
 });
 
 const option = computed(() => {
@@ -205,6 +262,9 @@ const option = computed(() => {
       },
     },
     legend: {
+      selected: {
+        Anomalies: false,
+      },
       data: [
         {
           name: 'Seasonality',
@@ -231,6 +291,14 @@ const option = computed(() => {
           },
           icon: 'rect',
         },
+        {
+          name: 'Anomalies',
+          itemStyle: {
+            color: ANOMALY_COLORS.HIGH,
+            borderWidth: 0.25,
+          },
+          icon: 'circle',
+        },
       ],
     },
     grid: {
@@ -240,27 +308,7 @@ const option = computed(() => {
       bottom: '20%',
       containLabel: true,
     },
-    series: [
-      ...seriesValuesData.value,
-      {
-        name: 'Seasonality',
-        type: 'line',
-        smooth: true,
-        data: seasonalityData.value.map((item: any) => item),
-        itemStyle: {
-          color: '#333333',
-        },
-        silent: true,
-        z: 8,
-        showSymbol: false,
-        lineStyle: {
-          color: '#006400',
-          width: 2,
-          opacity: 0.8,
-          type: 'dashed',
-        },
-      },
-    ],
+    series: seriesValuesData.value,
   };
 });
 </script>
