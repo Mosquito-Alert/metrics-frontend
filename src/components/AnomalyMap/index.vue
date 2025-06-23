@@ -350,7 +350,7 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   }
   tooltipEl.innerHTML = `
   <div><strong>${feature.get('region__name')}</strong></div>
-  <div>Value: ${feature.get('value')}</div>
+  <div>Bites Index: <i>${(feature.get('value') * 100).toFixed(1)}%</i></div>
   `;
   tooltipEl.classList.add('visible');
   hoverOverlay.setPosition(event.coordinate);
