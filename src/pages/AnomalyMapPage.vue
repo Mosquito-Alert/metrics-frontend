@@ -114,7 +114,16 @@ const playbackTooltipMsg = computed(() => {
 });
 
 uiStore.appWidth = window.innerWidth;
-uiStore.regionDetailDrawerWidth = Math.max(Math.floor(uiStore.appWidth / 2.75), 500);
+const getDrawerWidth = (appWidth: number) => {
+  return Math.max(Math.floor(appWidth / 2.75), 500);
+};
+uiStore.regionDetailDrawerWidth = getDrawerWidth(uiStore.appWidth);
+
+// Watch for window resize to adjust the drawer width
+window.addEventListener('resize', () => {
+  uiStore.appWidth = window.innerWidth;
+  uiStore.regionDetailDrawerWidth = getDrawerWidth(uiStore.appWidth);
+});
 </script>
 <style lang="scss">
 #map-date {
