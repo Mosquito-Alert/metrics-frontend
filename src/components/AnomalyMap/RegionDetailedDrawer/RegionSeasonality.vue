@@ -85,7 +85,7 @@ const seriesValuesData = computed(() => {
     .sort((a, b) => a - b);
   const mostRecentYear = Math.max(...years);
   let confidenceBandSeries: any[] = [];
-  let anomaliesSeries: any = {};
+  let anomaliesSeries: any = { name: 'Anomalies', type: 'scatter', data: [] };
 
   const series = years.map((year: number) => {
     const isLastYear = year === mostRecentYear;
@@ -172,7 +172,6 @@ const seriesValuesData = computed(() => {
         type: 'scatter',
         z: 11,
         showSymbol: false,
-        symbol: 'none',
         symbolSize: (value: any, params: any) => {
           const anomalyDegree = params.data.anomalyDegree || 0;
           if (anomalyDegree === 0) return 0; // Don't show symbols for non-anomalies
@@ -277,7 +276,7 @@ const seriesValuesData = computed(() => {
     },
   };
 
-  return [...series, ...confidenceBandSeries, seasonalitySeries, anomaliesSeries];
+  return [...series, ...confidenceBandSeries, anomaliesSeries, seasonalitySeries];
 });
 
 const option = computed(() => {

@@ -2,7 +2,7 @@
   <q-card>
     <q-card-section class="q-pb-none">
       <div class="text-subtitle2 text-weight-bold text-uppercase q-ma-none q-pa-none">
-        Bite Anomalies
+        Bite Probability Anomalies
       </div>
     </q-card-section>
 
