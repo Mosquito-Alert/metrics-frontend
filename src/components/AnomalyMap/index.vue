@@ -340,15 +340,18 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   hoveredFeatures.value = features as Feature[];
 
   const feature = features[0] as FeatureLike;
-  // if (playbackStore.playbackEnabled) {
-  //   const timeseries = JSON.parse(feature.get('timeseries'));
-  //   const hoveredFeature = timeseries.find(
-  //     (item: any) => item.date === playbackStore.playbackCurrentDate,
-  //   );
-  //   if (!hoveredFeature) return;
-  //   // (feature as any).properties_.value = hoveredFeature.value;
-  // }
-  tooltipEl.innerHTML = feature.get('region__name');
+  if (playbackStore.playbackEnabled) {
+    const timeseries = JSON.parse(feature.get('timeseries'));
+    const hoveredFeature = timeseries.find(
+      (item: any) => item.date === playbackStore.playbackCurrentDate,
+    );
+    if (!hoveredFeature) return;
+    (feature as any).properties_.value = hoveredFeature.value;
+  }
+  tooltipEl.innerHTML = `
+  <div><strong>${feature.get('region__name')}</strong></div>
+  <div>Value: ${feature.get('value')}</div>
+  `;
   tooltipEl.classList.add('visible');
   hoverOverlay.setPosition(event.coordinate);
 };
