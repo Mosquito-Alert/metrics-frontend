@@ -27,11 +27,27 @@ export const useMapStore = defineStore('mapStore', {
     },
     selectedFeatures: [] as FeatureLike[],
     data: null as Metric | any, // Replace with actual type if known
+    fetchingDate: true,
+    currentDate: '' as string, // Default date, can be updated later:
   }),
 
   getters: {},
 
   actions: {
+    async fetchLastDate() {
+      try {
+        this.fetchingDate = true;
+        const response = await metricsApi.lastDateRetrieve();
+        if (response.status === 200 && response.data) {
+          this.setDate(response.data.date);
+          this.fetchingDate = false;
+        } else {
+          throw new Error('Failed to fetch last date');
+        }
+      } catch (error) {
+        console.error('Error fetching last date:', error);
+      }
+    },
     async fetchData(date: string, x: number, y: number, z: number) {
       const response = await metricsApi.tilesRetrieve(
         {
@@ -44,6 +60,9 @@ export const useMapStore = defineStore('mapStore', {
       );
       this.data = response.data;
       return response.data;
+    },
+    setDate(newDate: string) {
+      this.currentDate = newDate;
     },
   },
 });

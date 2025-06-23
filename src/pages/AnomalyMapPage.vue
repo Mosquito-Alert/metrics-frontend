@@ -14,17 +14,17 @@
       <span
         class="q-px-lg q-py-sm text-weight-medium text-subtitle1"
         id="map-date"
-        v-if="!uiStore.fetchingDate"
+        v-if="!mapStore.fetchingDate"
       >
         {{ currentDate }}
       </span>
-      <q-skeleton type="QBadge" v-if="uiStore.fetchingDate" />
+      <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
     </q-page-sticky>
 
     <q-page-sticky position="top-right" :offset="[20, 80]" class="map-tools">
       <div class="playback sidemap-option" :class="{ active: sideOptionActive === 'active' }">
         <div @click="playbackStore.togglePlayback()">
-          <span v-if="!uiStore.fetchingDate" class="column items-center">
+          <span v-if="!mapStore.fetchingDate" class="column items-center">
             <q-icon name="history"></q-icon>
             <p class="q-pa-none q-ma-none">Playback</p>
             <!-- <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -36,7 +36,7 @@
               </q-date>
             </q-popup-proxy> -->
           </span>
-          <q-skeleton type="QBadge" v-if="uiStore.fetchingDate" />
+          <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
           <q-tooltip anchor="center left" self="center end">{{ playbackTooltipMsg }}</q-tooltip>
         </div>
       </div>
@@ -83,10 +83,12 @@ import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import { useUIStore } from 'src/stores/uiStore';
 import { computed, onMounted, ref } from 'vue';
 import { usePlaybackStore } from '../stores/playbackStore';
+import { useMapStore } from 'src/stores/mapStore';
 
 const $q = useQuasar();
 
 const uiStore = useUIStore();
+const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
 const playbackStore = usePlaybackStore();
 
@@ -99,7 +101,7 @@ const sideOptionActive = computed(() => {
 // * Lifecycle
 onMounted(async () => {
   $q.loading.show({ message: 'Loading data...' });
-  await uiStore.fetchLastDate();
+  await mapStore.fetchLastDate();
   dateFetched.value = true;
   $q.loading.hide();
 });

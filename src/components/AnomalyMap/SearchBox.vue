@@ -49,8 +49,10 @@ import { metricsApi, regionsApi } from 'src/services/apiService';
 import { useUIStore } from 'src/stores/uiStore';
 import { computed, ref, watch } from 'vue';
 import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
+import { useMapStore } from 'src/stores/mapStore';
 
 const uiStore = useUIStore();
+const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
 
 const suggestions = ref<{ label: string; value: string; id: number }[]>([]);
@@ -109,8 +111,8 @@ const fetchMetricFromRegion = async (regionCode: string): Promise<Metric | null>
   if (!regionCode) return null;
   try {
     const response = await metricsApi.list({
-      dateFrom: uiStore.date,
-      dateTo: uiStore.date,
+      dateFrom: mapStore.currentDate,
+      dateTo: mapStore.currentDate,
       regionCode,
     });
     if (response.status === 200 && response.data.results.length > 0) {
