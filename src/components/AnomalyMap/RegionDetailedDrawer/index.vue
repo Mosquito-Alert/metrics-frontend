@@ -17,7 +17,7 @@
         <div class="col-10">
           <p class="text-h6 text-weight-regular" style="color: #333">{{ provinceName }}</p>
           <p class="text-subtitle-1 text-weight-regular q-ma-none" style="color: #333">
-            {{ currentDate }}
+            {{ mapStore.currentDate }}
           </p>
         </div>
         <div class="col self-end">
@@ -64,7 +64,7 @@ import {
   anomalyClassificationStyle,
   classifyAnomaly,
 } from 'src/utils/anomalyClassification';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
 import { usePlaybackStore } from 'src/stores/playbackStore';
 import { useMapStore } from 'src/stores/mapStore';
@@ -119,12 +119,6 @@ const provinceName = computed(() => {
     return defaultTitle;
   }
   return selectedRegionMetric.region.province;
-});
-
-const currentDate = computed(() => {
-  return playbackStore.playbackEnabled
-    ? playbackStore.formattedPlaybackCurrentDate
-    : uiStore.formattedDate;
 });
 
 const status = computed(() => {

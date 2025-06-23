@@ -23,13 +23,11 @@ import { LineChart, ScatterChart } from 'echarts/charts';
 import { ANOMALY_COLORS } from 'src/constants/colors';
 import { Metric } from 'anomaly-detection';
 import { trendDataCorrection } from 'src/utils/trendDataCorrection';
-import { useUIStore } from 'src/stores/uiStore';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
-import { usePlaybackStore } from 'src/stores/playbackStore';
+import { useMapStore } from 'src/stores/mapStore';
 
-const uiStore = useUIStore();
+const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
-const playbackStore = usePlaybackStore();
 use([
   TooltipComponent,
   LineChart,
@@ -42,16 +40,13 @@ use([
   MarkLineComponent,
 ]);
 
-const currentDate = computed(
-  () => (playbackStore.playbackEnabled ? playbackStore.playbackCurrentDate : uiStore.date), // Use playback date if playback is enabled, otherwise use UI date
-);
 const anomaliesLoading = computed(() => regionDetailedStore.fetchingRegionMetricsAll);
 const anomaliesData = computed(() => regionDetailedStore.selectedRegionMetricsAll?.results || []);
 const trendLoading = computed(() => regionDetailedStore.fetchingRegionMetricTrend);
 const trendDate = computed((): Date => {
   return regionDetailedStore.selectedRegionMetricTrend?.date
     ? new Date(regionDetailedStore.selectedRegionMetricTrend.date)
-    : new Date(currentDate.value); // Default to the data date if no trend date is available
+    : new Date(mapStore.currentDate); // Default to the data date if no trend date is available
 });
 const trend = computed(() => {
   const data = regionDetailedStore.selectedRegionMetricTrend?.trend || [];
@@ -62,7 +57,7 @@ const percentageLastMonth = computed(() => {
   return 100 - ((365 * 2) / anomaliesData.value.length) * 100; // Assuming the last month has 30 days
 });
 const indexToday = computed(() => {
-  const today = new Date(currentDate.value);
+  const today = new Date(mapStore.currentDate);
   const todayString = date.formatDate(today, 'YYYY-MM-DD');
   return anomaliesData.value.findIndex(
     (item) => date.formatDate(item.date, 'YYYY-MM-DD') === todayString,
@@ -215,7 +210,7 @@ const option = computed(() => {
               xAxis: indexToday.value,
               label: {
                 padding: [0, 58, 0, 0],
-                formatter: () => date.formatDate(currentDate.value, 'MMM D, YYYY'),
+                formatter: () => date.formatDate(mapStore.currentDate, 'MMM D, YYYY'),
                 color: '#605158',
               },
               lineStyle: {

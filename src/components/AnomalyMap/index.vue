@@ -98,12 +98,10 @@ import {
 } from 'vue';
 import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
 import { usePlaybackStore } from 'src/stores/playbackStore';
-import { useUIStore } from 'src/stores/uiStore';
 import MVT from 'ol/format/MVT.js';
 import WebGLVectorTileLayer from 'ol/layer/WebGLVectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 
-const uiStore = useUIStore();
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
 const playbackStore = usePlaybackStore();
@@ -142,7 +140,7 @@ const loadTiles = (tile: any, url: string) => {
     const z = tileCoord[0].toString();
     const x = tileCoord[1].toString();
     const y = tileCoord[2].toString();
-    const data = await mapStore.fetchData(uiStore.date, x, y, z);
+    const data = await mapStore.fetchData(mapStore.currentDate, x, y, z);
 
     const format = tile.getFormat(); // ol/format/MVT configured as source format
     const features = format.readFeatures(data, {
@@ -170,7 +168,7 @@ const loadPlaybackTiles = (tile: any, url: string) => {
     const z = tileCoord[0].toString();
     const x = tileCoord[1].toString();
     const y = tileCoord[2].toString();
-    const data = await playbackStore.fetchData(uiStore.date, x, y, z);
+    const data = await playbackStore.fetchData(mapStore.currentDate, x, y, z);
 
     const format = tile.getFormat(); // ol/format/MVT configured as source format
     const features = format.readFeatures(data, {
