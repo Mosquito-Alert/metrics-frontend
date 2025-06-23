@@ -154,6 +154,13 @@ const seriesValuesData = computed(() => {
           areaStyle: {
             color: '#6dad6d66',
           },
+          emphasis: {
+            focus: 'series',
+            itemStyle: {
+              opacity: 0, // Hide hover circle
+            },
+            symbol: 'none',
+          },
           stack: 'confidence-band',
           symbol: 'none',
         },
@@ -165,6 +172,7 @@ const seriesValuesData = computed(() => {
         type: 'scatter',
         z: 11,
         showSymbol: false,
+        symbol: 'none',
         symbolSize: (value: any, params: any) => {
           const anomalyDegree = params.data.anomalyDegree || 0;
           if (anomalyDegree === 0) return 0; // Don't show symbols for non-anomalies
@@ -176,6 +184,13 @@ const seriesValuesData = computed(() => {
           borderColor: '#333333',
           borderWidth: 0.25,
           opacity: 1,
+        },
+        emphasis: {
+          focus: 'series',
+          itemStyle: {
+            opacity: 0, // Hide hover circle
+          },
+          symbol: 'none',
         },
         data: sortedData.map((item) => ({
           value: item.value as number,
@@ -193,11 +208,19 @@ const seriesValuesData = computed(() => {
         data: chartData,
         z: 10,
         showSymbol: false,
+        symbol: 'none',
         silent: true,
         lineStyle: {
           color: '#000',
           width: 1.2,
           opacity: 1,
+        },
+        emphasis: {
+          focus: 'series',
+          itemStyle: {
+            opacity: 0, // Hide hover circle
+          },
+          symbol: 'none',
         },
         ...markLine,
       };
@@ -210,11 +233,19 @@ const seriesValuesData = computed(() => {
       data: chartData,
       z: 1,
       showSymbol: false,
+      symbol: 'none',
       silent: true,
       lineStyle: {
         color: '#c4c4c4',
         width: 0.8,
         opacity: 0.8,
+      },
+      emphasis: {
+        focus: 'series',
+        itemStyle: {
+          opacity: 0, // Hide hover circle
+        },
+        symbol: 'none',
       },
     };
   });
@@ -230,11 +261,19 @@ const seriesValuesData = computed(() => {
     silent: true,
     z: 8,
     showSymbol: false,
+    symbol: 'none',
     lineStyle: {
       color: '#006400',
       width: 2,
       opacity: 0.8,
       type: 'dashed',
+    },
+    emphasis: {
+      focus: 'series',
+      itemStyle: {
+        opacity: 0, // Hide hover circle
+      },
+      symbol: 'none',
     },
   };
 
@@ -245,7 +284,8 @@ const option = computed(() => {
   return {
     xAxis: {
       type: 'category',
-      data: seasonalityData.value.map((item: any) => date.formatDate(item.date, 'MMM')),
+      // data: seasonalityData.value.map((item: any) => date.formatDate(item.date, 'MMM')),
+      data: seasonalityData.value.map((item: any) => item.date),
       axisTick: {
         show: false,
       },
@@ -256,12 +296,28 @@ const option = computed(() => {
       },
       axisLabel: {
         interval: 30, // Adjust this number to show fewer labels if needed
+        formatter: (value: string) => date.formatDate(value, 'MMM'),
+      },
+      axisPointer: {
+        show: true,
+        label: {
+          formatter: (params: any) => {
+            const dateValue = new Date(params.value);
+            return date.formatDate(dateValue, 'MMM D, YYYY');
+          },
+        },
       },
     },
     yAxis: {
       type: 'value',
       axisLabel: {
         formatter: (val: any) => val.toFixed(0) + '%', // Converts fractions to percentages
+      },
+      axisPointer: {
+        show: true,
+        label: {
+          formatter: (params: any) => params.value.toFixed(2) + '%',
+        },
       },
     },
     legend: {
