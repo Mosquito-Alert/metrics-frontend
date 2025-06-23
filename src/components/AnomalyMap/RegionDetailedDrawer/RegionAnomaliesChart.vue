@@ -261,7 +261,7 @@ const option = computed(() => {
           const anomalyDegree = params.data.anomalyDegree || 0;
           if (anomalyDegree === 0) return 0; // Don't show symbols for non-anomalies
           return 6;
-        }, // Adjust size based on anomaly degree
+        },
         itemStyle: {
           color: '#909090',
           width: 1,

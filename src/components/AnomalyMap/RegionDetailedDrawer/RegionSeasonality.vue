@@ -254,6 +254,9 @@ const option = computed(() => {
           color: '#a8a8a8',
         },
       },
+      axisLabel: {
+        interval: 30, // Adjust this number to show fewer labels if needed
+      },
     },
     yAxis: {
       type: 'value',
