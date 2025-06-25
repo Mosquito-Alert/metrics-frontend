@@ -1,9 +1,8 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { FeatureLike } from 'ol/Feature';
 import { MVT } from 'ol/format';
-import { AxiosResponse } from 'axios';
 import { Metric } from 'anomaly-detection';
-import { metricsApi } from '../services/apiService';
+import { metricsApi, regionsApi } from '../services/apiService';
 
 export const useMapStore = defineStore('mapStore', {
   state: () => ({
@@ -29,6 +28,7 @@ export const useMapStore = defineStore('mapStore', {
     data: null as Metric | any, // Replace with actual type if known
     fetchingDate: true,
     currentDate: '' as string, // Default date, can be updated later:
+    showAutonomousCommunities: false,
   }),
 
   getters: {},

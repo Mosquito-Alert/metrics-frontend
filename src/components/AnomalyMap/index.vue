@@ -101,6 +101,7 @@ import { usePlaybackStore } from 'src/stores/playbackStore';
 import MVT from 'ol/format/MVT.js';
 import WebGLVectorTileLayer from 'ol/layer/WebGLVectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
+import { regionsApi } from 'src/services/apiService';
 
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
@@ -136,11 +137,13 @@ const anomalyLayer = computed(() => {
 
 const loadTiles = (tile: any, url: string) => {
   tile.setLoader(async (extent: number[] | undefined, resolution: number, projection: string) => {
-    const tileCoord = tile.getTileCoord();
-    const z = tileCoord[0].toString();
-    const x = tileCoord[1].toString();
-    const y = tileCoord[2].toString();
-    const data = await mapStore.fetchData(mapStore.currentDate, x, y, z);
+    const [z, x, y] = tile.getTileCoord();
+    const data = await mapStore.fetchData(
+      mapStore.currentDate,
+      x.toString(),
+      y.toString(),
+      z.toString(),
+    );
 
     const format = tile.getFormat(); // ol/format/MVT configured as source format
     const features = format.readFeatures(data, {
@@ -160,15 +163,56 @@ const handleSourceTileLoadEnd = () => {
 };
 
 /**
+ * Borders Autonomous Communities
+ */
+const loadAutonomousCommunitiesTiles = (tile: any, url: string) => {
+  tile.setLoader((extent: number[] | undefined, resolution: number, projection: string) => {
+    const [z, x, y] = tile.getTileCoord();
+    regionsApi
+      .autonomousCommunitiesTilesRetrieve(
+        { x: x.toString(), y: y.toString(), z: z.toString() },
+        { responseType: 'arraybuffer' }, // Ensure we get the data as an ArrayBuffer
+      )
+      .then(async (response) => {
+        const format = tile.getFormat(); // ol/format/MVT configured as source format
+        const features = format.readFeatures(response.data, {
+          extent: extent,
+          featureProjection: projection,
+        });
+        tile.setFeatures(features);
+      });
+  });
+};
+const autonomousCommunitiesSource = new VectorTileSource({
+  format: mapStore.format as MVT,
+  projection: mapStore.projection,
+  url: 'http://dummy.url/{z}/{x}/{y}/', // We need a default URL
+  tileLoadFunction: loadAutonomousCommunitiesTiles,
+}) as any;
+const autonomousCommunitiesLayer = new VectorTileLayer({
+  className: 'autonomous-communities-layer',
+  zIndex: 11,
+  source: autonomousCommunitiesSource,
+  style: new Style({
+    stroke: new Stroke({
+      color: '#aaa',
+      width: 0.4,
+    }),
+  }),
+});
+
+/**
  * Playback
  */
 const loadPlaybackTiles = (tile: any, url: string) => {
   tile.setLoader(async (extent: number[] | undefined, resolution: number, projection: string) => {
-    const tileCoord = tile.getTileCoord();
-    const z = tileCoord[0].toString();
-    const x = tileCoord[1].toString();
-    const y = tileCoord[2].toString();
-    const data = await playbackStore.fetchData(mapStore.currentDate, x, y, z);
+    const [z, x, y] = tile.getTileCoord();
+    const data = await playbackStore.fetchData(
+      mapStore.currentDate,
+      x.toString(),
+      y.toString(),
+      z.toString(),
+    );
 
     const format = tile.getFormat(); // ol/format/MVT configured as source format
     const features = format.readFeatures(data, {
@@ -348,6 +392,7 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   }
   tooltipEl.innerHTML = `
   <div><strong>${feature.get('region__name')}</strong></div>
+  <div>(${feature.get('region__province__autonomous_community__name')})</div>
   <div>Bites Index: <i>${(feature.get('value') * 100).toFixed(1)}%</i></div>
   `;
   tooltipEl.classList.add('visible');
@@ -409,6 +454,20 @@ watch(
           layerRef.value.vectorTileLayer.getSource(),
         );
       }
+    }
+  },
+);
+watch(
+  () => mapStore.showAutonomousCommunities,
+  (showAutonomousCommunities) => {
+    const map = mapRef.value?.map;
+    if (!map) {
+      return;
+    }
+    if (showAutonomousCommunities) {
+      map.addLayer(autonomousCommunitiesLayer);
+    } else {
+      map.removeLayer(autonomousCommunitiesLayer);
     }
   },
 );
