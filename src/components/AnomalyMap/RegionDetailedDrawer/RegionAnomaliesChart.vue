@@ -57,7 +57,7 @@ const percentageLastMonth = computed(() => {
   return 100 - ((365 * 2) / anomaliesData.value.length) * 100; // Assuming the last month has 30 days
 });
 
-// Calculate the indexes for today and the beginning of the year, to mark the dates on the chart
+// Calculates the indexes for today and the beginning of the year, to mark the dates on the chart
 const indexes = computed(() => {
   const today = new Date(mapStore.currentDate);
   const todayString = date.formatDate(today, 'YYYY-MM-DD');
@@ -83,14 +83,6 @@ const indexes = computed(() => {
   });
   return { indexToday, indexLastYearFirstDay };
 });
-
-// const indexToday = computed(() => {
-//   const today = new Date(mapStore.currentDate);
-//   const todayString = date.formatDate(today, 'YYYY-MM-DD');
-//   return anomaliesData.value.findIndex(
-//     (item) => date.formatDate(item.date, 'YYYY-MM-DD') === todayString,
-//   );
-// });
 
 const option = computed(() => {
   return {
