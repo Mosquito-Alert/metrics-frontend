@@ -22,7 +22,7 @@
     </q-page-sticky>
 
     <q-page-sticky position="top-right" :offset="[20, 80]" class="map-tools">
-      <div class="playback sidemap-option" :class="{ active: sideOptionActive === 'active' }">
+      <div class="playback sidemap-option" :class="{ active: playbackOptionActive }">
         <div @click="playbackStore.togglePlayback()">
           <span v-if="!mapStore.fetchingDate" class="column items-center">
             <q-icon name="history"></q-icon>
@@ -38,6 +38,18 @@
           </span>
           <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
           <q-tooltip anchor="center left" self="center end">{{ playbackTooltipMsg }}</q-tooltip>
+        </div>
+      </div>
+      <div class="playback sidemap-option" :class="{ active: autonomousCommunitiesActive }">
+        <div @click="mapStore.showAutonomousCommunities = !mapStore.showAutonomousCommunities">
+          <span v-if="!mapStore.fetchingDate" class="column items-center">
+            <q-icon :name="mapStore.showAutonomousCommunities ? 'layers' : 'layers_clear'"></q-icon>
+            <p class="q-pa-none q-ma-none">Borders</p>
+          </span>
+          <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
+          <q-tooltip anchor="center left" self="center end">{{
+            autonomousCommunitiesTooltipMsg
+          }}</q-tooltip>
         </div>
       </div>
     </q-page-sticky>
@@ -93,9 +105,8 @@ const regionDetailedStore = useRegionDetailedStore();
 const playbackStore = usePlaybackStore();
 
 const dateFetched = ref(false);
-const sideOptionActive = computed(() => {
-  return playbackStore.playbackEnabled ? 'active' : 'inactive';
-});
+const playbackOptionActive = computed(() => playbackStore.playbackEnabled);
+const autonomousCommunitiesActive = computed(() => mapStore.showAutonomousCommunities);
 // const rangeDate = ref([new Date(), new Date()]);
 
 // * Lifecycle
@@ -111,9 +122,14 @@ const currentDate = computed(() => {
     ? playbackStore.formattedPlaybackCurrentDate
     : uiStore.formattedDate;
 });
-const playbackTooltipMsg = computed(() => {
-  return playbackStore.playbackEnabled ? 'Return to current date' : 'Playback last 30 days';
-});
+const playbackTooltipMsg = computed(() =>
+  playbackStore.playbackEnabled ? 'Return to current date' : 'Playback last 30 days',
+);
+const autonomousCommunitiesTooltipMsg = computed(() =>
+  mapStore.showAutonomousCommunities
+    ? 'Hide autonomous communities borders'
+    : 'Show autonomous communities borders',
+);
 
 uiStore.appWidth = window.innerWidth;
 const getDrawerWidth = (appWidth: number) => {

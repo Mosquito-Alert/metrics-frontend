@@ -1,5 +1,4 @@
 <template>
-  <!-- TODO: AUTO FOCUS -->
   <q-select
     v-model="regionSelected"
     clearable
