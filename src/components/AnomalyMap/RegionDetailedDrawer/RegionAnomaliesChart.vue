@@ -56,13 +56,41 @@ const loading = computed(() => anomaliesLoading.value || trendLoading.value);
 const percentageLastMonth = computed(() => {
   return 100 - ((365 * 2) / anomaliesData.value.length) * 100; // Assuming the last month has 30 days
 });
-const indexToday = computed(() => {
+
+// Calculate the indexes for today and the beginning of the year, to mark the dates on the chart
+const indexes = computed(() => {
   const today = new Date(mapStore.currentDate);
   const todayString = date.formatDate(today, 'YYYY-MM-DD');
-  return anomaliesData.value.findIndex(
-    (item) => date.formatDate(item.date, 'YYYY-MM-DD') === todayString,
-  );
+  let lastYear: number | null = null;
+  let indexToday = -1;
+  let indexLastYearFirstDay = -1;
+
+  anomaliesData.value.forEach((item, index) => {
+    const itemDate = new Date(item.date);
+    const itemYear = itemDate.getFullYear();
+    const itemString = date.formatDate(itemDate, 'YYYY-MM-DD');
+
+    // Find the index for today
+    if (indexToday === -1 && itemString === todayString) {
+      indexToday = index;
+    }
+
+    // Find the first day of the year
+    if (lastYear === null || itemYear > lastYear) {
+      lastYear = itemYear;
+      indexLastYearFirstDay = index; // Reset to the first occurrence of the new year
+    }
+  });
+  return { indexToday, indexLastYearFirstDay };
 });
+
+// const indexToday = computed(() => {
+//   const today = new Date(mapStore.currentDate);
+//   const todayString = date.formatDate(today, 'YYYY-MM-DD');
+//   return anomaliesData.value.findIndex(
+//     (item) => date.formatDate(item.date, 'YYYY-MM-DD') === todayString,
+//   );
+// });
 
 const option = computed(() => {
   return {
@@ -207,7 +235,8 @@ const option = computed(() => {
           data: [
             {
               name: "Today's mark",
-              xAxis: indexToday.value,
+              // xAxis: indexes.value.indexToday,
+              xAxis: indexes.value.indexLastYearFirstDay + 90,
               label: {
                 padding: [0, 58, 0, 0],
                 formatter: () => date.formatDate(mapStore.currentDate, 'MMM D, YYYY'),
@@ -216,6 +245,16 @@ const option = computed(() => {
               lineStyle: {
                 color: '#909198',
                 width: 1,
+              },
+            },
+            {
+              name: 'Beggining of the year',
+              xAxis: indexes.value.indexLastYearFirstDay,
+              label: { formatter: () => '' },
+              lineStyle: {
+                color: '#d1d1d1',
+                width: 1,
+                type: 'dotted',
               },
             },
           ],
