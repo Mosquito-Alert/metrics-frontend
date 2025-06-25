@@ -17,7 +17,7 @@
         <div class="col-10">
           <p class="text-h6 text-weight-regular" style="color: #333">{{ provinceName }}</p>
           <p class="text-subtitle-1 text-weight-regular q-ma-none" style="color: #333">
-            {{ mapStore.currentDate }}
+            {{ date.formatDate(mapStore.currentDate, 'MMM D, YYYY') }}
           </p>
         </div>
         <div class="col self-end">
@@ -57,7 +57,9 @@
 
 <script setup lang="ts">
 import { MetricDetail } from 'anomaly-detection';
+import { date } from 'quasar';
 import { historyPageSize } from 'src/constants/config';
+import { useMapStore } from 'src/stores/mapStore';
 import { useUIStore } from 'src/stores/uiStore';
 import {
   AnomalyClassificationEnum,
@@ -66,12 +68,9 @@ import {
 } from 'src/utils/anomalyClassification';
 import { computed, ref, watch } from 'vue';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
-import { usePlaybackStore } from 'src/stores/playbackStore';
-import { useMapStore } from 'src/stores/mapStore';
 
 const uiStore = useUIStore();
 const regionDetailedStore = useRegionDetailedStore();
-const playbackStore = usePlaybackStore();
 const mapStore = useMapStore();
 
 const drawerScrollArea = ref(null as any);
