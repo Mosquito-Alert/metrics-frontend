@@ -6,63 +6,40 @@
       icon="close"
       size="0.85rem"
       class="q-drawer-hide absolute"
-      style="top: 1rem; right: 1rem"
+      style="top: 1.5rem; right: 2rem"
       @click="() => playbackStore.togglePlayback()"
     />
-    <div class="playback-buttons q-mr-sm row items-center justify-between">
-      <div class="playback-step-buttons">
-        <q-btn
-          class="control-button q-mr-sm gt-md"
-          icon="replay_5"
-          @click="playbackStore.goBackDays(5)"
-          :disabled="playbackStore.playbackCurrentIndex <= 0"
-        >
-          <q-tooltip anchor="top middle" self="bottom middle">Go back 5 days</q-tooltip>
-        </q-btn>
-        <q-btn
-          class="control-button q-mr-sm"
-          icon="navigate_before"
-          @click="playbackStore.goBackDays(1)"
-          :disabled="playbackStore.playbackCurrentIndex <= 0"
-        >
-          <q-tooltip anchor="top middle" self="bottom middle">Go back 1 day</q-tooltip>
-        </q-btn>
-      </div>
+    <div class="playback-buttons">
       <q-btn
-        class="control-button q-mr-sm"
-        :icon="playIcon"
-        @click="playbackStore.toggleVideoPlayback"
+        class="control-button"
+        icon="navigate_before"
+        @click="playbackStore.goBackDays(1)"
+        :disabled="playbackStore.playbackCurrentIndex <= 0"
       >
+        <q-tooltip anchor="top middle" self="bottom middle">Go back 1 day</q-tooltip>
+      </q-btn>
+      <q-btn class="control-button" :icon="playIcon" @click="playbackStore.toggleVideoPlayback">
         <q-tooltip anchor="top middle" self="bottom middle">
           {{ playbackStore.playbackPaused ? 'Play' : 'Pause' }}
         </q-tooltip>
       </q-btn>
-      <div class="playback-step-buttons">
-        <q-btn
-          class="control-button q-ml-sm"
-          icon="navigate_next"
-          @click="playbackStore.goForwardDays(1)"
-          :disabled="playbackStore.playbackCurrentIndex >= maxIndex"
-        >
-          <q-tooltip anchor="top middle" self="bottom middle">Go forward 1 day</q-tooltip>
-        </q-btn>
-        <q-btn
-          class="control-button q-ml-sm gt-md"
-          icon="forward_5"
-          @click="playbackStore.goForwardDays(5)"
-          :disabled="playbackStore.playbackCurrentIndex >= maxIndex"
-        >
-          <q-tooltip anchor="top middle" self="bottom middle">Go forward 5 days</q-tooltip>
-        </q-btn>
-      </div>
+      <q-btn
+        class="control-button"
+        icon="navigate_next"
+        @click="playbackStore.goForwardDays(1)"
+        :disabled="playbackStore.playbackCurrentIndex >= maxIndex"
+      >
+        <q-tooltip anchor="top middle" self="bottom middle">Go forward 1 day</q-tooltip>
+      </q-btn>
     </div>
     <q-slider
-      class="playback-slider q-mt-xl"
+      class="playback-slider"
       v-model="playbackStore.playbackCurrentIndex"
       color="white"
       :marker-labels="markerLabels"
       label
       :label-value="currentLabel"
+      :label-always="true"
       label-color="white"
       label-text-color="black"
       markers
@@ -108,24 +85,36 @@ watch(
 </script>
 <style lang="scss">
 .playback-control {
+  display: flex;
+  align-items: center;
+
   background-color: #393939cc;
   color: #e1e1e1;
   border: 1px solid #393939;
   border-radius: 0.5rem;
-  padding: 2rem 3.2rem 0.4rem 3rem;
-  display: flex;
-  flex-direction: column;
-  .control-button {
-    background-color: #393939;
-    color: #e1e1e1;
-    border: 1px solid #393939;
-    border-radius: 0.5rem;
-    color: white; //#f3c954;
-    i {
+  padding: 1rem 3rem 0.1rem 2rem;
+  margin: auto 20px;
+  .playback-buttons {
+    display: flex;
+    flex-shrink: 0; // Prevent buttons from shrinking
+    margin-right: 3rem;
+    .control-button {
+      width: 1.2rem;
+      height: 1.2rem;
+      margin-right: 2px;
+      background-color: #393939;
+      color: #e1e1e1;
+      border: 1px solid #393939;
+      border-radius: 0.5rem;
       color: white; //#f3c954;
+      i {
+        color: white; //#f3c954;
+      }
     }
   }
   .q-slider {
+    flex: 1;
+    min-width: 0; // Prevent slider from overflowing
     width: 100%;
     margin-top: 1rem;
     .playback-slider {

@@ -26,6 +26,10 @@ export const useUIStore = defineStore('uiStore', {
         ? formattedDate(playbackStore.playbackCurrentDate)
         : formattedDate(mapStore.currentDate);
     },
+    getOffsetBottom: (state) => {
+      const playbackStore = usePlaybackStore();
+      return playbackStore.playbackEnabled ? '110' : '20';
+    },
   },
 
   actions: {},
