@@ -6,7 +6,6 @@
       icon="close"
       size="0.85rem"
       class="q-drawer-hide absolute"
-      style="top: 1.5rem; right: 2rem"
       @click="() => playbackStore.togglePlayback()"
     />
     <div class="playback-buttons">
@@ -130,6 +129,21 @@ watch(
     .playback-slider {
       width: 100%;
       margin-top: 1rem;
+    }
+  }
+}
+.q-drawer-hide {
+  top: 0.5rem;
+  right: 1.7rem;
+  background-color: #393939;
+  color: #e1e1e1;
+  border: 1px solid #393939;
+  border-radius: 0.5rem;
+  &:hover {
+    background-color: #f3c954;
+    color: #393939;
+    i {
+      color: #393939;
     }
   }
 }
