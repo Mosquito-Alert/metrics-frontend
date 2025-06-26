@@ -33,3 +33,16 @@ export const formattedDate = (date: string) => {
     day: '2-digit',
   });
 };
+
+/**
+ * Given a date, returns the index of the day in the year.
+ * For example, January 1st is 0, January 2nd is 1, and so on.
+ * @param date
+ * @returns
+ */
+export const getDayIndexInYear = (date: any): number => {
+  const startOfYear = new Date(date.getFullYear(), 0, 1) as any;
+  const diffInMs = date - startOfYear;
+  const dayIndex = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  return dayIndex;
+};

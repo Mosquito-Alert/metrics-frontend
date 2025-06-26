@@ -15,9 +15,12 @@ import { computed } from 'vue';
 import VChart from 'vue-echarts';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
 import { ANOMALY_COLORS } from 'src/constants/colors';
+import { useUIStore } from 'src/stores/uiStore';
+import { getDayIndexInYear } from 'src/utils/date';
 
 use([TooltipComponent, LineChart, CanvasRenderer, GridComponent, TitleComponent]);
 
+const uiStore = useUIStore();
 const regionDetailedStore = useRegionDetailedStore();
 
 const loading = computed(() => regionDetailedStore.fetchingRegionMetricSeasonality);
@@ -95,7 +98,9 @@ const seriesValuesData = computed(() => {
     const chartData = sortedData.map((d) => [d.dayOfYear, d.value]);
 
     if (isLastYear) {
-      const lastPoint = sortedData.at(-1) || null;
+      const currentDate = new Date(uiStore.getDate);
+      const currentDateIndex = getDayIndexInYear(currentDate);
+      const lastPoint = sortedData.find((item) => item.dayOfYear === currentDateIndex) || null;
       const xMarkLabelPadding =
         lastPoint && seasonalityData.value.length
           ? lastPoint.dayOfYear / (seasonalityData.value.length - 1) < 0.2
@@ -114,11 +119,7 @@ const seriesValuesData = computed(() => {
                   xAxis: lastPoint.dayOfYear,
                   label: {
                     padding: [0, xMarkLabelPadding, 0, 0],
-                    formatter: () => {
-                      const fullDate =
-                        regionDetailedStore.selectedRegionMetricsAll?.results?.at(-1)?.date;
-                      return ` ${date.formatDate(fullDate, 'MMMM D, YYYY')} `;
-                    },
+                    formatter: () => ` ${date.formatDate(uiStore.getDate, 'MMM D, YYYY')} `,
                     color: '#605158',
                   },
                   lineStyle: {

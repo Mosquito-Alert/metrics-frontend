@@ -25,7 +25,9 @@ import { Metric } from 'anomaly-detection';
 import { trendDataCorrection } from 'src/utils/trendDataCorrection';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
 import { useMapStore } from 'src/stores/mapStore';
+import { useUIStore } from 'src/stores/uiStore';
 
+const uiStore = useUIStore();
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
 use([
@@ -59,7 +61,7 @@ const percentageLastMonth = computed(() => {
 
 // Calculates the indexes for today and the beginning of the year, to mark the dates on the chart
 const indexes = computed(() => {
-  const today = new Date(mapStore.currentDate);
+  const today = new Date(uiStore.getDate);
   const todayString = date.formatDate(today, 'YYYY-MM-DD');
   let lastYear: number | null = null;
   let indexToday = -1;
@@ -230,7 +232,7 @@ const option = computed(() => {
               xAxis: indexes.value.indexToday,
               label: {
                 padding: [0, 58, 0, 0],
-                formatter: () => date.formatDate(mapStore.currentDate, 'MMM D, YYYY'),
+                formatter: () => date.formatDate(uiStore.getDate, 'MMM D, YYYY'),
                 color: '#605158',
               },
               lineStyle: {

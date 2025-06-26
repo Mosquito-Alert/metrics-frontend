@@ -12,6 +12,13 @@ export const useUIStore = defineStore('uiStore', {
   }),
 
   getters: {
+    getDate: (state) => {
+      const mapStore = useMapStore();
+      const playbackStore = usePlaybackStore();
+      return playbackStore.playbackEnabled
+        ? new Date(playbackStore.playbackCurrentDate)
+        : new Date(mapStore.currentDate);
+    },
     formattedDate: (state) => {
       const mapStore = useMapStore();
       const playbackStore = usePlaybackStore();
