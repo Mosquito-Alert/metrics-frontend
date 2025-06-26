@@ -16,7 +16,7 @@
         :projection="mapStore.projection"
       />
 
-      <ol-tile-layer>
+      <ol-tile-layer :z-index="2">
         <ol-source-xyz
           :url="mapStore.basemapLayer.url"
           :preload="mapStore.basemapLayer.preload"
@@ -25,7 +25,7 @@
         />
       </ol-tile-layer>
 
-      <ol-vector-tile-layer ref="layerRef" class-name="feature-layer">
+      <ol-vector-tile-layer ref="layerRef" class-name="feature-layer" z-index="3">
         <ol-source-vector-tile
           ref="sourceRef"
           :format="anomalyLayer.format"
@@ -40,7 +40,7 @@
 
       <ol-vector-tile-layer
         ref="hoverLayerRef"
-        :z-index="9"
+        :z-index="6"
         render-mode="vector"
         :source="sourceRef?.source"
       >
@@ -49,14 +49,14 @@
 
       <ol-vector-tile-layer
         ref="selectedLayerRef"
-        :z-index="10"
+        :z-index="7"
         render-mode="vector"
         :source="sourceRef?.source"
       >
         <ol-style :overrideStyleFunction="selectedStyleFn"></ol-style>
       </ol-vector-tile-layer>
 
-      <ol-tile-layer :z-index="15">
+      <ol-tile-layer :z-index="8">
         <ol-source-xyz
           :url="mapStore.labelsLayer.url"
           :preload="mapStore.labelsLayer.preload"
@@ -187,7 +187,7 @@ const autonomousCommunitiesSource = new VectorTileSource({
 }) as any;
 const autonomousCommunitiesLayer = new VectorTileLayer({
   className: 'autonomous-communities-layer',
-  zIndex: 11,
+  zIndex: 9,
   source: autonomousCommunitiesSource,
   style: new Style({
     stroke: new Stroke({
@@ -254,7 +254,7 @@ const playbackSource = new VectorTileSource({
 }) as any;
 const playbackLayer = new WebGLVectorTileLayer({
   className: 'playback-layer',
-  zIndex: 8,
+  zIndex: 4,
   source: playbackSource,
   style: playbackWebGLStyle.value,
 });
@@ -433,11 +433,13 @@ watch(
 
     if (playbackEnabled) {
       // Set the source to the hover and selected layers
+      layerRef.value?.vectorTileLayer.setZIndex(1);
       map.addLayer(playbackLayer);
       map.addLayer(playbackInteractionLayer);
       hoverLayerRef.value?.vectorTileLayer.setSource(playbackSource);
     } else {
       // Remove the playback layer and add the normal layer
+      layerRef.value?.vectorTileLayer.setZIndex(3);
       map.removeLayer(playbackLayer);
       map.removeLayer(playbackInteractionLayer);
       if (layerRef.value) {
