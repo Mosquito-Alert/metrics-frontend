@@ -65,8 +65,11 @@
         />
       </ol-tile-layer>
 
-      <ol-zoom-control className="custom-zoom-control" />
-      <ol-scaleline-control className="custom-scaleline-control" />
+      <ol-zoom-control className="custom-zoom-control" v-if="!playbackStore.playbackEnabled" />
+      <ol-scaleline-control
+        className="custom-scaleline-control"
+        v-if="!playbackStore.playbackEnabled"
+      />
     </ol-map>
   </q-page>
 </template>
@@ -99,7 +102,9 @@ import MVT from 'ol/format/MVT.js';
 import WebGLVectorTileLayer from 'ol/layer/WebGLVectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import { regionsApi } from 'src/services/apiService';
+import { useUIStore } from 'src/stores/uiStore';
 
+const uiStore = useUIStore();
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
 const playbackStore = usePlaybackStore();
@@ -119,6 +124,7 @@ const $q = useQuasar();
  * Base config
  */
 const center = computed(() => fromLonLat(mapStore.center, mapStore.projection));
+const offsetBottom = computed(() => uiStore.getOffsetBottom);
 
 // * Map layers
 const format = inject('ol-format');
@@ -581,7 +587,7 @@ const hoveredStyleFn = (feature: any) => {
 .custom-zoom-control {
   top: auto !important;
   bottom: 5em !important;
-  left: 1em !important;
+  left: 20px !important;
   right: auto !important;
 
   background-color: var(--ol-subtle-background-color);
@@ -606,7 +612,7 @@ const hoveredStyleFn = (feature: any) => {
 .custom-scaleline-control {
   top: auto !important;
   bottom: 2em !important;
-  left: 1em !important;
+  left: 20px !important;
   right: auto !important;
 
   background: var(--ol-partial-background-color);
