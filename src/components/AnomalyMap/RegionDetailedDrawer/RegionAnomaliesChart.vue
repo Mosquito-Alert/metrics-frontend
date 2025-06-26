@@ -227,8 +227,7 @@ const option = computed(() => {
           data: [
             {
               name: "Today's mark",
-              // xAxis: indexes.value.indexToday,
-              xAxis: indexes.value.indexLastYearFirstDay + 90,
+              xAxis: indexes.value.indexToday,
               label: {
                 padding: [0, 58, 0, 0],
                 formatter: () => date.formatDate(mapStore.currentDate, 'MMM D, YYYY'),

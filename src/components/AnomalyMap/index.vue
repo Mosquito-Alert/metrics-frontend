@@ -25,11 +25,7 @@
         />
       </ol-tile-layer>
 
-      <ol-vector-tile-layer
-        v-if="!playbackStore.playbackEnabled"
-        ref="layerRef"
-        class-name="feature-layer"
-      >
+      <ol-vector-tile-layer ref="layerRef" class-name="feature-layer">
         <ol-source-vector-tile
           ref="sourceRef"
           :format="anomalyLayer.format"
@@ -223,7 +219,6 @@ const loadPlaybackTiles = (tile: any, url: string) => {
     for (const feature of features) {
       const timeseries = JSON.parse(feature.get('timeseries'));
       timeseries.forEach((item: any) => {
-        // const dayKey = `day-${item.date}`;
         const dayKey = new Date(item.date).getTime();
         feature.properties_[dayKey] = item.anomaly_degree;
       });
@@ -331,6 +326,10 @@ const layerFilter = (layerCandidate: Layer) => {
     playbackStore.playbackEnabled ? 'playback-interaction-layer' : 'feature-layer',
   );
 };
+const featureLayerFilter = (layerCandidate: Layer) => {
+  const className = layerCandidate.getClassName?.() || '';
+  return className.includes('feature-layer');
+};
 
 const selectFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   const map = mapRef.value?.map;
@@ -341,7 +340,7 @@ const selectFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   // store selected feature
   const features = map.getFeaturesAtPixel(event.pixel, {
     hitTolerance: 0,
-    layerFilter,
+    layerFilter: featureLayerFilter,
   });
   if (!features.length) {
     mapStore.selectedFeatures = [];
@@ -433,26 +432,16 @@ watch(
     }
 
     if (playbackEnabled) {
-      // Remove the normal layer and add the playback layer
-      if (layerRef.value) {
-        // map.removeLayer(layerRef.value);
-        layerRef.value.vectorTileLayer.setVisible(false);
-      }
       // Set the source to the hover and selected layers
       map.addLayer(playbackLayer);
       map.addLayer(playbackInteractionLayer);
       hoverLayerRef.value?.vectorTileLayer.setSource(playbackSource);
-      selectedLayerRef.value?.vectorTileLayer.setSource(playbackSource);
     } else {
       // Remove the playback layer and add the normal layer
       map.removeLayer(playbackLayer);
       map.removeLayer(playbackInteractionLayer);
       if (layerRef.value) {
-        layerRef.value.vectorTileLayer.setVisible(true);
         hoverLayerRef.value?.vectorTileLayer.setSource(layerRef.value.vectorTileLayer.getSource());
-        selectedLayerRef.value?.vectorTileLayer.setSource(
-          layerRef.value.vectorTileLayer.getSource(),
-        );
       }
     }
   },
@@ -476,7 +465,8 @@ watch(
  * Styles
  */
 const styleFn = (feature: Feature) => {
-  if (playbackStore.playbackEnabled) {
+  const hasTimeseries = feature.get('timeseries') !== undefined;
+  if (playbackStore.playbackEnabled && hasTimeseries) {
     const timeseries = JSON.parse(feature.get('timeseries'));
     return styleProperties(
       timeseries.find((item: any) => item.date === playbackStore.playbackCurrentDate)
@@ -503,7 +493,8 @@ const styleProperties = (anomaly_degree: number) => {
 };
 
 const selectedStyleFn = (feature: any) => {
-  if (playbackStore.playbackEnabled) {
+  const hasTimeseries = feature.get('timeseries') !== undefined;
+  if (playbackStore.playbackEnabled && hasTimeseries) {
     const timeseries = JSON.parse(feature.get('timeseries'));
     const selectedFeature = timeseries.find(
       (item: any) => item.date === playbackStore.playbackCurrentDate,
@@ -526,7 +517,8 @@ const selectedStyleFn = (feature: any) => {
 };
 
 const hoveredStyleFn = (feature: any) => {
-  if (playbackStore.playbackEnabled) {
+  const hasTimeseries = feature.get('timeseries') !== undefined;
+  if (playbackStore.playbackEnabled && hasTimeseries) {
     const timeseries = JSON.parse(feature.get('timeseries'));
     const hoveredFeature = timeseries.find(
       (item: any) => item.date === playbackStore.playbackCurrentDate,
