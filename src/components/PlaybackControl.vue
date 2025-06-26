@@ -20,7 +20,13 @@
       </q-btn>
       <q-btn class="control-button" :icon="playIcon" @click="playbackStore.toggleVideoPlayback">
         <q-tooltip anchor="top middle" self="bottom middle">
-          {{ playbackStore.playbackPaused ? 'Play' : 'Pause' }}
+          {{
+            !playbackStore.playbackPaused
+              ? 'Pause'
+              : playbackStore.playbackFinished
+                ? 'Replay'
+                : 'Play'
+          }}
         </q-tooltip>
       </q-btn>
       <q-btn
@@ -73,7 +79,11 @@ const currentLabel = computed(() => {
 });
 
 const playIcon = computed(() => {
-  return playbackStore.playbackPaused ? 'play_arrow' : 'pause';
+  return !playbackStore.playbackPaused
+    ? 'pause'
+    : playbackStore.playbackFinished
+      ? 'replay'
+      : 'play_arrow';
 });
 
 watch(

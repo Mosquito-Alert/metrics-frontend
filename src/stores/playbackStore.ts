@@ -7,6 +7,7 @@ import { useRegionDetailedStore } from './regionDetailedStore';
 export const usePlaybackStore = defineStore('playbackStore', {
   state: () => ({
     playbackEnabled: false as boolean,
+    playbackFinished: false as boolean, // Flag to indicate if playback has finished
     playbackDays: 30 as number,
     playbackDaysObject: {} as Record<number, string>, // Axis for playback days, indexed by day
     playbackSpeed: 2 as number, // Speed in seconds per day
@@ -57,6 +58,11 @@ export const usePlaybackStore = defineStore('playbackStore', {
     },
     updateCurrentDate(index: number) {
       this.playbackCurrentDate = this.playbackDaysObject[index] || '';
+      if (this.playbackCurrentIndex == Object.keys(this.playbackDaysObject).length - 1) {
+        this.playbackFinished = true; // Set playback finished flag
+      } else {
+        this.playbackFinished = false; // Reset playback finished flag
+      }
     },
     play() {
       const delay = this.playbackSpeed * 1000; // Convert seconds to milliseconds
