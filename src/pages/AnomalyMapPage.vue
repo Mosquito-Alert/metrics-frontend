@@ -43,10 +43,28 @@
       </div>
     </q-page-sticky>
 
+    <!-- LEGEND AND DATE -->
+    <q-page-sticky position="bottom-right" :offset="[20, uiStore.getOffsetBottom]">
+      <div id="map-date" class="text-right q-py-sm">
+        <span
+          class="q-px-lg q-py-sm text-weight-medium text-subtitle1"
+          v-if="!mapStore.fetchingDate"
+        >
+          {{ currentDate }}
+        </span>
+        <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
+      </div>
+      <MapLegend />
+    </q-page-sticky>
+
     <!-- PLAYBACK CONTROL -->
     <q-page-sticky
       position="bottom-left"
+<<<<<<< 11-zoom-extension-to-spain
       :offset="[0, 2]"
+=======
+      :offset="[0, 0]"
+>>>>>>> main
       class="sticky-playback-control flex justify-center"
     >
       <PlaybackControl
@@ -61,27 +79,17 @@
 
     <!-- LOGO -->
     <q-img
-      style="z-index: 1"
+      :style="{
+        zIndex: 1,
+        position: 'absolute',
+        bottom: uiStore.getOffsetBottom + 'px',
+        margin: 'auto',
+      }"
       class="absolute-bottom q-mb-sm"
-      position="calc(50% - 11px) center"
       fit="contain"
       src="~assets/logo_horizontal_black.png"
       height="1.8rem"
     />
-
-    <!-- LEGEND AND DATE -->
-    <q-page-sticky position="bottom-right" :offset="[20, 20]">
-      <div id="map-date" class="text-right q-py-sm">
-        <span
-          class="q-px-lg q-py-sm text-weight-medium text-subtitle1"
-          v-if="!mapStore.fetchingDate"
-        >
-          {{ currentDate }}
-        </span>
-        <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
-      </div>
-      <MapLegend />
-    </q-page-sticky>
   </q-page>
 </template>
 
@@ -183,7 +191,7 @@ window.addEventListener('resize', () => {
   }
 }
 .sticky-playback-control {
-  width: 32%;
+  width: 100%;
   > div {
     width: 100%;
     height: 100%;
