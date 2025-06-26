@@ -60,11 +60,7 @@
     <!-- PLAYBACK CONTROL -->
     <q-page-sticky
       position="bottom-left"
-<<<<<<< 11-zoom-extension-to-spain
       :offset="[0, 2]"
-=======
-      :offset="[0, 0]"
->>>>>>> main
       class="sticky-playback-control flex justify-center"
     >
       <PlaybackControl
