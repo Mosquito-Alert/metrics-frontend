@@ -10,18 +10,7 @@
     </q-page-sticky>
 
     <!-- RIGHT SIDE OPTIONS -->
-    <q-page-sticky position="top-right" :offset="[20, 20]">
-      <span
-        class="q-px-lg q-py-sm text-weight-medium text-subtitle1"
-        id="map-date"
-        v-if="!mapStore.fetchingDate"
-      >
-        {{ currentDate }}
-      </span>
-      <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
-    </q-page-sticky>
-
-    <q-page-sticky position="top-right" :offset="[20, 80]" class="map-tools">
+    <q-page-sticky position="top-right" :offset="[20, 20]" class="map-tools">
       <div class="playback sidemap-option" :class="{ active: playbackOptionActive }">
         <div @click="playbackStore.togglePlayback()">
           <span v-if="!mapStore.fetchingDate" class="column items-center">
@@ -80,11 +69,18 @@
       height="1.8rem"
     />
 
-    <!-- LEGEND -->
-    <q-page-sticky position="bottom-left" :offset="[20, 20]">
-      <MapLegend
-        v-if="!regionDetailedStore.selectedRegionMetricId && !playbackStore.playbackEnabled"
-      />
+    <!-- LEGEND AND DATE -->
+    <q-page-sticky position="bottom-right" :offset="[20, 20]">
+      <div id="map-date" class="text-right q-py-sm">
+        <span
+          class="q-px-lg q-py-sm text-weight-medium text-subtitle1"
+          v-if="!mapStore.fetchingDate"
+        >
+          {{ currentDate }}
+        </span>
+        <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
+      </div>
+      <MapLegend />
     </q-page-sticky>
   </q-page>
 </template>
@@ -145,10 +141,12 @@ window.addEventListener('resize', () => {
 </script>
 <style lang="scss">
 #map-date {
-  background-color: #f0f0f0;
-  color: #444;
-  border-radius: 4px;
-  border: 1px solid #444;
+  > span {
+    background-color: #f0f0f0;
+    color: #444;
+    border-radius: 4px;
+    border: 1px solid #444;
+  }
 }
 .map-tools {
   background-color: #393939cc;

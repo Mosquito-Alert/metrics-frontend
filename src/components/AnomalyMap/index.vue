@@ -7,6 +7,7 @@
       :loadTilesWhileInteracting="true"
       @pointermove="hoverFeature"
       @click="selectFeature"
+      :controls="[]"
     >
       <ol-view
         ref="viewRef"
@@ -64,8 +65,8 @@
         />
       </ol-tile-layer>
 
-      <ol-zoom-control />
-      <ol-scaleline-control />
+      <ol-zoom-control className="custom-zoom-control" />
+      <ol-scaleline-control className="custom-scaleline-control" />
     </ol-map>
   </q-page>
 </template>
@@ -576,5 +577,52 @@ const hoveredStyleFn = (feature: any) => {
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-top: 6px solid rgba(0, 0, 0, 0.75); /* same as tooltip background */
+}
+.custom-zoom-control {
+  top: auto !important;
+  bottom: 5em !important;
+  left: 1em !important;
+  right: auto !important;
+
+  background-color: var(--ol-subtle-background-color);
+  border-radius: 4px;
+
+  button {
+    width: 1.75em !important;
+    height: 1.75em !important;
+    border-radius: 2px 2px 0 0;
+    display: block;
+    margin: 1px;
+    padding: 0;
+    color: var(--ol-subtle-foreground-color);
+    font-weight: bold;
+    text-decoration: none;
+    font-size: inherit;
+    text-align: center;
+    line-height: 0.4em;
+    background-color: var(--ol-background-color);
+  }
+}
+.custom-scaleline-control {
+  top: auto !important;
+  bottom: 2em !important;
+  left: 1em !important;
+  right: auto !important;
+
+  background: var(--ol-partial-background-color);
+  border-radius: 4px;
+  padding: 2px;
+  position: absolute;
+
+  > div {
+    border: 1px solid var(--ol-subtle-foreground-color);
+    border-top: none;
+    color: var(--ol-foreground-color);
+    font-size: 10px;
+    text-align: center;
+    margin: 1px;
+    will-change: contents, width;
+    transition: all 0.25s;
+  }
 }
 </style>
