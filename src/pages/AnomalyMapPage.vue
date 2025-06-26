@@ -29,7 +29,7 @@
           <q-tooltip anchor="center left" self="center end">{{ playbackTooltipMsg }}</q-tooltip>
         </div>
       </div>
-      <div class="playback sidemap-option" :class="{ active: autonomousCommunitiesActive }">
+      <div class="sidemap-option" :class="{ active: autonomousCommunitiesActive }">
         <div @click="mapStore.showAutonomousCommunities = !mapStore.showAutonomousCommunities">
           <span v-if="!mapStore.fetchingDate" class="column items-center">
             <q-icon :name="mapStore.showAutonomousCommunities ? 'layers' : 'layers_clear'"></q-icon>
@@ -46,7 +46,7 @@
     <!-- PLAYBACK CONTROL -->
     <q-page-sticky
       position="bottom-left"
-      :offset="[20, 20]"
+      :offset="[0, 2]"
       class="sticky-playback-control flex justify-center"
     >
       <PlaybackControl
