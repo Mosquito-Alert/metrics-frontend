@@ -81,7 +81,7 @@ import { Geometry } from 'ol/geom';
 import { Layer } from 'ol/layer';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import type MapRef from 'ol/Map';
-import { fromLonLat } from 'ol/proj';
+import { fromLonLat, transformExtent } from 'ol/proj';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
 import { ANOMALY_COLORS } from 'src/constants/colors';
@@ -292,6 +292,14 @@ onMounted(() => {
   if (!map) {
     return;
   }
+
+  const spainExtent = [-9.5, 35.9, 3.3, 43.9];
+  const spainExtent3857 = transformExtent(spainExtent, 'EPSG:4326', mapStore.projection);
+  map.getView().fit(spainExtent3857, {
+    size: map.getSize(),
+    padding: [50, 50, 50, 50], // Padding around the feature
+    duration: 200, // duration of the zoom animation in milliseconds
+  });
 
   map.addOverlay(hoverOverlay);
 
