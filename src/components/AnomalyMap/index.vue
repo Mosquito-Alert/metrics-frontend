@@ -420,7 +420,7 @@ watchEffect(() => {
     const feature = selectedFeatures.value[0] as FeatureLike;
     const geometry = feature.getGeometry() as Geometry;
     viewRef.value.view.fit(geometry.getExtent(), {
-      padding: [250, 250, 250, 250], //Padding around the feature
+      padding: [350, 350, 350, 350], //Padding around the feature
       duration: 600, // duration of the zoom animation in milliseconds
     });
   } else if (viewRef.value && !regionDetailedStore.isRegionSelected) {

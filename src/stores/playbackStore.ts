@@ -47,13 +47,15 @@ export const usePlaybackStore = defineStore('playbackStore', {
     togglePlayback() {
       const regionDetailedStore = useRegionDetailedStore();
       this.playbackEnabled = !this.playbackEnabled;
-      if (this.playbackEnabled) {
+      if (!this.playbackEnabled) {
         // Enabling playback
         // Reset playback state when enabling playback
         this.playbackCurrentDate = this.playbackDaysObject[0] || '';
         this.playbackCurrentIndex = 0;
         this.data = null; // Clear previous data
         regionDetailedStore.$reset(); // Reset region detailed store
+      } else {
+        // this.toggleVideoPlayback();
       }
     },
     updateCurrentDate(index: number) {

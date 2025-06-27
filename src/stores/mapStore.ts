@@ -2,7 +2,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia';
 import { FeatureLike } from 'ol/Feature';
 import { MVT } from 'ol/format';
 import { Metric } from 'anomaly-detection';
-import { metricsApi, regionsApi } from '../services/apiService';
+import { metricsApi } from '../services/apiService';
 
 export const useMapStore = defineStore('mapStore', {
   state: () => ({
