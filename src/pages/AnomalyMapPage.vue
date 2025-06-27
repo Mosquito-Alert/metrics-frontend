@@ -64,11 +64,7 @@
       class="sticky-playback-control flex justify-center"
     >
       <PlaybackControl
-        v-if="
-          playbackStore.playbackEnabled &&
-          !regionDetailedStore.selectedRegionMetricId &&
-          !playbackStore.fetchingData
-        "
+        v-if="playbackStore.playbackEnabled && !regionDetailedStore.selectedRegionMetricId"
       />
       <q-skeleton type="QBadge" v-if="playbackStore.fetchingData" />
     </q-page-sticky>

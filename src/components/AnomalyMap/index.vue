@@ -70,6 +70,7 @@
         className="custom-scaleline-control"
         v-if="!playbackStore.playbackEnabled"
       />
+      <ol-attribution-control />
     </ol-map>
   </q-page>
 </template>
