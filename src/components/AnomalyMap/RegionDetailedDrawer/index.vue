@@ -6,7 +6,7 @@
         flat
         icon="close"
         size="0.85rem"
-        class="q-drawer-hide"
+        class="q-drawer-hide close-drawer"
         @click="() => resetSelectedRegionMetricId()"
       />
       <p class="text-h3 q-ma-none q-mb-xs">
@@ -143,7 +143,7 @@ const resetSelectedRegionMetricId = () => {
 const width = computed(() => uiStore.regionDetailDrawerWidth);
 </script>
 <style lang="scss">
-.q-drawer-hide {
+.close-drawer {
   position: absolute;
   top: 1rem;
   right: 1rem;

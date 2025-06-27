@@ -8,7 +8,7 @@
       flat
       icon="close"
       size="0.85rem"
-      class="q-drawer-hide"
+      class="q-drawer-hide extra-drawer-close"
       @click="() => (regionDetailedStore.showTable = !regionDetailedStore.showTable)"
     />
     <!-- * CONTENT -->
@@ -29,7 +29,7 @@ const regionDetailedStore = useRegionDetailedStore();
 const width = computed(() => uiStore.regionDetailDrawerWidth);
 </script>
 <style lang="scss">
-.q-drawer-hide {
+.extra-drawer-close {
   position: absolute;
   top: 1rem;
   right: 1rem;

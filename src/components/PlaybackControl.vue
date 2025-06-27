@@ -5,7 +5,7 @@
       flat
       icon="close"
       size="0.85rem"
-      class="q-drawer-hide absolute"
+      class="q-drawer-hide absolute playback-close"
       @click="() => playbackStore.togglePlayback()"
     />
     <div class="playback-buttons">
@@ -132,7 +132,7 @@ watch(
     }
   }
 }
-.q-drawer-hide {
+.playback-close {
   top: 0.5rem;
   right: 1.7rem;
   background-color: #393939;
