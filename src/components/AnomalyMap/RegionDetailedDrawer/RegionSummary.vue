@@ -1,5 +1,10 @@
 <template>
-  <h6 class="q-my-sm q-mb-md q-ml-sm text-weight-regular" style="color: #333">Summary</h6>
+  <h6 class="q-my-sm q-mb-md q-ml-sm text-weight-regular" style="color: #333">
+    Summary
+    <span v-if="playbackStore.playbackEnabled" class="text-italic text-subtitle1"
+      >(for {{ date.formatDate(uiStore.formattedDate, 'MMMM D, YYYY') }})</span
+    >
+  </h6>
   <div
     class="q-pa-md q-mt-sm q-mb-lg row q-pa-xs rounded-borders"
     style="background-color: #fdf7e6"
@@ -44,8 +49,13 @@ import {
   classifyAnomaly,
 } from 'src/utils/anomalyClassification';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
+import { useUIStore } from 'src/stores/uiStore';
+import { date } from 'quasar';
+import { usePlaybackStore } from 'src/stores/playbackStore';
 
+const uiStore = useUIStore();
 const regionDetailedStore = useRegionDetailedStore();
+const playbackStore = usePlaybackStore();
 
 const metric = computed<MetricDetail>(
   () => regionDetailedStore.getFormattedRegionMetric as MetricDetail,

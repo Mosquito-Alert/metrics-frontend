@@ -53,10 +53,10 @@ export const usePlaybackStore = defineStore('playbackStore', {
         this.playbackCurrentDate = this.playbackDaysObject[0] || '';
         this.playbackCurrentIndex = 0;
         this.data = null; // Clear previous data
-        regionDetailedStore.$reset(); // Reset region detailed store
       } else {
         // this.toggleVideoPlayback();
       }
+      regionDetailedStore.$reset(); // Reset region detailed store
     },
     updateCurrentDate(index: number) {
       this.playbackCurrentDate = this.playbackDaysObject[index] || '';

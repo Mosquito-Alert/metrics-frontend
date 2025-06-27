@@ -9,6 +9,7 @@
     :rows-per-page-options="[5, 10, 25, 50]"
     @request="onRequest"
     :hide-bottom="data.length > 0"
+    :table-row-class-fn="rowClassFn"
   >
     <template v-slot:loading>
       <q-inner-loading showing color="primary" />
@@ -31,6 +32,8 @@ import { date, QTableProps } from 'quasar';
 import { anomalyClassificationStyle, classifyAnomaly } from 'src/utils/anomalyClassification';
 import { historyPageSize } from 'src/constants/config';
 import { useRegionDetailedStore } from '../../../../stores/regionDetailedStore';
+import { useUIStore } from 'src/stores/uiStore';
+import { formattedDate } from 'src/utils/date';
 
 const columns: QTableProps['columns'] = [
   {
@@ -39,7 +42,7 @@ const columns: QTableProps['columns'] = [
     required: true,
     label: 'Date',
     align: 'left',
-    format: (val: string, row: any): string => date.formatDate(new Date(val), 'YYYY-MM-DD'),
+    format: (val: string, row: any): string => date.formatDate(new Date(val), 'DD-MM-YYYY'),
   },
   {
     name: 'anomaly',
@@ -75,6 +78,7 @@ const columns: QTableProps['columns'] = [
   },
 ];
 
+const uiStore = useUIStore();
 const regionDetailedStore = useRegionDetailedStore();
 
 const loading = computed(() => regionDetailedStore.fetchingRegionMetricsHistory);
@@ -119,4 +123,17 @@ const onRequest = async (props: any) => {
 
   return returnedData;
 };
+
+const rowClassFn = (row: Metric) => {
+  // check if the date is the same as uiStore.getDate
+  const selectedDate = uiStore.formattedDate;
+  const rowDate = formattedDate(row.date);
+  return formattedDate(row.date) === uiStore.formattedDate ? 'cell-highlight' : '';
+};
 </script>
+
+<style lang="scss">
+.cell-highlight {
+  background-color: #fdf7e6 !important; /* Light blue background for the highlighted cell */
+}
+</style>
