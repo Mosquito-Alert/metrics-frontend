@@ -309,6 +309,7 @@ const option = computed(() => {
       },
     },
     yAxis: {
+      name: 'Bite Index (%)',
       type: 'value',
       axisLabel: {
         formatter: (val: any) => val.toFixed(0) + '%', // Converts fractions to percentages

@@ -169,6 +169,7 @@ const option = computed(() => {
       boundaryGap: false,
     },
     yAxis: {
+      name: 'Bite Index (%)',
       // min: 0, // Sets the minimum value to 0
       axisLabel: {
         formatter: (val: any) => val.toFixed(0) + '%', // Converts fractions to percentages
