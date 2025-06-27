@@ -3,6 +3,7 @@ import routesNames from '../router/routesNames';
 import { formattedDate } from '../utils/date';
 import { useMapStore } from './mapStore';
 import { usePlaybackStore } from './playbackStore';
+import { useRegionDetailedStore } from './regionDetailedStore';
 
 export const useUIStore = defineStore('uiStore', {
   state: () => ({
@@ -28,7 +29,8 @@ export const useUIStore = defineStore('uiStore', {
     },
     getOffsetBottom: (state) => {
       const playbackStore = usePlaybackStore();
-      return playbackStore.playbackEnabled ? '110' : '20';
+      const regionDetailedStore = useRegionDetailedStore();
+      return playbackStore.playbackEnabled && !regionDetailedStore.isRegionSelected ? '110' : '20';
     },
   },
 
