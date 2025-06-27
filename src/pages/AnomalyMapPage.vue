@@ -1,6 +1,8 @@
 <template>
   <q-page>
+    <!-- DRAWERS -->
     <RegionDetailedDrawer v-if="regionDetailedStore.isRegionSelected" />
+    <RegionDetailExtraDrawer v-if="regionDetailedStore.showTable" />
     <!-- MAP -->
     <AnomalyMap v-if="dateFetched" />
 

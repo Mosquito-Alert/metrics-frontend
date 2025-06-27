@@ -6,8 +6,7 @@
         flat
         icon="close"
         size="0.85rem"
-        class="q-drawer-hide absolute"
-        style="top: 1rem; right: 1rem"
+        class="q-drawer-hide"
         @click="() => resetSelectedRegionMetricId()"
       />
       <p class="text-h3 q-ma-none q-mb-xs">
@@ -51,7 +50,7 @@
       <RegionAnomaliesChart class="q-pt-sm" />
       <RegionSeasonality />
       <RegionSummary />
-      <RegionAnomaliesHistoryTable />
+      <!-- <RegionAnomaliesHistoryTable /> -->
     </q-scroll-area>
   </div>
 </template>
@@ -144,6 +143,12 @@ const resetSelectedRegionMetricId = () => {
 const width = computed(() => uiStore.regionDetailDrawerWidth);
 </script>
 <style lang="scss">
+.q-drawer-hide {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1002;
+}
 .region-detail-drawer {
   z-index: 1000;
   position: absolute;

@@ -30,7 +30,7 @@ import { Metric, PaginatedMetricList } from 'anomaly-detection';
 import { date, QTableProps } from 'quasar';
 import { anomalyClassificationStyle, classifyAnomaly } from 'src/utils/anomalyClassification';
 import { historyPageSize } from 'src/constants/config';
-import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
+import { useRegionDetailedStore } from '../../../../stores/regionDetailedStore';
 
 const columns: QTableProps['columns'] = [
   {

@@ -1,6 +1,28 @@
 <template>
   <div class="bg-white rounded-borders">
     <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Bite Index Time Series</h6>
+    <q-btn
+      v-if="!regionDetailedStore.showTable"
+      dense
+      flat
+      class="show-table q-px-md"
+      :class="{ active: regionDetailedStore.showTable }"
+      label="Show data"
+      icon-right="keyboard_double_arrow_right"
+      size="0.8rem"
+      @click="() => (regionDetailedStore.showTable = !regionDetailedStore.showTable)"
+    />
+    <q-btn
+      v-if="regionDetailedStore.showTable"
+      dense
+      flat
+      class="show-table q-px-md"
+      :class="{ active: regionDetailedStore.showTable }"
+      label="Hide data"
+      icon="keyboard_double_arrow_left"
+      size="0.8rem"
+      @click="() => (regionDetailedStore.showTable = !regionDetailedStore.showTable)"
+    />
     <v-chart style="height: 330px" :option="option" :loading="loading" />
   </div>
 </template>
@@ -327,3 +349,28 @@ const option = computed(() => {
   };
 });
 </script>
+<style lang="scss">
+.show-table {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1001;
+  background-color: #f0f0f0;
+  color: #444;
+  border-radius: 4px;
+  border: 1px solid #444;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  &.active {
+    background-color: #f3c954;
+    padding-left: 1rem;
+    .block {
+      padding-right: 0.3rem;
+    }
+  }
+
+  &:hover {
+    background-color: #f3c954;
+  }
+}
+</style>

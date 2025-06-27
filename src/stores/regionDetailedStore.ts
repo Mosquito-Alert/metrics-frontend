@@ -27,6 +27,7 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
     fetchingRegionMetricTrend: true,
     selectedRegionMetricSeasonality: null as MetricSeasonality | null,
     fetchingRegionMetricSeasonality: true,
+    showTable: false,
   }),
 
   getters: {
