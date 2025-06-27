@@ -7,8 +7,8 @@
     <AnomalyMap v-if="dateFetched" />
 
     <!-- SEARCH BAR -->
-    <q-page-sticky position="top-left" :offset="[20, 20]">
-      <SearchBox v-if="!regionDetailedStore.selectedRegionMetricId" />
+    <q-page-sticky position="top-left" :offset="[searchboxOffsetLeft, 20]">
+      <SearchBox :style="{ zIndex: 1002 }" />
     </q-page-sticky>
 
     <!-- RIGHT SIDE OPTIONS -->
@@ -138,6 +138,11 @@ const getDrawerWidth = (appWidth: number) => {
   return Math.max(Math.floor(appWidth / 2.75), 500);
 };
 uiStore.regionDetailDrawerWidth = getDrawerWidth(uiStore.appWidth);
+
+const searchboxOffsetLeft = computed(() => {
+  const offset = regionDetailedStore.isRegionSelected ? uiStore.regionDetailDrawerWidth : 0;
+  return 20 + offset;
+});
 
 // Watch for window resize to adjust the drawer width
 window.addEventListener('resize', () => {
