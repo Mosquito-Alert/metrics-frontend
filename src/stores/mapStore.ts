@@ -29,7 +29,7 @@ export const useMapStore = defineStore('mapStore', {
     fetchingDate: true,
     currentDate: '' as string, // Default date, can be updated later:
     showAutonomousCommunities: false,
-    showActualValues: false,
+    showAnomalies: false,
   }),
 
   getters: {},

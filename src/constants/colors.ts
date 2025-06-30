@@ -5,10 +5,6 @@ export const ANOMALY_COLORS = {
   HIGH: '#ff795b',
 };
 
-export const VALUE_COLORS = {
-  LOW: '#fdf7e6',
-  HIGH: '#ff795b',
-};
 export const VALUE_COLOR_STOPS = [
   { min: 0.0, max: 0.15, start: '#ffffff', end: '#fef0d9' },
   { min: 0.15, max: 0.3, start: '#fef0d9', end: '#fdd49e' },

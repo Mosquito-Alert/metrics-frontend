@@ -85,7 +85,7 @@ import type MapRef from 'ol/Map';
 import { fromLonLat, transformExtent } from 'ol/proj';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
-import { ANOMALY_COLORS, VALUE_COLOR_STOPS, VALUE_COLORS } from 'src/constants/colors';
+import { ANOMALY_COLORS, VALUE_COLOR_STOPS } from 'src/constants/colors';
 import { useMapStore } from 'src/stores/mapStore';
 import {
   computed,
@@ -245,7 +245,7 @@ const playbackWebGLStyle = computed(() => {
     });
   };
   const timestampKey = new Date(playbackStore.playbackCurrentDate).getTime();
-  const showActualValues = mapStore.showActualValues;
+  const showAnomalies = mapStore.showAnomalies;
 
   // Build gradient stops based on COLOR_RANGES
   const colorStops: (string | number)[] = [];
@@ -262,7 +262,7 @@ const playbackWebGLStyle = computed(() => {
     ...colorStops,
   ] as any;
 
-  if (showActualValues) {
+  if (showAnomalies) {
     fillColor = [
       'case',
       ['>', ['get', `anomaly_degree${timestampKey}`], 0],
@@ -503,8 +503,8 @@ watch(
   },
 );
 watch(
-  () => mapStore.showActualValues,
-  (showActualValues) => {
+  () => mapStore.showAnomalies,
+  (showAnomalies) => {
     const map = mapRef.value?.map;
     if (!map) {
       return;
@@ -544,7 +544,7 @@ const styleFn = (feature: Feature) => {
   }
 
   // Adjust color based on anomalyDegree if required
-  if (mapStore.showActualValues) {
+  if (mapStore.showAnomalies) {
     const hexColor = fillColor.startsWith('rgb') ? rgbStringToHex(fillColor) : fillColor;
 
     if (anomalyDegree === 0) {

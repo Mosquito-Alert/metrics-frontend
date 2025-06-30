@@ -1,6 +1,6 @@
 <template>
   <q-card>
-    <q-card-section v-if="mapStore.showActualValues">
+    <q-card-section>
       <div class="text-subtitle2 text-weight-bold text-uppercase q-ma-none q-pa-none q-mb-md">
         Bite Probability Anomalies
       </div>
@@ -45,8 +45,8 @@ const mapStore = useMapStore();
 
 const gradientStops = computed(() => {
   return VALUE_COLOR_STOPS.map((range) => {
-    const start = mapStore.showActualValues ? adjustSaturation(range.start, 0.0) : range.start;
-    const end = mapStore.showActualValues ? adjustSaturation(range.end, 0.0) : range.end;
+    const start = mapStore.showAnomalies ? adjustSaturation(range.start, 0.0) : range.start;
+    const end = mapStore.showAnomalies ? adjustSaturation(range.end, 0.0) : range.end;
     return `${start} ${(range.min * 100).toFixed(0)}%, ${end} ${(range.max * 100).toFixed(0)}%`;
   }).join(', ');
 });

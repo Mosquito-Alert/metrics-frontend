@@ -34,7 +34,7 @@
       <div class="sidemap-option" :class="{ active: autonomousCommunitiesActive }">
         <div @click="mapStore.showAutonomousCommunities = !mapStore.showAutonomousCommunities">
           <span v-if="!mapStore.fetchingDate" class="column items-center">
-            <q-icon :name="mapStore.showAutonomousCommunities ? 'layers' : 'layers_clear'"></q-icon>
+            <q-icon :name="'layers'"></q-icon>
             <p class="q-pa-none q-ma-none">Borders</p>
           </span>
           <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
@@ -43,15 +43,15 @@
           }}</q-tooltip>
         </div>
       </div>
-      <div class="sidemap-option" :class="{ active: showActualValues }">
-        <div @click="mapStore.showActualValues = !mapStore.showActualValues">
+      <div class="sidemap-option" :class="{ active: showAnomalies }">
+        <div @click="mapStore.showAnomalies = !mapStore.showAnomalies">
           <span v-if="!mapStore.fetchingDate" class="column items-center">
-            <q-icon :name="mapStore.showActualValues ? 'bar_chart' : 'troubleshoot'"></q-icon>
-            <p class="q-pa-none q-ma-none">Values</p>
+            <q-icon :name="'troubleshoot'"></q-icon>
+            <p class="q-pa-none q-ma-none">Anomalies</p>
           </span>
           <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
           <q-tooltip anchor="center left" self="center end">{{
-            showActualValuesTooltipMsg
+            showAnomaliesTooltipMsg
           }}</q-tooltip>
         </div>
       </div>
@@ -121,7 +121,7 @@ const playbackStore = usePlaybackStore();
 const dateFetched = ref(false);
 const playbackOptionActive = computed(() => playbackStore.playbackEnabled);
 const autonomousCommunitiesActive = computed(() => mapStore.showAutonomousCommunities);
-const showActualValues = computed(() => mapStore.showActualValues);
+const showAnomalies = computed(() => mapStore.showAnomalies);
 // const rangeDate = ref([new Date(), new Date()]);
 
 // * Lifecycle
@@ -145,8 +145,8 @@ const autonomousCommunitiesTooltipMsg = computed(() =>
     ? 'Hide autonomous communities borders'
     : 'Show autonomous communities borders',
 );
-const showActualValuesTooltipMsg = computed(() =>
-  mapStore.showActualValues ? 'Show anomalies' : 'Show actual values',
+const showAnomaliesTooltipMsg = computed(() =>
+  mapStore.showAnomalies ? 'Hide anomalies' : 'Show anomalies',
 );
 
 uiStore.appWidth = window.innerWidth;
