@@ -225,7 +225,8 @@ const loadPlaybackTiles = (tile: any, url: string) => {
       const timeseries = JSON.parse(feature.get('timeseries'));
       timeseries.forEach((item: any) => {
         const dayKey = new Date(item.date).getTime();
-        feature.properties_[dayKey] = item.anomaly_degree;
+        feature.properties_['anomaly_degree' + dayKey] = item.anomaly_degree;
+        feature.properties_['value' + dayKey] = item.value;
       });
     }
 
@@ -233,23 +234,37 @@ const loadPlaybackTiles = (tile: any, url: string) => {
     mapStore.extent = extent || [];
   });
 };
-const playbackWebGLStyle = computed(() => [
-  {
-    style: {
-      'fill-color': [
-        'case',
-        ['>', ['get', new Date(playbackStore.playbackCurrentDate).getTime()], 0],
-        ANOMALY_COLORS.HIGH,
-        ['<', ['get', new Date(playbackStore.playbackCurrentDate).getTime()], 0],
-        ANOMALY_COLORS.LOW,
-        ANOMALY_COLORS.USUAL_LIGHT + '48', // with alpha 0.7
-      ],
-      'fill-opacity': 1,
-      'stroke-color': 'rgba(255, 255, 255, 0.3)',
-      'stroke-width': 0.5,
+const playbackWebGLStyle = computed(() => {
+  const timestampKey = new Date(playbackStore.playbackCurrentDate).getTime();
+
+  return [
+    {
+      style: {
+        'fill-color': mapStore.showActualValues
+          ? [
+              'interpolate',
+              ['linear'],
+              ['get', 'value' + timestampKey],
+              0,
+              'rgb(253, 247, 230)', // Start color: #fdf7e6
+              1,
+              'rgb(255, 121, 91)', // End color: #ff795b
+            ]
+          : [
+              'case',
+              ['>', ['get', 'anomaly_degree' + timestampKey], 0],
+              ANOMALY_COLORS.HIGH,
+              ['<', ['get', 'anomaly_degree' + timestampKey], 0],
+              ANOMALY_COLORS.LOW,
+              ANOMALY_COLORS.USUAL_LIGHT + '48', // default
+            ],
+        'fill-opacity': 1,
+        'stroke-color': 'rgba(255, 255, 255, 0.3)',
+        'stroke-width': 0.5,
+      },
     },
-  },
-]);
+  ];
+});
 const playbackSource = new VectorTileSource({
   format: mapStore.format as MVT,
   projection: mapStore.projection,
@@ -382,7 +397,7 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   // store hovered feature
   const features = map.getFeaturesAtPixel(event.pixel, {
     hitTolerance: 0,
-    layerFilter,
+    layerFilter: featureLayerFilter,
   });
   if (!features.length) {
     hoveredFeatures.value = [];
@@ -394,14 +409,6 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   hoveredFeatures.value = features as Feature[];
 
   const feature = features[0] as FeatureLike;
-  if (playbackStore.playbackEnabled) {
-    const timeseries = JSON.parse(feature.get('timeseries'));
-    const hoveredFeature = timeseries.find(
-      (item: any) => item.date === playbackStore.playbackCurrentDate,
-    );
-    if (!hoveredFeature) return;
-    (feature as any).properties_.value = hoveredFeature.value;
-  }
   tooltipEl.innerHTML = `
   <div><strong>${feature.get('region__name')}</strong></div>
   <div>(${feature.get('region__province__autonomous_community__name')})</div>
@@ -490,70 +497,14 @@ watch(
  * Styles
  */
 const styleFn = (feature: Feature) => {
-  const hasTimeseries = feature.get('timeseries') !== undefined;
-  if (playbackStore.playbackEnabled && hasTimeseries) {
-    const timeseries = JSON.parse(feature.get('timeseries'));
-    if (mapStore.showActualValues) {
-      return styleActualValueProperties(
-        timeseries.find((item: any) => item.date === playbackStore.playbackCurrentDate)?.value || 0,
-      );
-    } else {
-      return styleProperties(
-        timeseries.find((item: any) => item.date === playbackStore.playbackCurrentDate)
-          ?.anomaly_degree || 0,
-      );
-    }
-  }
-  return mapStore.showActualValues
-    ? styleActualValueProperties(feature.get('value'))
-    : styleProperties(feature.get('anomaly_degree'));
-};
+  const showValues = mapStore.showActualValues;
+  let anomalyDegree = feature.get('anomaly_degree');
+  let value = feature.get('value');
 
-const styleProperties = (anomaly_degree: number) => {
-  // TODO: Add a gradient to the fill color based on the anomaly degree
-  let fillColor;
-  if (anomaly_degree && anomaly_degree !== 0) {
-    fillColor = anomaly_degree > 0 ? ANOMALY_COLORS.HIGH : ANOMALY_COLORS.LOW;
-  } else {
-    fillColor = ANOMALY_COLORS.USUAL_LIGHT + '48'; // with alpha 0.7
-  }
-
-  return new Style({
-    fill: new Fill({
-      color: fillColor,
-    }),
-  });
-};
-
-const styleActualValueProperties = (value: number) => {
-  // Start color: #fdf7e6 -> rgb(253, 247, 230)
-  // End color:   #ff795b -> rgb(255, 121, 91)
-
-  const startColor = { r: 253, g: 247, b: 230 };
-  const endColor = { r: 255, g: 121, b: 91 };
-
-  const r = Math.round(startColor.r + (endColor.r - startColor.r) * value);
-  const g = Math.round(startColor.g + (endColor.g - startColor.g) * value);
-  const b = Math.round(startColor.b + (endColor.b - startColor.b) * value);
-
-  return new Style({
-    fill: new Fill({
-      color: `rgb(${r}, ${g}, ${b})`,
-    }),
-  });
+  return showValues ? generateValueStyle(value) : generateAnomalyStyle(anomalyDegree);
 };
 
 const selectedStyleFn = (feature: any) => {
-  const hasTimeseries = feature.get('timeseries') !== undefined;
-  if (playbackStore.playbackEnabled && hasTimeseries) {
-    const timeseries = JSON.parse(feature.get('timeseries'));
-    const selectedFeature = timeseries.find(
-      (item: any) => item.date === playbackStore.playbackCurrentDate,
-    );
-    if (!selectedFeature) return;
-    feature.id_ = selectedFeature.id; // Set the id directly
-    feature.properties_.anomaly_degree = selectedFeature.anomaly_degree;
-  }
   const selectedFeaturesIds = selectedFeatures.value.map((f) => f.getId());
   if (!selectedFeaturesIds.includes(feature.getId())) return;
 
@@ -568,20 +519,10 @@ const selectedStyleFn = (feature: any) => {
 };
 
 const hoveredStyleFn = (feature: any) => {
-  const hasTimeseries = feature.get('timeseries') !== undefined;
-  if (playbackStore.playbackEnabled && hasTimeseries) {
-    const timeseries = JSON.parse(feature.get('timeseries'));
-    const hoveredFeature = timeseries.find(
-      (item: any) => item.date === playbackStore.playbackCurrentDate,
-    );
-    if (!hoveredFeature) return;
-    feature.id_ = hoveredFeature.id; // Set the id directly
-    feature.properties_.anomaly_degree = hoveredFeature.anomaly_degree;
-  }
   const hoveredFeaturesIds = hoveredFeatures.value.map((f) => f.getId());
   if (!hoveredFeaturesIds.includes(feature.getId())) return;
-  const style = styleFn(feature);
 
+  const style = styleFn(feature);
   style.setStroke(
     new Stroke({
       color: getCssVar('accent') || '#FF0000',
@@ -589,6 +530,32 @@ const hoveredStyleFn = (feature: any) => {
     }),
   );
   return style;
+};
+const generateAnomalyStyle = (anomalyDegree: number) => {
+  let fillColor = ANOMALY_COLORS.USUAL_LIGHT + '48'; // default
+
+  if (anomalyDegree > 0) {
+    fillColor = ANOMALY_COLORS.HIGH;
+  } else if (anomalyDegree < 0) {
+    fillColor = ANOMALY_COLORS.LOW;
+  }
+
+  return new Style({
+    fill: new Fill({ color: fillColor }),
+  });
+};
+
+const generateValueStyle = (value: number) => {
+  const startColor = { r: 253, g: 247, b: 230 }; // #fdf7e6
+  const endColor = { r: 255, g: 121, b: 91 }; // #ff795b
+
+  const r = Math.round(startColor.r + (endColor.r - startColor.r) * value);
+  const g = Math.round(startColor.g + (endColor.g - startColor.g) * value);
+  const b = Math.round(startColor.b + (endColor.b - startColor.b) * value);
+
+  return new Style({
+    fill: new Fill({ color: `rgb(${r}, ${g}, ${b})` }),
+  });
 };
 </script>
 <style lang="scss">
