@@ -18,8 +18,32 @@
         </div>
       </div>
     </q-card-section>
+
+    <q-card-section v-if="mapStore.showActualValues">
+      <div class="text-subtitle2 text-weight-medium text-uppercase q-ma-none q-pa-none q-mb-sm">
+        Bites Probability Values
+      </div>
+      <div>
+        <div class="legend-item legend-gradient">
+          <span class="label-left">0</span>
+          <div
+            class="gradient-box"
+            :style="{
+              background: `linear-gradient(to right, ${VALUE_COLORS.LOW}, ${VALUE_COLORS.HIGH})`,
+            }"
+          ></div>
+          <span class="label-right">1</span>
+        </div>
+      </div>
+    </q-card-section>
   </q-card>
 </template>
+<script setup lang="ts">
+import { VALUE_COLORS } from 'src/constants/colors';
+import { useMapStore } from 'src/stores/mapStore';
+
+const mapStore = useMapStore();
+</script>
 <style lang="scss">
 .q-card {
   background-color: #f0f0f0;
@@ -50,6 +74,20 @@
       font-size: 0.8rem;
       color: #333;
     }
+  }
+
+  .legend-gradient {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* space between labels and box */
+    font-size: 14px;
+  }
+
+  .gradient-box {
+    width: 150px;
+    height: 20px;
+    border: 1px solid #aaa;
+    border-radius: 3px;
   }
 }
 </style>

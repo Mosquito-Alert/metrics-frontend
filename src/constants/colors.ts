@@ -4,3 +4,8 @@ export const ANOMALY_COLORS = {
   LOW: '#85b0d5BE',
   HIGH: '#ff795b',
 };
+
+export const VALUE_COLORS = {
+  LOW: '#fdf7e6',
+  HIGH: '#ff795b',
+};

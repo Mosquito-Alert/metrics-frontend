@@ -85,7 +85,7 @@ import type MapRef from 'ol/Map';
 import { fromLonLat, transformExtent } from 'ol/proj';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
-import { ANOMALY_COLORS } from 'src/constants/colors';
+import { ANOMALY_COLORS, VALUE_COLORS } from 'src/constants/colors';
 import { useMapStore } from 'src/stores/mapStore';
 import {
   computed,
@@ -103,6 +103,7 @@ import MVT from 'ol/format/MVT.js';
 import WebGLVectorTileLayer from 'ol/layer/WebGLVectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import { regionsApi } from 'src/services/apiService';
+import { hexToRgb } from 'src/utils/colorConversor';
 
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
@@ -246,9 +247,9 @@ const playbackWebGLStyle = computed(() => {
               ['linear'],
               ['get', 'value' + timestampKey],
               0,
-              'rgb(253, 247, 230)', // Start color: #fdf7e6
+              hexToRgb(VALUE_COLORS.LOW),
               1,
-              'rgb(255, 121, 91)', // End color: #ff795b
+              hexToRgb(VALUE_COLORS.HIGH),
             ]
           : [
               'case',
@@ -348,12 +349,6 @@ onBeforeUnmount(() => {
 /**
  * Select and hover features
  */
-const layerFilter = (layerCandidate: Layer) => {
-  const className = layerCandidate.getClassName?.() || '';
-  return className.includes(
-    playbackStore.playbackEnabled ? 'playback-interaction-layer' : 'feature-layer',
-  );
-};
 const featureLayerFilter = (layerCandidate: Layer) => {
   const className = layerCandidate.getClassName?.() || '';
   return className.includes('feature-layer');
@@ -546,8 +541,8 @@ const generateAnomalyStyle = (anomalyDegree: number) => {
 };
 
 const generateValueStyle = (value: number) => {
-  const startColor = { r: 253, g: 247, b: 230 }; // #fdf7e6
-  const endColor = { r: 255, g: 121, b: 91 }; // #ff795b
+  const startColor = hexToRgb(VALUE_COLORS.LOW);
+  const endColor = hexToRgb(VALUE_COLORS.HIGH);
 
   const r = Math.round(startColor.r + (endColor.r - startColor.r) * value);
   const g = Math.round(startColor.g + (endColor.g - startColor.g) * value);
