@@ -49,8 +49,6 @@
     <q-scroll-area ref="drawerScrollArea" class="drawer-content col q-px-md q-py-xs">
       <RegionAnomaliesChart class="q-pt-sm" />
       <RegionSeasonality />
-      <RegionSummary />
-      <!-- <RegionAnomaliesHistoryTable /> -->
     </q-scroll-area>
   </div>
 </template>

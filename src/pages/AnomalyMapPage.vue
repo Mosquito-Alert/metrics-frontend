@@ -43,6 +43,18 @@
           }}</q-tooltip>
         </div>
       </div>
+      <div class="sidemap-option" :class="{ active: showActualValues }">
+        <div @click="mapStore.showActualValues = !mapStore.showActualValues">
+          <span v-if="!mapStore.fetchingDate" class="column items-center">
+            <q-icon :name="mapStore.showActualValues ? 'bar_chart' : 'troubleshoot'"></q-icon>
+            <p class="q-pa-none q-ma-none">Values</p>
+          </span>
+          <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
+          <q-tooltip anchor="center left" self="center end">{{
+            showActualValuesTooltipMsg
+          }}</q-tooltip>
+        </div>
+      </div>
     </q-page-sticky>
 
     <!-- LEGEND AND DATE -->
@@ -109,6 +121,7 @@ const playbackStore = usePlaybackStore();
 const dateFetched = ref(false);
 const playbackOptionActive = computed(() => playbackStore.playbackEnabled);
 const autonomousCommunitiesActive = computed(() => mapStore.showAutonomousCommunities);
+const showActualValues = computed(() => mapStore.showActualValues);
 // const rangeDate = ref([new Date(), new Date()]);
 
 // * Lifecycle
@@ -131,6 +144,9 @@ const autonomousCommunitiesTooltipMsg = computed(() =>
   mapStore.showAutonomousCommunities
     ? 'Hide autonomous communities borders'
     : 'Show autonomous communities borders',
+);
+const showActualValuesTooltipMsg = computed(() =>
+  mapStore.showActualValues ? 'Show anomalies' : 'Show actual values',
 );
 
 uiStore.appWidth = window.innerWidth;

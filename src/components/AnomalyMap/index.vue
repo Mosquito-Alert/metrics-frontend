@@ -103,9 +103,7 @@ import MVT from 'ol/format/MVT.js';
 import WebGLVectorTileLayer from 'ol/layer/WebGLVectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import { regionsApi } from 'src/services/apiService';
-import { useUIStore } from 'src/stores/uiStore';
 
-const uiStore = useUIStore();
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
 const playbackStore = usePlaybackStore();
@@ -125,7 +123,6 @@ const $q = useQuasar();
  * Base config
  */
 const center = computed(() => fromLonLat(mapStore.center, mapStore.projection));
-const offsetBottom = computed(() => uiStore.getOffsetBottom);
 
 // * Map layers
 const format = inject('ol-format');
@@ -478,6 +475,16 @@ watch(
     }
   },
 );
+watch(
+  () => mapStore.showActualValues,
+  (showActualValues) => {
+    const map = mapRef.value?.map;
+    if (!map) {
+      return;
+    }
+    layerRef.value?.vectorTileLayer.setStyle(styleFn as any);
+  },
+);
 
 /**
  * Styles
@@ -486,12 +493,20 @@ const styleFn = (feature: Feature) => {
   const hasTimeseries = feature.get('timeseries') !== undefined;
   if (playbackStore.playbackEnabled && hasTimeseries) {
     const timeseries = JSON.parse(feature.get('timeseries'));
-    return styleProperties(
-      timeseries.find((item: any) => item.date === playbackStore.playbackCurrentDate)
-        ?.anomaly_degree || 0,
-    );
+    if (mapStore.showActualValues) {
+      return styleActualValueProperties(
+        timeseries.find((item: any) => item.date === playbackStore.playbackCurrentDate)?.value || 0,
+      );
+    } else {
+      return styleProperties(
+        timeseries.find((item: any) => item.date === playbackStore.playbackCurrentDate)
+          ?.anomaly_degree || 0,
+      );
+    }
   }
-  return styleProperties(feature.get('anomaly_degree'));
+  return mapStore.showActualValues
+    ? styleActualValueProperties(feature.get('value'))
+    : styleProperties(feature.get('anomaly_degree'));
 };
 
 const styleProperties = (anomaly_degree: number) => {
@@ -506,6 +521,24 @@ const styleProperties = (anomaly_degree: number) => {
   return new Style({
     fill: new Fill({
       color: fillColor,
+    }),
+  });
+};
+
+const styleActualValueProperties = (value: number) => {
+  // Start color: #fdf7e6 -> rgb(253, 247, 230)
+  // End color:   #ff795b -> rgb(255, 121, 91)
+
+  const startColor = { r: 253, g: 247, b: 230 };
+  const endColor = { r: 255, g: 121, b: 91 };
+
+  const r = Math.round(startColor.r + (endColor.r - startColor.r) * value);
+  const g = Math.round(startColor.g + (endColor.g - startColor.g) * value);
+  const b = Math.round(startColor.b + (endColor.b - startColor.b) * value);
+
+  return new Style({
+    fill: new Fill({
+      color: `rgb(${r}, ${g}, ${b})`,
     }),
   });
 };
