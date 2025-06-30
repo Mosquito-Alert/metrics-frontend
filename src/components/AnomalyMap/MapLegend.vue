@@ -1,12 +1,9 @@
 <template>
   <q-card>
-    <q-card-section class="q-pb-none">
-      <div class="text-subtitle2 text-weight-bold text-uppercase q-ma-none q-pa-none">
+    <q-card-section v-if="mapStore.showActualValues">
+      <div class="text-subtitle2 text-weight-bold text-uppercase q-ma-none q-pa-none q-mb-md">
         Bite Probability Anomalies
       </div>
-    </q-card-section>
-
-    <q-card-section>
       <div>
         <div class="legend-item">
           <span class="legend-color anomaly-high"></span>
@@ -19,8 +16,8 @@
       </div>
     </q-card-section>
 
-    <q-card-section v-if="mapStore.showActualValues">
-      <div class="text-subtitle2 text-weight-medium text-uppercase q-ma-none q-pa-none q-mb-sm">
+    <q-card-section>
+      <div class="text-subtitle2 text-weight-medium text-uppercase q-ma-none q-pa-none q-mb-md">
         Bites Probability Values
       </div>
       <div>
@@ -29,7 +26,7 @@
           <div
             class="gradient-box"
             :style="{
-              background: `linear-gradient(to right, ${VALUE_COLORS.LOW}, ${VALUE_COLORS.HIGH})`,
+              background: `linear-gradient(to right, ${gradientStops})`,
             }"
           ></div>
           <span class="label-right">1</span>
@@ -39,10 +36,20 @@
   </q-card>
 </template>
 <script setup lang="ts">
-import { VALUE_COLORS } from 'src/constants/colors';
+import { VALUE_COLOR_STOPS } from 'src/constants/colors';
 import { useMapStore } from 'src/stores/mapStore';
+import { adjustSaturation } from 'src/utils/colorConversor';
+import { computed } from 'vue';
 
 const mapStore = useMapStore();
+
+const gradientStops = computed(() => {
+  return VALUE_COLOR_STOPS.map((range) => {
+    const start = mapStore.showActualValues ? adjustSaturation(range.start, 0.0) : range.start;
+    const end = mapStore.showActualValues ? adjustSaturation(range.end, 0.0) : range.end;
+    return `${start} ${(range.min * 100).toFixed(0)}%, ${end} ${(range.max * 100).toFixed(0)}%`;
+  }).join(', ');
+});
 </script>
 <style lang="scss">
 .q-card {

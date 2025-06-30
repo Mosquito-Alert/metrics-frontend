@@ -85,7 +85,7 @@ import type MapRef from 'ol/Map';
 import { fromLonLat, transformExtent } from 'ol/proj';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
-import { ANOMALY_COLORS, VALUE_COLORS } from 'src/constants/colors';
+import { ANOMALY_COLORS, VALUE_COLOR_STOPS, VALUE_COLORS } from 'src/constants/colors';
 import { useMapStore } from 'src/stores/mapStore';
 import {
   computed,
@@ -103,7 +103,7 @@ import MVT from 'ol/format/MVT.js';
 import WebGLVectorTileLayer from 'ol/layer/WebGLVectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import { regionsApi } from 'src/services/apiService';
-import { hexToRgb } from 'src/utils/colorConversor';
+import { adjustSaturation, hexToRgb, rgbStringToHex } from 'src/utils/colorConversor';
 
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
@@ -236,29 +236,53 @@ const loadPlaybackTiles = (tile: any, url: string) => {
   });
 };
 const playbackWebGLStyle = computed(() => {
+  const applySaturationToStops = (stops: (string | number)[], saturationLevel = 0.0) => {
+    return stops.map((item) => {
+      if (typeof item === 'string') {
+        return adjustSaturation(item, saturationLevel);
+      }
+      return item;
+    });
+  };
   const timestampKey = new Date(playbackStore.playbackCurrentDate).getTime();
+  const showActualValues = mapStore.showActualValues;
+
+  // Build gradient stops based on COLOR_RANGES
+  const colorStops: (string | number)[] = [];
+  VALUE_COLOR_STOPS.forEach((range) => {
+    colorStops.push(range.min, range.start);
+  });
+  const lastIndex = VALUE_COLOR_STOPS.length - 1;
+  colorStops.push(1.0, VALUE_COLOR_STOPS[lastIndex]?.end as string);
+
+  let fillColor = [
+    'interpolate',
+    ['linear'],
+    ['get', `value${timestampKey}`],
+    ...colorStops,
+  ] as any;
+
+  if (showActualValues) {
+    fillColor = [
+      'case',
+      ['>', ['get', `anomaly_degree${timestampKey}`], 0],
+      ANOMALY_COLORS.HIGH,
+      ['<', ['get', `anomaly_degree${timestampKey}`], 0],
+      ANOMALY_COLORS.LOW,
+      // No anomaly - gradient with reduced saturation
+      [
+        'interpolate',
+        ['linear'],
+        ['get', `value${timestampKey}`],
+        ...applySaturationToStops(colorStops, 0.0),
+      ],
+    ];
+  }
 
   return [
     {
       style: {
-        'fill-color': mapStore.showActualValues
-          ? [
-              'interpolate',
-              ['linear'],
-              ['get', 'value' + timestampKey],
-              0,
-              hexToRgb(VALUE_COLORS.LOW),
-              1,
-              hexToRgb(VALUE_COLORS.HIGH),
-            ]
-          : [
-              'case',
-              ['>', ['get', 'anomaly_degree' + timestampKey], 0],
-              ANOMALY_COLORS.HIGH,
-              ['<', ['get', 'anomaly_degree' + timestampKey], 0],
-              ANOMALY_COLORS.LOW,
-              ANOMALY_COLORS.USUAL_LIGHT + '48', // default
-            ],
+        'fill-color': fillColor,
         'fill-opacity': 1,
         'stroke-color': 'rgba(255, 255, 255, 0.3)',
         'stroke-width': 0.5,
@@ -266,6 +290,7 @@ const playbackWebGLStyle = computed(() => {
     },
   ];
 });
+
 const playbackSource = new VectorTileSource({
   format: mapStore.format as MVT,
   projection: mapStore.projection,
@@ -491,12 +516,49 @@ watch(
 /**
  * Styles
  */
-const styleFn = (feature: Feature) => {
-  const showValues = mapStore.showActualValues;
-  let anomalyDegree = feature.get('anomaly_degree');
-  let value = feature.get('value');
 
-  return showValues ? generateValueStyle(value) : generateAnomalyStyle(anomalyDegree);
+const styleFn = (feature: Feature) => {
+  const anomalyDegree = feature.get('anomaly_degree');
+  const value = feature.get('value');
+
+  let fillColor = ANOMALY_COLORS.USUAL_LIGHT + '48'; // Default fallback color
+
+  if (typeof value === 'number' && value >= 0) {
+    for (const range of VALUE_COLOR_STOPS) {
+      if (value >= range.min && value <= range.max) {
+        const startColor = hexToRgb(range.start);
+        const endColor = hexToRgb(range.end);
+
+        // Normalize value within the range
+        const normalized = (value - range.min) / (range.max - range.min);
+
+        // Interpolate color
+        const r = Math.round(startColor.r + (endColor.r - startColor.r) * normalized);
+        const g = Math.round(startColor.g + (endColor.g - startColor.g) * normalized);
+        const b = Math.round(startColor.b + (endColor.b - startColor.b) * normalized);
+
+        fillColor = `rgb(${r}, ${g}, ${b})`;
+        break;
+      }
+    }
+  }
+
+  // Adjust color based on anomalyDegree if required
+  if (mapStore.showActualValues) {
+    const hexColor = fillColor.startsWith('rgb') ? rgbStringToHex(fillColor) : fillColor;
+
+    if (anomalyDegree === 0) {
+      fillColor = adjustSaturation(hexColor, 0.0); // No anomaly
+    } else if (anomalyDegree > 0) {
+      fillColor = ANOMALY_COLORS.HIGH;
+    } else if (anomalyDegree < 0) {
+      fillColor = ANOMALY_COLORS.LOW;
+    }
+  }
+
+  return new Style({
+    fill: new Fill({ color: fillColor }),
+  });
 };
 
 const selectedStyleFn = (feature: any) => {
@@ -525,32 +587,6 @@ const hoveredStyleFn = (feature: any) => {
     }),
   );
   return style;
-};
-const generateAnomalyStyle = (anomalyDegree: number) => {
-  let fillColor = ANOMALY_COLORS.USUAL_LIGHT + '48'; // default
-
-  if (anomalyDegree > 0) {
-    fillColor = ANOMALY_COLORS.HIGH;
-  } else if (anomalyDegree < 0) {
-    fillColor = ANOMALY_COLORS.LOW;
-  }
-
-  return new Style({
-    fill: new Fill({ color: fillColor }),
-  });
-};
-
-const generateValueStyle = (value: number) => {
-  const startColor = hexToRgb(VALUE_COLORS.LOW);
-  const endColor = hexToRgb(VALUE_COLORS.HIGH);
-
-  const r = Math.round(startColor.r + (endColor.r - startColor.r) * value);
-  const g = Math.round(startColor.g + (endColor.g - startColor.g) * value);
-  const b = Math.round(startColor.b + (endColor.b - startColor.b) * value);
-
-  return new Style({
-    fill: new Fill({ color: `rgb(${r}, ${g}, ${b})` }),
-  });
 };
 </script>
 <style lang="scss">
