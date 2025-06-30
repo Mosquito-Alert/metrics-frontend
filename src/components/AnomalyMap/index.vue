@@ -284,8 +284,6 @@ const playbackWebGLStyle = computed(() => {
       style: {
         'fill-color': fillColor,
         'fill-opacity': 1,
-        'stroke-color': 'rgba(255, 255, 255, 0.3)',
-        'stroke-width': 0.5,
       },
     },
   ];
