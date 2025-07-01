@@ -302,20 +302,6 @@ const playbackLayer = new WebGLVectorTileLayer({
   source: playbackSource,
   style: playbackWebGLStyle.value,
 });
-const playbackInteractionLayer = new VectorTileLayer({
-  className: 'playback-interaction-layer',
-  source: playbackSource,
-  visible: true, // invisible but still interactive
-  style: new Style({
-    fill: new Fill({
-      color: 'rgba(0, 0, 0, 0)', // transparent fill
-    }),
-    stroke: new Stroke({
-      color: 'rgba(0, 0, 0, 0)', // transparent stroke
-      width: 0,
-    }),
-  }),
-});
 
 watch(playbackWebGLStyle, (newVariables) => {
   playbackLayer.setStyle(newVariables);
@@ -473,13 +459,11 @@ watch(
       // Set the source to the hover and selected layers
       layerRef.value?.vectorTileLayer.setZIndex(1);
       map.addLayer(playbackLayer);
-      map.addLayer(playbackInteractionLayer);
       hoverLayerRef.value?.vectorTileLayer.setSource(playbackSource);
     } else {
       // Remove the playback layer and add the normal layer
       layerRef.value?.vectorTileLayer.setZIndex(3);
       map.removeLayer(playbackLayer);
-      map.removeLayer(playbackInteractionLayer);
       if (layerRef.value) {
         hoverLayerRef.value?.vectorTileLayer.setSource(layerRef.value.vectorTileLayer.getSource());
       }
