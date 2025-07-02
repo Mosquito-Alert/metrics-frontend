@@ -13,24 +13,6 @@
 
     <!-- RIGHT SIDE OPTIONS -->
     <q-page-sticky position="top-right" :offset="[20, 20]" class="map-tools">
-      <div class="playback sidemap-option" :class="{ active: playbackOptionActive }">
-        <div @click="playbackStore.togglePlayback()">
-          <span v-if="!mapStore.fetchingDate" class="column items-center">
-            <q-icon name="history"></q-icon>
-            <p class="q-pa-none q-ma-none">Playback</p>
-            <!-- <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-              <q-date v-model="rangeDate" range>
-                <div class="row items-center justify-end q-gutter-sm">
-                  <q-btn label="Cancel" color="primary" flat v-close-popup />
-                  <q-btn label="OK" color="primary" flat v-close-popup />
-                </div>
-              </q-date>
-            </q-popup-proxy> -->
-          </span>
-          <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
-          <q-tooltip anchor="center left" self="center end">{{ playbackTooltipMsg }}</q-tooltip>
-        </div>
-      </div>
       <div class="sidemap-option" :class="{ active: autonomousCommunitiesActive }">
         <div @click="mapStore.showAutonomousCommunities = !mapStore.showAutonomousCommunities">
           <span v-if="!mapStore.fetchingDate" class="column items-center">
@@ -119,7 +101,6 @@ const regionDetailedStore = useRegionDetailedStore();
 const playbackStore = usePlaybackStore();
 
 const dateFetched = ref(false);
-const playbackOptionActive = computed(() => playbackStore.playbackEnabled);
 const autonomousCommunitiesActive = computed(() => mapStore.showAutonomousCommunities);
 const showAnomalies = computed(() => mapStore.showAnomalies);
 // const rangeDate = ref([new Date(), new Date()]);
@@ -128,18 +109,12 @@ const showAnomalies = computed(() => mapStore.showAnomalies);
 onMounted(async () => {
   $q.loading.show({ message: 'Loading data...' });
   await mapStore.fetchLastDate();
+  playbackStore.togglePlayback();
   dateFetched.value = true;
   $q.loading.hide();
 });
 
-const currentDate = computed(() => {
-  return playbackStore.playbackEnabled
-    ? playbackStore.formattedPlaybackCurrentDate
-    : uiStore.formattedDate;
-});
-const playbackTooltipMsg = computed(() =>
-  playbackStore.playbackEnabled ? 'Return to current date' : 'Playback last 30 days',
-);
+const currentDate = computed(() => uiStore.formattedDate);
 const autonomousCommunitiesTooltipMsg = computed(() =>
   mapStore.showAutonomousCommunities
     ? 'Hide autonomous communities borders'
