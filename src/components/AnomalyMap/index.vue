@@ -204,33 +204,65 @@ watch(
 );
 
 /**
- * WMS Layer
+ * WMS Layers (Metric Value and Anomaly)
  */
-const wmsSource = new TileWMS({
-  // crossOrigin: 'anonymous',
-  projection: mapStore.projection,
-  // TODO: Dynamic URL
-  url: 'http://localhost:8080/geoserver/mosquitoalert/wms',
-  params: {
-    LAYERS: 'mosquitoalert:metric',
-    SRS: mapStore.projection,
-    viewparams: 'date:' + mapStore.lastDate, //playbackStore.playbackCurrentDate,
-  },
-});
-const wmsLayer = new TileLayer({
+const getWmsSource = (styleName: string) =>
+  new TileWMS({
+    // crossOrigin: 'anonymous',
+    projection: mapStore.projection,
+    // TODO: Dynamic URL
+    url: 'http://localhost:8080/geoserver/mosquitoalert/wms',
+    params: {
+      LAYERS: `mosquitoalert:${styleName}`,
+      SRS: mapStore.projection,
+      viewparams: 'date:' + mapStore.lastDate, //playbackStore.playbackCurrentDate,
+    },
+  });
+const valueSource = getWmsSource('metric');
+const valueLayer = new TileLayer({
   className: 'wms-layer',
   zIndex: 3,
-  source: wmsSource,
+  source: valueSource,
+});
+const anomalySource = getWmsSource('metric-anomaly');
+const anomalyLayer = new TileLayer({
+  className: 'anomaly-layer',
+  zIndex: 4,
+  source: anomalySource,
+  visible: mapStore.showAnomalies,
 });
 watch(
   () => playbackStore.playbackCurrentDate,
   (newDate) => {
-    if (!wmsSource) {
+    if (!valueSource) {
       return;
     }
-    wmsSource.updateParams({
+    valueSource.updateParams({
       viewparams: 'date:' + newDate,
     });
+    anomalySource.updateParams({
+      viewparams: 'date:' + newDate,
+    });
+  },
+);
+watch(
+  () => mapStore.showAnomalies,
+  (showAnomalies) => {
+    const map = mapRef.value?.map;
+    if (!map) {
+      return;
+    }
+    if (showAnomalies) {
+      valueSource.updateParams({
+        STYLES: 'mosquitoalert:metricstyle-gray',
+      });
+      anomalyLayer.setVisible(true);
+    } else {
+      valueSource.updateParams({
+        STYLES: '', // default style
+      });
+      anomalyLayer.setVisible(false);
+    }
   },
 );
 
@@ -250,7 +282,8 @@ onMounted(() => {
     padding: [50, 50, 50, 50], // Padding around the feature
     duration: 200, // duration of the zoom animation in milliseconds
   });
-  map.addLayer(wmsLayer);
+  map.addLayer(valueLayer);
+  map.addLayer(anomalyLayer);
   map.addLayer(featureLayer);
   map.addOverlay(hoverOverlay);
 
@@ -365,20 +398,6 @@ watchEffect(() => {
 watch([hoveredFeatures, selectedFeatures], () => {
   featureLayer.changed();
 });
-watch(
-  () => mapStore.showAnomalies,
-  (showAnomalies) => {
-    if (showAnomalies) {
-      wmsSource.updateParams({
-        STYLES: 'mosquitoalert:metricstyle-gray',
-      });
-    } else {
-      wmsSource.updateParams({
-        STYLES: '', // default style
-      });
-    }
-  },
-);
 </script>
 <style lang="scss">
 .custom-tooltip {
