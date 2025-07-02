@@ -74,7 +74,7 @@
     <!-- PLAYBACK CONTROL -->
     <q-page-sticky
       position="bottom-left"
-      :offset="[0, 2]"
+      :offset="[0, 0]"
       class="sticky-playback-control flex justify-center"
     >
       <PlaybackControl

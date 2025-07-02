@@ -3,6 +3,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia';
 import { metricsApi } from '../services/apiService';
 import { formattedDate, getDatesBetween, subtractDays } from '../utils/date';
 import { useRegionDetailedStore } from './regionDetailedStore';
+import { useMapStore } from './mapStore';
 
 export const usePlaybackStore = defineStore('playbackStore', {
   state: () => ({
@@ -10,7 +11,7 @@ export const usePlaybackStore = defineStore('playbackStore', {
     playbackFinished: false as boolean, // Flag to indicate if playback has finished
     playbackDays: 30 as number,
     playbackDaysObject: {} as Record<number, string>, // Axis for playback days, indexed by day
-    playbackSpeed: 2 as number, // Speed in seconds per day
+    playbackSpeed: 0.75 as number, // Speed in seconds per day
     playbackPaused: true as boolean,
     playbackCurrentIndex: 0 as number,
     playbackCurrentDate: '' as string, // Default date, can be updated later
@@ -55,6 +56,10 @@ export const usePlaybackStore = defineStore('playbackStore', {
         this.data = null; // Clear previous data
       } else {
         // this.toggleVideoPlayback();
+        const mapStore = useMapStore();
+        const firstDate = subtractDays(mapStore.currentDate, this.playbackDays - 1);
+        this.playbackDaysObject = getDatesBetween(firstDate, mapStore.currentDate);
+        this.playbackCurrentDate = this.playbackCurrentDate || firstDate;
       }
       regionDetailedStore.$reset(); // Reset region detailed store
     },

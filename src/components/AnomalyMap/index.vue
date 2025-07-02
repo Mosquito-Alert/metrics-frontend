@@ -104,6 +104,8 @@ import WebGLVectorTileLayer from 'ol/layer/WebGLVectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import { regionsApi } from 'src/services/apiService';
 import { adjustSaturation, hexToRgb, rgbStringToHex } from 'src/utils/colorConversor';
+import { TileWMS } from 'ol/source';
+import TileLayer from 'ol/layer/Tile';
 
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
@@ -206,106 +208,133 @@ const autonomousCommunitiesLayer = new VectorTileLayer({
 /**
  * Playback
  */
-const loadPlaybackTiles = (tile: any, url: string) => {
-  tile.setLoader(async (extent: number[] | undefined, resolution: number, projection: string) => {
-    const [z, x, y] = tile.getTileCoord();
-    const data = await playbackStore.fetchData(
-      mapStore.currentDate,
-      x.toString(),
-      y.toString(),
-      z.toString(),
-    );
+// const loadPlaybackTiles = (tile: any, url: string) => {
+//   tile.setLoader(async (extent: number[] | undefined, resolution: number, projection: string) => {
+//     const [z, x, y] = tile.getTileCoord();
+//     const data = await playbackStore.fetchData(
+//       mapStore.currentDate,
+//       x.toString(),
+//       y.toString(),
+//       z.toString(),
+//     );
 
-    const format = tile.getFormat(); // ol/format/MVT configured as source format
-    const features = format.readFeatures(data, {
-      extent: extent,
-      featureProjection: projection,
-    });
+//     const format = tile.getFormat(); // ol/format/MVT configured as source format
+//     const features = format.readFeatures(data, {
+//       extent: extent,
+//       featureProjection: projection,
+//     });
 
-    for (const feature of features) {
-      const timeseries = JSON.parse(feature.get('timeseries'));
-      timeseries.forEach((item: any) => {
-        const dayKey = new Date(item.date).getTime();
-        feature.properties_['anomaly_degree' + dayKey] = item.anomaly_degree;
-        feature.properties_['value' + dayKey] = item.value;
-      });
-    }
+//     for (const feature of features) {
+//       const timeseries = JSON.parse(feature.get('timeseries'));
+//       timeseries.forEach((item: any) => {
+//         const dayKey = new Date(item.date).getTime();
+//         feature.properties_['anomaly_degree' + dayKey] = item.anomaly_degree;
+//         feature.properties_['value' + dayKey] = item.value;
+//       });
+//     }
 
-    tile.setFeatures(features);
-    mapStore.extent = extent || [];
-  });
-};
-const playbackWebGLStyle = computed(() => {
-  const applySaturationToStops = (stops: (string | number)[], saturationLevel = 0.0) => {
-    return stops.map((item) => {
-      if (typeof item === 'string') {
-        return adjustSaturation(item, saturationLevel);
-      }
-      return item;
-    });
-  };
-  const timestampKey = new Date(playbackStore.playbackCurrentDate).getTime();
-  const showAnomalies = mapStore.showAnomalies;
+//     tile.setFeatures(features);
+//     mapStore.extent = extent || [];
+//   });
+// };
+// const playbackWebGLStyle = computed(() => {
+//   const applySaturationToStops = (stops: (string | number)[], saturationLevel = 0.0) => {
+//     return stops.map((item) => {
+//       if (typeof item === 'string') {
+//         return adjustSaturation(item, saturationLevel);
+//       }
+//       return item;
+//     });
+//   };
+//   const timestampKey = new Date(playbackStore.playbackCurrentDate).getTime();
+//   const showAnomalies = mapStore.showAnomalies;
 
-  // Build gradient stops based on COLOR_RANGES
-  const colorStops: (string | number)[] = [];
-  VALUE_COLOR_STOPS.forEach((range) => {
-    colorStops.push(range.min, range.start);
-  });
-  const lastIndex = VALUE_COLOR_STOPS.length - 1;
-  colorStops.push(1.0, VALUE_COLOR_STOPS[lastIndex]?.end as string);
+//   // Build gradient stops based on COLOR_RANGES
+//   const colorStops: (string | number)[] = [];
+//   VALUE_COLOR_STOPS.forEach((range) => {
+//     colorStops.push(range.min, range.start);
+//   });
+//   const lastIndex = VALUE_COLOR_STOPS.length - 1;
+//   colorStops.push(1.0, VALUE_COLOR_STOPS[lastIndex]?.end as string);
 
-  let fillColor = [
-    'interpolate',
-    ['linear'],
-    ['get', `value${timestampKey}`],
-    ...colorStops,
-  ] as any;
+//   let fillColor = [
+//     'interpolate',
+//     ['linear'],
+//     ['get', `value${timestampKey}`],
+//     ...colorStops,
+//   ] as any;
 
-  if (showAnomalies) {
-    fillColor = [
-      'case',
-      ['>', ['get', `anomaly_degree${timestampKey}`], 0],
-      ANOMALY_COLORS.HIGH,
-      ['<', ['get', `anomaly_degree${timestampKey}`], 0],
-      ANOMALY_COLORS.LOW,
-      // No anomaly - gradient with reduced saturation
-      [
-        'interpolate',
-        ['linear'],
-        ['get', `value${timestampKey}`],
-        ...applySaturationToStops(colorStops, 0.0),
-      ],
-    ];
-  }
+//   if (showAnomalies) {
+//     fillColor = [
+//       'case',
+//       ['>', ['get', `anomaly_degree${timestampKey}`], 0],
+//       ANOMALY_COLORS.HIGH,
+//       ['<', ['get', `anomaly_degree${timestampKey}`], 0],
+//       ANOMALY_COLORS.LOW,
+//       // No anomaly - gradient with reduced saturation
+//       [
+//         'interpolate',
+//         ['linear'],
+//         ['get', `value${timestampKey}`],
+//         ...applySaturationToStops(colorStops, 0.0),
+//       ],
+//     ];
+//   }
 
-  return [
-    {
-      style: {
-        'fill-color': fillColor,
-        'fill-opacity': 1,
-      },
-    },
-  ];
-});
+//   return [
+//     {
+//       style: {
+//         'fill-color': fillColor,
+//         'fill-opacity': 1,
+//       },
+//     },
+//   ];
+// });
 
-const playbackSource = new VectorTileSource({
-  format: mapStore.format as MVT,
+// const playbackSource = new VectorTileSource({
+//   format: mapStore.format as MVT,
+//   projection: mapStore.projection,
+//   tileLoadFunction: loadPlaybackTiles,
+//   // We need a deafult URL
+//   url: 'http://dummy.url/{z}/{x}/{y}/',
+// }) as any;
+// const playbackLayer = new WebGLVectorTileLayer({
+//   className: 'playback-layer',
+//   zIndex: 4,
+//   source: playbackSource,
+//   style: playbackWebGLStyle.value,
+// });
+
+// watch(playbackWebGLStyle, (newVariables) => {
+//   playbackLayer.setStyle(newVariables);
+// });
+
+const playbackSource = new TileWMS({
+  // crossOrigin: 'anonymous',
   projection: mapStore.projection,
-  tileLoadFunction: loadPlaybackTiles,
-  // We need a deafult URL
-  url: 'http://dummy.url/{z}/{x}/{y}/',
-}) as any;
-const playbackLayer = new WebGLVectorTileLayer({
+  url: 'http://localhost:8080/geoserver/mosquitoalert/wms',
+  params: {
+    LAYERS: 'mosquitoalert:metric2',
+    SRS: mapStore.projection,
+    viewparams: 'date:' + playbackStore.playbackCurrentDate,
+  },
+});
+const playbackLayer = new TileLayer({
   className: 'playback-layer',
   zIndex: 4,
   source: playbackSource,
-  style: playbackWebGLStyle.value,
 });
-
-watch(playbackWebGLStyle, (newVariables) => {
-  playbackLayer.setStyle(newVariables);
-});
+watch(
+  () => playbackStore.playbackCurrentDate,
+  (newDate) => {
+    if (!playbackSource) {
+      return;
+    }
+    playbackSource.updateParams({
+      viewparams: 'date:' + newDate,
+    });
+  },
+);
 
 /**
  * Vue lyfecycle hooks
@@ -459,7 +488,7 @@ watch(
       // Set the source to the hover and selected layers
       layerRef.value?.vectorTileLayer.setZIndex(1);
       map.addLayer(playbackLayer);
-      hoverLayerRef.value?.vectorTileLayer.setSource(playbackSource);
+      // hoverLayerRef.value?.vectorTileLayer.setSource(playbackSource);
     } else {
       // Remove the playback layer and add the normal layer
       layerRef.value?.vectorTileLayer.setZIndex(3);

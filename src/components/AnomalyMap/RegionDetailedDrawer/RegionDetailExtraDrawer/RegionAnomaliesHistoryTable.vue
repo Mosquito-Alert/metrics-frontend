@@ -124,16 +124,13 @@ const onRequest = async (props: any) => {
   return returnedData;
 };
 
-const rowClassFn = (row: Metric) => {
-  // check if the date is the same as uiStore.getDate
-  const selectedDate = uiStore.formattedDate;
-  const rowDate = formattedDate(row.date);
-  return formattedDate(row.date) === uiStore.formattedDate ? 'cell-highlight' : '';
-};
+const rowClassFn = (row: Metric) =>
+  formattedDate(row.date) === uiStore.formattedDate ? 'cell-highlight' : '';
 </script>
 
 <style lang="scss">
 .cell-highlight {
   background-color: #fdf7e6 !important; /* Light blue background for the highlighted cell */
+  font-weight: 600;
 }
 </style>
