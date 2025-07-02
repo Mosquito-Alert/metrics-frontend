@@ -1,6 +1,6 @@
 <template>
   <q-card>
-    <q-card-section v-if="mapStore.showAnomalies">
+    <q-card-section v-if="mapStore.showAnomalies || regionDetailedStore.selectedRegionMetricId">
       <div class="text-subtitle2 text-weight-bold text-uppercase q-ma-none q-pa-none q-mb-md">
         Bite Probability Anomalies
       </div>
@@ -38,10 +38,12 @@
 <script setup lang="ts">
 import { VALUE_COLOR_STOPS } from 'src/constants/colors';
 import { useMapStore } from 'src/stores/mapStore';
+import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import { adjustSaturation } from 'src/utils/colorConversor';
 import { computed } from 'vue';
 
 const mapStore = useMapStore();
+const regionDetailedStore = useRegionDetailedStore();
 
 const gradientStops = computed(() => {
   return VALUE_COLOR_STOPS.map((range) => {

@@ -40,7 +40,7 @@
     </q-page-sticky>
 
     <!-- LEGEND AND DATE -->
-    <q-page-sticky position="bottom-right" :offset="[20, uiStore.getOffsetBottom]">
+    <q-page-sticky position="bottom-right" :offset="[20, 110]">
       <div id="map-date" class="text-right q-py-sm">
         <span
           class="q-px-lg q-py-sm text-weight-medium text-subtitle1"
@@ -59,13 +59,7 @@
       :offset="[0, 0]"
       class="sticky-playback-control flex justify-center"
     >
-      <PlaybackControl
-        v-if="
-          playbackStore.playbackEnabled &&
-          !regionDetailedStore.selectedRegionMetricId &&
-          !playbackStore.fetchingData
-        "
-      />
+      <PlaybackControl v-if="playbackStore.playbackEnabled && !playbackStore.fetchingData" />
       <q-skeleton type="QBadge" v-if="playbackStore.fetchingData" />
     </q-page-sticky>
 
@@ -74,7 +68,7 @@
       :style="{
         zIndex: 1,
         position: 'absolute',
-        bottom: uiStore.getOffsetBottom + 'px',
+        bottom: '110px',
         margin: 'auto',
       }"
       class="absolute-bottom q-mb-sm"

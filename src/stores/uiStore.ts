@@ -27,10 +27,11 @@ export const useUIStore = defineStore('uiStore', {
         ? formattedDate(playbackStore.playbackCurrentDate)
         : formattedDate(mapStore.lastDate);
     },
-    getOffsetBottom: (state) => {
-      const playbackStore = usePlaybackStore();
+    playbackWidth: (state) => {
       const regionDetailedStore = useRegionDetailedStore();
-      return playbackStore.playbackEnabled && !regionDetailedStore.isRegionSelected ? '110' : '20';
+      return regionDetailedStore.selectedRegionMetricId
+        ? state.appWidth - state.regionDetailDrawerWidth
+        : state.appWidth;
     },
   },
 

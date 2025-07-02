@@ -1,5 +1,5 @@
 <template>
-  <div class="playback-control">
+  <div class="playback-control" :style="compactWithDrawerStyle">
     <div class="playback-buttons">
       <q-btn
         class="control-button"
@@ -47,10 +47,15 @@
 </template>
 <script setup lang="ts">
 import { usePlaybackStore } from 'src/stores/playbackStore';
+import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
+import { useUIStore } from 'src/stores/uiStore';
 import { formattedDate } from 'src/utils/date';
 import { computed, ref, watch } from 'vue';
+import type { CSSProperties } from 'vue';
 
+const uiStore = useUIStore();
 const playbackStore = usePlaybackStore();
+const regionDetailedStore = useRegionDetailedStore();
 
 const maxIndex = ref(Object.keys(playbackStore.playbackDaysObject).length - 1);
 // Only show first and last markers
@@ -77,6 +82,17 @@ const playIcon = computed(() => {
       : 'play_arrow';
 });
 
+const compactWithDrawerStyle = computed<CSSProperties>(() => {
+  return regionDetailedStore.selectedRegionMetricId
+    ? {
+        width: uiStore.playbackWidth + 'px',
+        position: 'absolute',
+        left: uiStore.regionDetailDrawerWidth + 'px',
+        bottom: '0px',
+      }
+    : {};
+});
+
 watch(
   () => playbackStore.playbackCurrentIndex,
   (newValue) => {
@@ -92,9 +108,9 @@ watch(
   background-color: #393939cc;
   color: #e1e1e1;
   border: 1px solid #393939;
-  border-radius: 0.5rem;
+  // border-radius: 0.5rem;
   padding: 1rem 3rem 0.1rem 2rem;
-  margin: auto 20px;
+  // margin: auto 20px;
   .playback-buttons {
     display: flex;
     flex-shrink: 0; // Prevent buttons from shrinking
