@@ -13,7 +13,6 @@
     />
     <!-- * CONTENT -->
     <q-scroll-area ref="drawerScrollArea" class="drawer-content col q-px-md q-py-xs">
-      <RegionSummary />
       <RegionAnomaliesHistoryTable />
     </q-scroll-area>
   </div>

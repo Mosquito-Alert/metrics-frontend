@@ -18,14 +18,14 @@ export const useUIStore = defineStore('uiStore', {
       const playbackStore = usePlaybackStore();
       return playbackStore.playbackEnabled
         ? new Date(playbackStore.playbackCurrentDate)
-        : new Date(mapStore.currentDate);
+        : new Date(mapStore.lastDate);
     },
     formattedDate: (state) => {
       const mapStore = useMapStore();
       const playbackStore = usePlaybackStore();
       return playbackStore.playbackEnabled
         ? formattedDate(playbackStore.playbackCurrentDate)
-        : formattedDate(mapStore.currentDate);
+        : formattedDate(mapStore.lastDate);
     },
     getOffsetBottom: (state) => {
       const playbackStore = usePlaybackStore();

@@ -27,7 +27,7 @@ export const useMapStore = defineStore('mapStore', {
     selectedFeatures: [] as FeatureLike[],
     data: null as Metric | any, // Replace with actual type if known
     fetchingDate: true,
-    currentDate: '' as string, // Default date, can be updated later:
+    lastDate: '' as string, // Default date, can be updated later:
     showAutonomousCommunities: false,
     showAnomalies: false,
   }),
@@ -63,7 +63,7 @@ export const useMapStore = defineStore('mapStore', {
       return response.data;
     },
     setDate(newDate: string) {
-      this.currentDate = newDate;
+      this.lastDate = newDate;
     },
   },
 });

@@ -70,7 +70,7 @@ const trendLoading = computed(() => regionDetailedStore.fetchingRegionMetricTren
 const trendDate = computed((): Date => {
   return regionDetailedStore.selectedRegionMetricTrend?.date
     ? new Date(regionDetailedStore.selectedRegionMetricTrend.date)
-    : new Date(mapStore.currentDate); // Default to the data date if no trend date is available
+    : new Date(mapStore.lastDate); // Default to the data date if no trend date is available
 });
 const trend = computed(() => {
   const data = regionDetailedStore.selectedRegionMetricTrend?.trend || [];

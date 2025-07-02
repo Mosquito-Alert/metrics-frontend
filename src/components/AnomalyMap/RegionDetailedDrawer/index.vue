@@ -16,7 +16,7 @@
         <div class="col-10">
           <p class="text-h6 text-weight-regular" style="color: #333">{{ provinceName }}</p>
           <p class="text-subtitle-1 text-weight-regular q-ma-none" style="color: #333">
-            {{ date.formatDate(mapStore.currentDate, 'MMM D, YYYY') }}
+            {{ date.formatDate(mapStore.lastDate, 'MMM D, YYYY') }}
             <span class="date-label">(Last available data)</span>
           </p>
         </div>
