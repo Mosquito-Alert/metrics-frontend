@@ -5,8 +5,8 @@
       class="absolute-full"
       :loadTilesWhileAnimating="true"
       :loadTilesWhileInteracting="true"
-      @pointermove="hoverFeature"
       @click="selectFeature"
+      @pointermove="hoverFeature"
       :controls="[]"
     >
       <ol-view
@@ -26,7 +26,7 @@
         />
       </ol-tile-layer>
 
-      <ol-tile-layer :z-index="6">
+      <ol-tile-layer :z-index="7">
         <ol-source-xyz
           :url="mapStore.labelsLayer.url"
           :preload="mapStore.labelsLayer.preload"
@@ -81,7 +81,7 @@ const $q = useQuasar();
 const center = computed(() => fromLonLat(mapStore.center, mapStore.projection));
 
 /**
- * Feature Layer
+ * Feature Layer (and hover layer)
  */
 const format = inject('ol-format');
 mapStore.format = new format.MVT({ idProperty: 'id' }); // Store the format in the mapStore for later use
@@ -147,8 +147,38 @@ const featureLayer = new VectorTileLayer({
   source: featureSource,
   style: styleFn as any, // Use the style function defined below
 });
+const hoverLayer = new VectorTileLayer({
+  className: 'hover-layer',
+  zIndex: 5,
+  source: featureSource,
+  style: styleFn as any, // Use the same style function for hover
+});
 featureSource.on('tileloadstart', handleSourceTileLoadStart);
 featureSource.on('tileloadend', handleSourceTileLoadEnd);
+// Zoom to selectedFeature
+watchEffect(() => {
+  if (regionDetailedStore.isRegionSelected && selectedFeatures.value.length > 0) {
+    const feature = selectedFeatures.value[0] as FeatureLike;
+    const geometry = feature.getGeometry() as Geometry;
+    viewRef.value.view.fit(geometry.getExtent(), {
+      padding: [350, 350, 350, 350], //Padding around the feature
+      duration: 600, // duration of the zoom animation in milliseconds
+    });
+  } else if (viewRef.value && !regionDetailedStore.isRegionSelected) {
+    viewRef.value.view.animate({
+      center: center.value,
+      zoom: mapStore.zoom,
+      duration: 600, // duration of the zoom animation in milliseconds
+    });
+  }
+});
+
+watch(selectedFeatures, () => {
+  featureLayer.changed();
+});
+watch(hoveredFeatures, () => {
+  hoverLayer.changed();
+});
 
 /**
  * Borders Autonomous Communities
@@ -179,7 +209,7 @@ const autonomousCommunitiesSource = new VectorTileSource({
 }) as any;
 const autonomousCommunitiesLayer = new VectorTileLayer({
   className: 'autonomous-communities-layer',
-  zIndex: 5,
+  zIndex: 6,
   source: autonomousCommunitiesSource,
   style: new Style({
     stroke: new Stroke({
@@ -285,6 +315,7 @@ onMounted(() => {
   map.addLayer(valueLayer);
   map.addLayer(anomalyLayer);
   map.addLayer(featureLayer);
+  map.addLayer(hoverLayer);
   map.addOverlay(hoverOverlay);
 
   // Cursor pointer on feature hover
@@ -374,28 +405,6 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   tooltipEl.classList.add('visible');
   hoverOverlay.setPosition(event.coordinate);
 };
-
-// Zoom to selectedFeature
-watchEffect(() => {
-  if (regionDetailedStore.isRegionSelected && selectedFeatures.value.length > 0) {
-    const feature = selectedFeatures.value[0] as FeatureLike;
-    const geometry = feature.getGeometry() as Geometry;
-    viewRef.value.view.fit(geometry.getExtent(), {
-      padding: [350, 350, 350, 350], //Padding around the feature
-      duration: 600, // duration of the zoom animation in milliseconds
-    });
-  } else if (viewRef.value && !regionDetailedStore.isRegionSelected) {
-    viewRef.value.view.animate({
-      center: center.value,
-      zoom: mapStore.zoom,
-      duration: 600, // duration of the zoom animation in milliseconds
-    });
-  }
-});
-
-watch([hoveredFeatures, selectedFeatures], () => {
-  featureLayer.changed();
-});
 </script>
 <style lang="scss">
 .custom-tooltip {
