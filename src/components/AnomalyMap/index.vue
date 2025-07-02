@@ -212,7 +212,7 @@ const wmsSource = new TileWMS({
   // TODO: Dynamic URL
   url: 'http://localhost:8080/geoserver/mosquitoalert/wms',
   params: {
-    LAYERS: 'mosquitoalert:metric2',
+    LAYERS: 'mosquitoalert:metric',
     SRS: mapStore.projection,
     viewparams: 'date:' + mapStore.lastDate, //playbackStore.playbackCurrentDate,
   },
@@ -368,12 +368,15 @@ watch([hoveredFeatures, selectedFeatures], () => {
 watch(
   () => mapStore.showAnomalies,
   (showAnomalies) => {
-    const map = mapRef.value?.map;
-    if (!map) {
-      return;
+    if (showAnomalies) {
+      wmsSource.updateParams({
+        STYLES: 'mosquitoalert:metricstyle-gray',
+      });
+    } else {
+      wmsSource.updateParams({
+        STYLES: '', // default style
+      });
     }
-    // layerRef.value?.vectorTileLayer.setStyle(styleFn as any);
-    featureLayer.setStyle(styleFn as any);
   },
 );
 </script>
