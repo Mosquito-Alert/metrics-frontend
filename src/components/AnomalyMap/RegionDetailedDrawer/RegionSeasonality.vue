@@ -113,6 +113,8 @@ const seriesValuesData = computed(() => {
       const markLine = lastPoint
         ? {
             markLine: {
+              // animation: false,
+              animationDuration: 100,
               data: [
                 {
                   name: "Today's mark",

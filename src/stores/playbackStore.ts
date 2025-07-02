@@ -55,7 +55,7 @@ export const usePlaybackStore = defineStore('playbackStore', {
         this.playbackCurrentIndex = 0;
         this.data = null; // Clear previous data
       } else {
-        // this.toggleVideoPlayback();
+        this.toggleVideoPlayback();
         const mapStore = useMapStore();
         const firstDate = subtractDays(mapStore.lastDate, this.playbackDays - 1);
         this.playbackDaysObject = getDatesBetween(firstDate, mapStore.lastDate);

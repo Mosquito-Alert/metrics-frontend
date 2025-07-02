@@ -47,22 +47,22 @@
 <script setup lang="ts">
 import { Feature, MapBrowserEvent, Overlay } from 'ol';
 import { FeatureLike } from 'ol/Feature';
+import MVT from 'ol/format/MVT.js';
 import { Geometry } from 'ol/geom';
 import { Layer } from 'ol/layer';
+import TileLayer from 'ol/layer/Tile';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import type MapRef from 'ol/Map';
 import { fromLonLat, transformExtent } from 'ol/proj';
+import { TileWMS } from 'ol/source';
+import VectorTileSource from 'ol/source/VectorTile.js';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
-import { useMapStore } from 'src/stores/mapStore';
-import { computed, inject, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
-import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
-import { usePlaybackStore } from 'src/stores/playbackStore';
-import MVT from 'ol/format/MVT.js';
-import VectorTileSource from 'ol/source/VectorTile.js';
 import { regionsApi } from 'src/services/apiService';
-import { TileWMS } from 'ol/source';
-import TileLayer from 'ol/layer/Tile';
+import { useMapStore } from 'src/stores/mapStore';
+import { usePlaybackStore } from 'src/stores/playbackStore';
+import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
+import { computed, inject, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
 
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
@@ -369,9 +369,7 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
 
   const feature = features[0] as FeatureLike;
   tooltipEl.innerHTML = `
-  <div><strong>${feature.get('region__name')}</strong></div>
-  <div>(${feature.get('region__province__autonomous_community__name')})</div>
-  <div>Bites Index: <i>${(feature.get('value') * 100).toFixed(1)}%</i></div>
+  <div>${feature.get('region__name')}</div>
   `;
   tooltipEl.classList.add('visible');
   hoverOverlay.setPosition(event.coordinate);

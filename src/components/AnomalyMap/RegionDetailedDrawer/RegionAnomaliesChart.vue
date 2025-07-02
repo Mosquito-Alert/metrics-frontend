@@ -249,6 +249,8 @@ const option = computed(() => {
         })),
         showSymbol: false,
         markLine: {
+          // animation: false,
+          animationDuration: 100,
           data: [
             {
               name: "Today's mark",

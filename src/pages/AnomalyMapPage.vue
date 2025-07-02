@@ -13,24 +13,6 @@
 
     <!-- RIGHT SIDE OPTIONS -->
     <q-page-sticky position="top-right" :offset="[20, 20]" class="map-tools">
-      <div class="playback sidemap-option" :class="{ active: playbackOptionActive }">
-        <div @click="playbackStore.togglePlayback()">
-          <span v-if="!mapStore.fetchingDate" class="column items-center">
-            <q-icon name="history"></q-icon>
-            <p class="q-pa-none q-ma-none">Playback</p>
-            <!-- <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-              <q-date v-model="rangeDate" range>
-                <div class="row items-center justify-end q-gutter-sm">
-                  <q-btn label="Cancel" color="primary" flat v-close-popup />
-                  <q-btn label="OK" color="primary" flat v-close-popup />
-                </div>
-              </q-date>
-            </q-popup-proxy> -->
-          </span>
-          <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
-          <q-tooltip anchor="center left" self="center end">{{ playbackTooltipMsg }}</q-tooltip>
-        </div>
-      </div>
       <div class="sidemap-option" :class="{ active: autonomousCommunitiesActive }">
         <div @click="mapStore.showAutonomousCommunities = !mapStore.showAutonomousCommunities">
           <span v-if="!mapStore.fetchingDate" class="column items-center">
@@ -58,7 +40,7 @@
     </q-page-sticky>
 
     <!-- LEGEND AND DATE -->
-    <q-page-sticky position="bottom-right" :offset="[20, uiStore.getOffsetBottom]">
+    <q-page-sticky position="bottom-right" :offset="[20, 110]">
       <div id="map-date" class="text-right q-py-sm">
         <span
           class="q-px-lg q-py-sm text-weight-medium text-subtitle1"
@@ -77,13 +59,7 @@
       :offset="[0, 0]"
       class="sticky-playback-control flex justify-center"
     >
-      <PlaybackControl
-        v-if="
-          playbackStore.playbackEnabled &&
-          !regionDetailedStore.selectedRegionMetricId &&
-          !playbackStore.fetchingData
-        "
-      />
+      <PlaybackControl v-if="playbackStore.playbackEnabled && !playbackStore.fetchingData" />
       <q-skeleton type="QBadge" v-if="playbackStore.fetchingData" />
     </q-page-sticky>
 
@@ -92,7 +68,7 @@
       :style="{
         zIndex: 1,
         position: 'absolute',
-        bottom: uiStore.getOffsetBottom + 'px',
+        bottom: '110px',
         margin: 'auto',
       }"
       class="absolute-bottom q-mb-sm"
@@ -119,7 +95,6 @@ const regionDetailedStore = useRegionDetailedStore();
 const playbackStore = usePlaybackStore();
 
 const dateFetched = ref(false);
-const playbackOptionActive = computed(() => playbackStore.playbackEnabled);
 const autonomousCommunitiesActive = computed(() => mapStore.showAutonomousCommunities);
 const showAnomalies = computed(() => mapStore.showAnomalies);
 // const rangeDate = ref([new Date(), new Date()]);
@@ -128,18 +103,12 @@ const showAnomalies = computed(() => mapStore.showAnomalies);
 onMounted(async () => {
   $q.loading.show({ message: 'Loading data...' });
   await mapStore.fetchLastDate();
+  playbackStore.togglePlayback();
   dateFetched.value = true;
   $q.loading.hide();
 });
 
-const currentDate = computed(() => {
-  return playbackStore.playbackEnabled
-    ? playbackStore.formattedPlaybackCurrentDate
-    : uiStore.formattedDate;
-});
-const playbackTooltipMsg = computed(() =>
-  playbackStore.playbackEnabled ? 'Return to current date' : 'Playback last 30 days',
-);
+const currentDate = computed(() => uiStore.formattedDate);
 const autonomousCommunitiesTooltipMsg = computed(() =>
   mapStore.showAutonomousCommunities
     ? 'Hide autonomous communities borders'
