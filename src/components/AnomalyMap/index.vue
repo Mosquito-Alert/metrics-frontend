@@ -26,38 +26,7 @@
         />
       </ol-tile-layer>
 
-      <ol-vector-tile-layer ref="layerRef" class-name="feature-layer" z-index="3">
-        <ol-source-vector-tile
-          ref="sourceRef"
-          :format="anomalyLayer.format"
-          :projection="mapStore.projection"
-          :tileLoadFunction="loadTiles"
-          :url="anomalyLayer.url"
-          @tileloadstart="handleSourceTileLoadStart"
-          @tileloadend="handleSourceTileLoadEnd"
-        />
-        <ol-style :overrideStyleFunction="styleFn"></ol-style>
-      </ol-vector-tile-layer>
-
-      <ol-vector-tile-layer
-        ref="hoverLayerRef"
-        :z-index="6"
-        render-mode="vector"
-        :source="sourceRef?.source"
-      >
-        <ol-style :overrideStyleFunction="hoveredStyleFn"></ol-style>
-      </ol-vector-tile-layer>
-
-      <ol-vector-tile-layer
-        ref="selectedLayerRef"
-        :z-index="7"
-        render-mode="vector"
-        :source="sourceRef?.source"
-      >
-        <ol-style :overrideStyleFunction="selectedStyleFn"></ol-style>
-      </ol-vector-tile-layer>
-
-      <ol-tile-layer :z-index="8">
+      <ol-tile-layer :z-index="6">
         <ol-source-xyz
           :url="mapStore.labelsLayer.url"
           :preload="mapStore.labelsLayer.preload"
@@ -85,7 +54,6 @@ import type MapRef from 'ol/Map';
 import { fromLonLat, transformExtent } from 'ol/proj';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
-import { ANOMALY_COLORS, VALUE_COLOR_STOPS } from 'src/constants/colors';
 import { useMapStore } from 'src/stores/mapStore';
 import {
   computed,
@@ -100,10 +68,8 @@ import {
 import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
 import { usePlaybackStore } from 'src/stores/playbackStore';
 import MVT from 'ol/format/MVT.js';
-import WebGLVectorTileLayer from 'ol/layer/WebGLVectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import { regionsApi } from 'src/services/apiService';
-import { adjustSaturation, hexToRgb, rgbStringToHex } from 'src/utils/colorConversor';
 import { TileWMS } from 'ol/source';
 import TileLayer from 'ol/layer/Tile';
 
@@ -116,10 +82,6 @@ const selectedFeatures = computed(() => mapStore.selectedFeatures);
 
 const mapRef = ref<{ map: MapRef } | null>(null);
 const viewRef = ref();
-const sourceRef = ref();
-const layerRef = ref<{ vectorTileLayer: VectorTileLayer } | null>(null);
-const hoverLayerRef = ref<{ vectorTileLayer: VectorTileLayer } | null>(null);
-const selectedLayerRef = ref<{ vectorTileLayer: VectorTileLayer } | null>(null);
 
 const $q = useQuasar();
 /**
@@ -127,17 +89,11 @@ const $q = useQuasar();
  */
 const center = computed(() => fromLonLat(mapStore.center, mapStore.projection));
 
-// * Map layers
+/**
+ * Feature Layer
+ */
 const format = inject('ol-format');
 mapStore.format = new format.MVT({ idProperty: 'id' }); // Store the format in the mapStore for later use
-
-const anomalyLayer = computed(() => {
-  return {
-    // We need a deafult URL
-    url: `http://dummy.url/{z}/{x}/{y}/`,
-    format: mapStore.format,
-  };
-});
 
 const loadTiles = (tile: any, url: string) => {
   tile.setLoader(async (extent: number[] | undefined, resolution: number, projection: string) => {
@@ -165,6 +121,42 @@ const handleSourceTileLoadStart = () => {
 const handleSourceTileLoadEnd = () => {
   $q.loading.hide();
 };
+const styleFn = (feature: Feature) => {
+  const selectedFeaturesIds = selectedFeatures.value.map((f) => f.getId());
+  const hoveredFeaturesIds = hoveredFeatures.value.map((f) => f.getId());
+  let width = 2;
+  if (selectedFeaturesIds.includes(feature.getId())) {
+    width = 4;
+  } else if (hoveredFeaturesIds.includes(feature.getId())) {
+    width = 2;
+  } else {
+    return new Style({
+      fill: new Fill({
+        color: 'rgba(255, 255, 255, 0)',
+      }),
+    });
+  }
+  return new Style({
+    stroke: new Stroke({
+      color: getCssVar('accent') || '#FF0000',
+      width,
+    }),
+  });
+};
+const featureSource = new VectorTileSource({
+  format: mapStore.format as MVT,
+  projection: mapStore.projection,
+  url: 'http://dummy.url/{z}/{x}/{y}/', // We need a default URL
+  tileLoadFunction: loadTiles,
+}) as any;
+const featureLayer = new VectorTileLayer({
+  className: 'feature-layer',
+  zIndex: 4,
+  source: featureSource,
+  style: styleFn as any, // Use the style function defined below
+});
+featureSource.on('tileloadstart', handleSourceTileLoadStart);
+featureSource.on('tileloadend', handleSourceTileLoadEnd);
 
 /**
  * Borders Autonomous Communities
@@ -195,7 +187,7 @@ const autonomousCommunitiesSource = new VectorTileSource({
 }) as any;
 const autonomousCommunitiesLayer = new VectorTileLayer({
   className: 'autonomous-communities-layer',
-  zIndex: 9,
+  zIndex: 5,
   source: autonomousCommunitiesSource,
   style: new Style({
     stroke: new Stroke({
@@ -208,107 +200,6 @@ const autonomousCommunitiesLayer = new VectorTileLayer({
 /**
  * Playback
  */
-// const loadPlaybackTiles = (tile: any, url: string) => {
-//   tile.setLoader(async (extent: number[] | undefined, resolution: number, projection: string) => {
-//     const [z, x, y] = tile.getTileCoord();
-//     const data = await playbackStore.fetchData(
-//       mapStore.currentDate,
-//       x.toString(),
-//       y.toString(),
-//       z.toString(),
-//     );
-
-//     const format = tile.getFormat(); // ol/format/MVT configured as source format
-//     const features = format.readFeatures(data, {
-//       extent: extent,
-//       featureProjection: projection,
-//     });
-
-//     for (const feature of features) {
-//       const timeseries = JSON.parse(feature.get('timeseries'));
-//       timeseries.forEach((item: any) => {
-//         const dayKey = new Date(item.date).getTime();
-//         feature.properties_['anomaly_degree' + dayKey] = item.anomaly_degree;
-//         feature.properties_['value' + dayKey] = item.value;
-//       });
-//     }
-
-//     tile.setFeatures(features);
-//     mapStore.extent = extent || [];
-//   });
-// };
-// const playbackWebGLStyle = computed(() => {
-//   const applySaturationToStops = (stops: (string | number)[], saturationLevel = 0.0) => {
-//     return stops.map((item) => {
-//       if (typeof item === 'string') {
-//         return adjustSaturation(item, saturationLevel);
-//       }
-//       return item;
-//     });
-//   };
-//   const timestampKey = new Date(playbackStore.playbackCurrentDate).getTime();
-//   const showAnomalies = mapStore.showAnomalies;
-
-//   // Build gradient stops based on COLOR_RANGES
-//   const colorStops: (string | number)[] = [];
-//   VALUE_COLOR_STOPS.forEach((range) => {
-//     colorStops.push(range.min, range.start);
-//   });
-//   const lastIndex = VALUE_COLOR_STOPS.length - 1;
-//   colorStops.push(1.0, VALUE_COLOR_STOPS[lastIndex]?.end as string);
-
-//   let fillColor = [
-//     'interpolate',
-//     ['linear'],
-//     ['get', `value${timestampKey}`],
-//     ...colorStops,
-//   ] as any;
-
-//   if (showAnomalies) {
-//     fillColor = [
-//       'case',
-//       ['>', ['get', `anomaly_degree${timestampKey}`], 0],
-//       ANOMALY_COLORS.HIGH,
-//       ['<', ['get', `anomaly_degree${timestampKey}`], 0],
-//       ANOMALY_COLORS.LOW,
-//       // No anomaly - gradient with reduced saturation
-//       [
-//         'interpolate',
-//         ['linear'],
-//         ['get', `value${timestampKey}`],
-//         ...applySaturationToStops(colorStops, 0.0),
-//       ],
-//     ];
-//   }
-
-//   return [
-//     {
-//       style: {
-//         'fill-color': fillColor,
-//         'fill-opacity': 1,
-//       },
-//     },
-//   ];
-// });
-
-// const playbackSource = new VectorTileSource({
-//   format: mapStore.format as MVT,
-//   projection: mapStore.projection,
-//   tileLoadFunction: loadPlaybackTiles,
-//   // We need a deafult URL
-//   url: 'http://dummy.url/{z}/{x}/{y}/',
-// }) as any;
-// const playbackLayer = new WebGLVectorTileLayer({
-//   className: 'playback-layer',
-//   zIndex: 4,
-//   source: playbackSource,
-//   style: playbackWebGLStyle.value,
-// });
-
-// watch(playbackWebGLStyle, (newVariables) => {
-//   playbackLayer.setStyle(newVariables);
-// });
-
 const playbackSource = new TileWMS({
   // crossOrigin: 'anonymous',
   projection: mapStore.projection,
@@ -321,7 +212,7 @@ const playbackSource = new TileWMS({
 });
 const playbackLayer = new TileLayer({
   className: 'playback-layer',
-  zIndex: 4,
+  zIndex: 3,
   source: playbackSource,
 });
 watch(
@@ -352,7 +243,7 @@ onMounted(() => {
     padding: [50, 50, 50, 50], // Padding around the feature
     duration: 200, // duration of the zoom animation in milliseconds
   });
-
+  map.addLayer(featureLayer);
   map.addOverlay(hoverOverlay);
 
   // Cursor pointer on feature hover
@@ -469,11 +360,8 @@ watchEffect(() => {
   }
 });
 
-watch(hoveredFeatures, () => {
-  hoverLayerRef.value?.vectorTileLayer.changed();
-});
-watch(selectedFeatures, () => {
-  selectedLayerRef.value?.vectorTileLayer.changed();
+watch([hoveredFeatures, selectedFeatures], () => {
+  featureLayer.changed();
 });
 // Switch between normal and playback layers
 watch(
@@ -486,16 +374,12 @@ watch(
 
     if (playbackEnabled) {
       // Set the source to the hover and selected layers
-      layerRef.value?.vectorTileLayer.setZIndex(1);
+      // featureLayer.setZIndex(1);
       map.addLayer(playbackLayer);
-      // hoverLayerRef.value?.vectorTileLayer.setSource(playbackSource);
     } else {
       // Remove the playback layer and add the normal layer
-      layerRef.value?.vectorTileLayer.setZIndex(3);
+      // featureLayer.setZIndex(3);
       map.removeLayer(playbackLayer);
-      if (layerRef.value) {
-        hoverLayerRef.value?.vectorTileLayer.setSource(layerRef.value.vectorTileLayer.getSource());
-      }
     }
   },
 );
@@ -520,85 +404,10 @@ watch(
     if (!map) {
       return;
     }
-    layerRef.value?.vectorTileLayer.setStyle(styleFn as any);
+    // layerRef.value?.vectorTileLayer.setStyle(styleFn as any);
+    featureLayer.setStyle(styleFn as any);
   },
 );
-
-/**
- * Styles
- */
-
-const styleFn = (feature: Feature) => {
-  const anomalyDegree = feature.get('anomaly_degree');
-  const value = feature.get('value');
-
-  let fillColor = ANOMALY_COLORS.USUAL_LIGHT + '48'; // Default fallback color
-
-  if (typeof value === 'number' && value >= 0) {
-    for (const range of VALUE_COLOR_STOPS) {
-      if (value >= range.min && value <= range.max) {
-        const startColor = hexToRgb(range.start);
-        const endColor = hexToRgb(range.end);
-
-        // Normalize value within the range
-        const normalized = (value - range.min) / (range.max - range.min);
-
-        // Interpolate color
-        const r = Math.round(startColor.r + (endColor.r - startColor.r) * normalized);
-        const g = Math.round(startColor.g + (endColor.g - startColor.g) * normalized);
-        const b = Math.round(startColor.b + (endColor.b - startColor.b) * normalized);
-
-        fillColor = `rgb(${r}, ${g}, ${b})`;
-        break;
-      }
-    }
-  }
-
-  // Adjust color based on anomalyDegree if required
-  if (mapStore.showAnomalies) {
-    const hexColor = fillColor.startsWith('rgb') ? rgbStringToHex(fillColor) : fillColor;
-
-    if (anomalyDegree === 0) {
-      fillColor = adjustSaturation(hexColor, 0.0); // No anomaly
-    } else if (anomalyDegree > 0) {
-      fillColor = ANOMALY_COLORS.HIGH;
-    } else if (anomalyDegree < 0) {
-      fillColor = ANOMALY_COLORS.LOW;
-    }
-  }
-
-  return new Style({
-    fill: new Fill({ color: fillColor }),
-  });
-};
-
-const selectedStyleFn = (feature: any) => {
-  const selectedFeaturesIds = selectedFeatures.value.map((f) => f.getId());
-  if (!selectedFeaturesIds.includes(feature.getId())) return;
-
-  const style = styleFn(feature);
-  style.setStroke(
-    new Stroke({
-      color: getCssVar('accent') || '#FF0000',
-      width: 4,
-    }),
-  );
-  return style;
-};
-
-const hoveredStyleFn = (feature: any) => {
-  const hoveredFeaturesIds = hoveredFeatures.value.map((f) => f.getId());
-  if (!hoveredFeaturesIds.includes(feature.getId())) return;
-
-  const style = styleFn(feature);
-  style.setStroke(
-    new Stroke({
-      color: getCssVar('accent') || '#FF0000',
-      width: 2,
-    }),
-  );
-  return style;
-};
 </script>
 <style lang="scss">
 .custom-tooltip {
