@@ -110,8 +110,8 @@ const fetchMetricFromRegion = async (regionCode: string): Promise<Metric | null>
   if (!regionCode) return null;
   try {
     const response = await metricsApi.list({
-      dateFrom: mapStore.currentDate,
-      dateTo: mapStore.currentDate,
+      dateFrom: mapStore.lastDate,
+      dateTo: mapStore.lastDate,
       regionCode,
     });
     if (response.status === 200 && response.data.results.length > 0) {

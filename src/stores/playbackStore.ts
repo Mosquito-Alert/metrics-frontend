@@ -57,8 +57,8 @@ export const usePlaybackStore = defineStore('playbackStore', {
       } else {
         // this.toggleVideoPlayback();
         const mapStore = useMapStore();
-        const firstDate = subtractDays(mapStore.currentDate, this.playbackDays - 1);
-        this.playbackDaysObject = getDatesBetween(firstDate, mapStore.currentDate);
+        const firstDate = subtractDays(mapStore.lastDate, this.playbackDays - 1);
+        this.playbackDaysObject = getDatesBetween(firstDate, mapStore.lastDate);
         this.playbackCurrentDate = this.playbackCurrentDate || firstDate;
       }
       regionDetailedStore.$reset(); // Reset region detailed store

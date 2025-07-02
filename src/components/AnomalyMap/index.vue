@@ -55,16 +55,7 @@ import { fromLonLat, transformExtent } from 'ol/proj';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
 import { useMapStore } from 'src/stores/mapStore';
-import {
-  computed,
-  inject,
-  onBeforeUnmount,
-  onMounted,
-  onUnmounted,
-  ref,
-  watch,
-  watchEffect,
-} from 'vue';
+import { computed, inject, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue';
 import { useRegionDetailedStore } from '../../stores/regionDetailedStore';
 import { usePlaybackStore } from 'src/stores/playbackStore';
 import MVT from 'ol/format/MVT.js';
@@ -99,7 +90,7 @@ const loadTiles = (tile: any, url: string) => {
   tile.setLoader(async (extent: number[] | undefined, resolution: number, projection: string) => {
     const [z, x, y] = tile.getTileCoord();
     const data = await mapStore.fetchData(
-      mapStore.currentDate,
+      mapStore.lastDate,
       x.toString(),
       y.toString(),
       z.toString(),
@@ -132,6 +123,7 @@ const styleFn = (feature: Feature) => {
   } else {
     return new Style({
       fill: new Fill({
+        // We need to fill the feature with a transparent color because otherwise the feature won't be clickable
         color: 'rgba(255, 255, 255, 0)',
       }),
     });
@@ -196,32 +188,47 @@ const autonomousCommunitiesLayer = new VectorTileLayer({
     }),
   }),
 });
+watch(
+  () => mapStore.showAutonomousCommunities,
+  (showAutonomousCommunities) => {
+    const map = mapRef.value?.map;
+    if (!map) {
+      return;
+    }
+    if (showAutonomousCommunities) {
+      map.addLayer(autonomousCommunitiesLayer);
+    } else {
+      map.removeLayer(autonomousCommunitiesLayer);
+    }
+  },
+);
 
 /**
- * Playback
+ * WMS Layer
  */
-const playbackSource = new TileWMS({
+const wmsSource = new TileWMS({
   // crossOrigin: 'anonymous',
   projection: mapStore.projection,
+  // TODO: Dynamic URL
   url: 'http://localhost:8080/geoserver/mosquitoalert/wms',
   params: {
     LAYERS: 'mosquitoalert:metric2',
     SRS: mapStore.projection,
-    viewparams: 'date:' + playbackStore.playbackCurrentDate,
+    viewparams: 'date:' + mapStore.lastDate, //playbackStore.playbackCurrentDate,
   },
 });
-const playbackLayer = new TileLayer({
-  className: 'playback-layer',
+const wmsLayer = new TileLayer({
+  className: 'wms-layer',
   zIndex: 3,
-  source: playbackSource,
+  source: wmsSource,
 });
 watch(
   () => playbackStore.playbackCurrentDate,
   (newDate) => {
-    if (!playbackSource) {
+    if (!wmsSource) {
       return;
     }
-    playbackSource.updateParams({
+    wmsSource.updateParams({
       viewparams: 'date:' + newDate,
     });
   },
@@ -243,6 +250,7 @@ onMounted(() => {
     padding: [50, 50, 50, 50], // Padding around the feature
     duration: 200, // duration of the zoom animation in milliseconds
   });
+  map.addLayer(wmsLayer);
   map.addLayer(featureLayer);
   map.addOverlay(hoverOverlay);
 
@@ -267,12 +275,6 @@ onUnmounted(() => {
 
   // .clear();
   mapStore.selectedFeatures = [];
-});
-
-onBeforeUnmount(() => {
-  // See: https://github.com/openlayers/openlayers/blob/29c58d08fb8ddc22b4b7384b38851323359c5706/src/ol/layer/WebGLPoints.js#L58-L59
-  // See: https://stackoverflow.com/questions/69295838/how-to-properly-release-webgl-resources-of-removed-layers-in-openlayers
-  playbackLayer.dispose();
 });
 
 /**
@@ -363,40 +365,6 @@ watchEffect(() => {
 watch([hoveredFeatures, selectedFeatures], () => {
   featureLayer.changed();
 });
-// Switch between normal and playback layers
-watch(
-  () => playbackStore.playbackEnabled,
-  (playbackEnabled) => {
-    const map = mapRef.value?.map;
-    if (!map) {
-      return;
-    }
-
-    if (playbackEnabled) {
-      // Set the source to the hover and selected layers
-      // featureLayer.setZIndex(1);
-      map.addLayer(playbackLayer);
-    } else {
-      // Remove the playback layer and add the normal layer
-      // featureLayer.setZIndex(3);
-      map.removeLayer(playbackLayer);
-    }
-  },
-);
-watch(
-  () => mapStore.showAutonomousCommunities,
-  (showAutonomousCommunities) => {
-    const map = mapRef.value?.map;
-    if (!map) {
-      return;
-    }
-    if (showAutonomousCommunities) {
-      map.addLayer(autonomousCommunitiesLayer);
-    } else {
-      map.removeLayer(autonomousCommunitiesLayer);
-    }
-  },
-);
 watch(
   () => mapStore.showAnomalies,
   (showAnomalies) => {
