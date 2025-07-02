@@ -1,13 +1,5 @@
 <template>
   <div class="playback-control">
-    <q-btn
-      dense
-      flat
-      icon="close"
-      size="0.85rem"
-      class="q-drawer-hide absolute playback-close"
-      @click="() => playbackStore.togglePlayback()"
-    />
     <div class="playback-buttons">
       <q-btn
         class="control-button"
@@ -129,21 +121,6 @@ watch(
     .playback-slider {
       width: 100%;
       margin-top: 1rem;
-    }
-  }
-}
-.playback-close {
-  top: 0.5rem;
-  right: 1.7rem;
-  background-color: #393939;
-  color: #e1e1e1;
-  border: 1px solid #393939;
-  border-radius: 0.5rem;
-  &:hover {
-    background-color: #f3c954;
-    color: #393939;
-    i {
-      color: #393939;
     }
   }
 }
