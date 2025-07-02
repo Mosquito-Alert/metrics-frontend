@@ -155,30 +155,6 @@ const hoverLayer = new VectorTileLayer({
 });
 featureSource.on('tileloadstart', handleSourceTileLoadStart);
 featureSource.on('tileloadend', handleSourceTileLoadEnd);
-// Zoom to selectedFeature
-watchEffect(() => {
-  if (regionDetailedStore.isRegionSelected && selectedFeatures.value.length > 0) {
-    const feature = selectedFeatures.value[0] as FeatureLike;
-    const geometry = feature.getGeometry() as Geometry;
-    viewRef.value.view.fit(geometry.getExtent(), {
-      padding: [350, 350, 350, 350], //Padding around the feature
-      duration: 600, // duration of the zoom animation in milliseconds
-    });
-  } else if (viewRef.value && !regionDetailedStore.isRegionSelected) {
-    viewRef.value.view.animate({
-      center: center.value,
-      zoom: mapStore.zoom,
-      duration: 600, // duration of the zoom animation in milliseconds
-    });
-  }
-});
-
-watch(selectedFeatures, () => {
-  featureLayer.changed();
-});
-watch(hoveredFeatures, () => {
-  hoverLayer.changed();
-});
 
 /**
  * Borders Autonomous Communities
@@ -405,6 +381,30 @@ const hoverFeature = async (event: MapBrowserEvent<PointerEvent>) => {
   tooltipEl.classList.add('visible');
   hoverOverlay.setPosition(event.coordinate);
 };
+// Zoom to selectedFeature
+watchEffect(() => {
+  if (regionDetailedStore.isRegionSelected && selectedFeatures.value.length > 0) {
+    const feature = selectedFeatures.value[0] as FeatureLike;
+    const geometry = feature.getGeometry() as Geometry;
+    viewRef.value.view.fit(geometry.getExtent(), {
+      padding: [350, 350, 350, 350], //Padding around the feature
+      duration: 600, // duration of the zoom animation in milliseconds
+    });
+  } else if (viewRef.value && !regionDetailedStore.isRegionSelected) {
+    viewRef.value.view.animate({
+      center: center.value,
+      zoom: mapStore.zoom,
+      duration: 600, // duration of the zoom animation in milliseconds
+    });
+  }
+});
+
+watch(selectedFeatures, () => {
+  featureLayer.changed();
+});
+watch(hoveredFeatures, () => {
+  hoverLayer.changed();
+});
 </script>
 <style lang="scss">
 .custom-tooltip {
