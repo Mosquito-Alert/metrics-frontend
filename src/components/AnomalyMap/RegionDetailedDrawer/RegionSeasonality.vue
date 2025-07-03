@@ -90,7 +90,7 @@ const seriesValuesData = computed(() => {
   let confidenceBandSeries: any[] = [];
   let anomaliesSeries: any = { name: 'Anomalies', type: 'scatter', data: [] };
 
-  const series = years.map((year: number) => {
+  const series = years.flatMap((year: number) => {
     const isLastYear = year === mostRecentYear;
     const yearData = anomaliesData.value[year] || [];
     const sortedData = yearData.sort((a, b) => a.dayOfYear - b.dayOfYear);
@@ -109,6 +109,33 @@ const seriesValuesData = computed(() => {
               ? 58
               : 0
           : 0;
+
+      // Prepare data for deviation areas
+      const belowBase = [];
+      const belowTop = [];
+      const aboveBase = [];
+      const aboveTop = [];
+      for (const i in sortedData) {
+        const d = sortedData[i] as {
+          dayOfYear: number;
+          value: number | undefined;
+        };
+        const seasonalityValue = Number(seasonalityData.value[i]?.value || 0);
+        const value = d.value || 0;
+        if (value < seasonalityValue) {
+          // Fill below seasonality area
+          belowTop.push([d.dayOfYear, value - seasonalityValue]); // - trend.value[i]
+          belowBase.push([d.dayOfYear, seasonalityValue]);
+          aboveBase.push([d.dayOfYear, seasonalityValue]); // - trend.value[i]
+          aboveTop.push([d.dayOfYear, 0]);
+        } else {
+          // Fill above seasonality area
+          belowBase.push([d.dayOfYear, seasonalityValue]); // - trend.value[i]
+          belowTop.push([d.dayOfYear, 0]);
+          aboveBase.push([d.dayOfYear, value]); // - trend.value[i]
+          aboveTop.push([d.dayOfYear, -(value - seasonalityValue)]);
+        }
+      }
 
       const markLine = lastPoint
         ? {
@@ -135,7 +162,7 @@ const seriesValuesData = computed(() => {
           }
         : {};
 
-      // // Confidence band for the last year
+      // Confidence band for the last year
       confidenceBandSeries = [
         {
           name: 'Uncertainty interval upper bound',
@@ -203,29 +230,76 @@ const seriesValuesData = computed(() => {
           },
         })),
       };
-
-      return {
-        name: 'Values Present Year',
+      // Above Seasonality Area (red)
+      const aboveBaseSeries = {
+        name: 'Deviation',
         type: 'line',
-        data: chartData,
-        z: 10,
-        showSymbol: false,
+        data: aboveBase,
+        lineStyle: { opacity: 0 },
+        stack: 'above',
         symbol: 'none',
-        silent: true,
-        lineStyle: {
-          color: '#000',
-          width: 1.2,
-          opacity: 1,
-        },
-        emphasis: {
-          focus: 'series',
-          itemStyle: {
-            opacity: 0, // Hide hover circle
-          },
-          symbol: 'none',
-        },
-        ...markLine,
       };
+
+      const aboveTopSeries = {
+        name: 'Deviation',
+        type: 'line',
+        data: aboveTop,
+        lineStyle: { opacity: 0 },
+        areaStyle: { color: 'red' },
+        stack: 'above',
+        symbol: 'none',
+        z: 5,
+      };
+
+      // Below Seasonality Area (blue)
+      const belowBaseSeries = {
+        name: 'Deviation',
+        type: 'line',
+        data: belowBase,
+        lineStyle: { opacity: 0 },
+        stack: 'below',
+        symbol: 'none',
+      };
+
+      const belowTopSeries = {
+        name: 'Deviation',
+        type: 'line',
+        data: belowTop,
+        lineStyle: { opacity: 0 },
+        areaStyle: { color: 'blue' },
+        stack: 'below',
+        symbol: 'none',
+        z: 4,
+      };
+
+      return [
+        {
+          name: 'Values Present Year',
+          type: 'line',
+          data: chartData,
+          z: 10,
+          showSymbol: false,
+          symbol: 'none',
+          silent: true,
+          lineStyle: {
+            color: '#000',
+            width: 1.2,
+            opacity: 1,
+          },
+          emphasis: {
+            focus: 'series',
+            itemStyle: {
+              opacity: 0, // Hide hover circle
+            },
+            symbol: 'none',
+          },
+          ...markLine,
+        },
+        aboveBaseSeries,
+        aboveTopSeries,
+        belowBaseSeries,
+        belowTopSeries,
+      ];
     }
 
     // Previous years
@@ -345,6 +419,13 @@ const option = computed(() => {
           itemStyle: {
             color: '#a8a8a8',
           },
+        },
+        {
+          name: 'Deviation',
+          itemStyle: {
+            color: 'rgba(255, 0, 0, 0.3)',
+          },
+          icon: 'rect',
         },
         {
           name: 'Confidence band',
