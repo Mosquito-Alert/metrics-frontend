@@ -29,20 +29,28 @@
         <q-tooltip anchor="top middle" self="bottom middle">Go forward 1 day</q-tooltip>
       </q-btn>
     </div>
-    <q-slider
-      class="playback-slider"
-      v-model="playbackStore.playbackCurrentIndex"
-      color="white"
-      :marker-labels="markerLabels"
-      label
-      :label-value="currentLabel"
-      :label-always="true"
-      label-color="white"
-      label-text-color="black"
-      markers
-      :min="0"
-      :max="maxIndex"
-    />
+    <div class="playback-slider">
+      <q-slider
+        v-model="playbackStore.playbackCurrentIndex"
+        color="white"
+        label
+        :label-value="currentLabel"
+        :label-always="true"
+        label-color="white"
+        label-text-color="black"
+        markers
+        :min="0"
+        :max="maxIndex"
+      />
+      <div class="playback-labels">
+        <span class="playback-label first-label">
+          {{ formattedDate(fromDate) }}
+        </span>
+        <span class="playback-label last-label">
+          {{ formattedDate(toDate) }}
+        </span>
+      </div>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
@@ -58,16 +66,8 @@ const playbackStore = usePlaybackStore();
 const regionDetailedStore = useRegionDetailedStore();
 
 const maxIndex = ref(Object.keys(playbackStore.playbackDaysObject).length - 1);
-// Only show first and last markers
-const markerLabels = computed(() => {
-  const labels = playbackStore.playbackDaysObject;
-  return Object.keys(labels).reduce((acc: any, key: any, index) => {
-    if (index === 0 || index === Object.keys(labels).length - 1) {
-      acc[key] = formattedDate(labels[key] as string);
-    }
-    return acc;
-  }, {});
-});
+const fromDate = ref<string>(playbackStore.playbackDaysObject[0] as string);
+const toDate = ref<string>(playbackStore.playbackDaysObject[maxIndex.value] as string);
 
 const currentLabel = computed(() => {
   const currentDate = playbackStore.playbackDaysObject[playbackStore.playbackCurrentIndex];
@@ -123,20 +123,39 @@ watch(
       color: #e1e1e1;
       border: 1px solid #393939;
       border-radius: 0.5rem;
-      color: white; //#f3c954;
+      color: white;
       i {
-        color: white; //#f3c954;
+        color: white;
       }
     }
   }
-  .q-slider {
-    flex: 1;
-    min-width: 0; // Prevent slider from overflowing
+  .playback-slider {
     width: 100%;
-    margin-top: 1rem;
-    .playback-slider {
+    // margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    // justify-content: center;
+    .q-slider {
+      flex: 1;
+      min-width: 0; // Prevent slider from overflowing
       width: 100%;
       margin-top: 1rem;
+    }
+    .playback-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      .playback-label {
+        color: #e1e1e1;
+        margin-bottom: 2px;
+      }
+      .first-label {
+        text-align: left;
+      }
+      .last-label {
+        text-align: right;
+      }
     }
   }
 }

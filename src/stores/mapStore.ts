@@ -30,6 +30,7 @@ export const useMapStore = defineStore('mapStore', {
     lastDate: '' as string, // Default date, can be updated later:
     showAutonomousCommunities: false,
     showAnomalies: false,
+    showLabels: true,
   }),
 
   getters: {},

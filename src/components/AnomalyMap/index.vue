@@ -26,7 +26,7 @@
         />
       </ol-tile-layer>
 
-      <ol-tile-layer :z-index="7">
+      <ol-tile-layer :z-index="7" v-if="mapStore.showLabels">
         <ol-source-xyz
           :url="mapStore.labelsLayer.url"
           :preload="mapStore.labelsLayer.preload"

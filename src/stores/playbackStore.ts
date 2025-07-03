@@ -17,6 +17,8 @@ export const usePlaybackStore = defineStore('playbackStore', {
     playbackCurrentDate: '' as string, // Default date, can be updated later
     data: null as Metric | any, // Replace with actual type if known
     fetchingData: false as boolean, // Flag to indicate if data is being fetched
+    availableDates: [] as { date: string }[], // Array to hold available dates for playback
+    fetchingAvailableDates: false as boolean, // Flag to indicate if available dates should be fetched
   }),
 
   getters: {
@@ -45,6 +47,19 @@ export const usePlaybackStore = defineStore('playbackStore', {
       this.fetchingData = false; // Reset fetching flag
       return response.data;
     },
+    // async fetchAvailableDates() {
+    //   this.fetchingAvailableDates = true; // Set flag to indicate fetching available dates
+    //   try {
+    //     const response = await metricsApi.datesList();
+    //     this.availableDates = response.data.map((date: string) => ({
+    //       date: new Date(date),
+    //     }));
+    //   } catch (error) {
+    //     console.error('Error fetching available dates:', error);
+    //   } finally {
+    //     this.fetchingAvailableDates = false; // Reset flag after fetching
+    //   }
+    // },
     togglePlayback() {
       const regionDetailedStore = useRegionDetailedStore();
       this.playbackEnabled = !this.playbackEnabled;
