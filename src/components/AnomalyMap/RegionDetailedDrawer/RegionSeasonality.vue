@@ -398,7 +398,10 @@ const option = computed(() => {
       },
     },
     legend: {
+      // top: ,
+      type: 'scroll',
       selected: {
+        'Confidence band': false,
         Anomalies: false,
       },
       data: [
@@ -423,7 +426,7 @@ const option = computed(() => {
         {
           name: 'Deviation',
           itemStyle: {
-            color: 'rgba(255, 0, 0, 0.3)',
+            color: 'rgba(255, 0, 0, 0.7)',
           },
           icon: 'rect',
         },
