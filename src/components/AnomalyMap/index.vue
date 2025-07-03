@@ -34,11 +34,8 @@
         />
       </ol-tile-layer>
 
-      <ol-zoom-control className="custom-zoom-control" v-if="!playbackStore.playbackEnabled" />
-      <ol-scaleline-control
-        className="custom-scaleline-control"
-        v-if="!playbackStore.playbackEnabled"
-      />
+      <ol-zoom-control className="custom-zoom-control" />
+      <ol-scaleline-control className="custom-scaleline-control" />
       <ol-attribution-control />
     </ol-map>
   </q-page>
@@ -443,7 +440,7 @@ watch(hoveredFeatures, () => {
 }
 .custom-zoom-control {
   top: auto !important;
-  bottom: 5em !important;
+  bottom: 10.5em !important;
   left: 20px !important;
   right: auto !important;
 
@@ -468,7 +465,7 @@ watch(hoveredFeatures, () => {
 }
 .custom-scaleline-control {
   top: auto !important;
-  bottom: 2em !important;
+  bottom: 7.7em !important;
   left: 20px !important;
   right: auto !important;
 
