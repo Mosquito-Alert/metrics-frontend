@@ -245,7 +245,7 @@ const seriesValuesData = computed(() => {
         type: 'line',
         data: aboveTop,
         lineStyle: { opacity: 0 },
-        areaStyle: { color: 'red' },
+        areaStyle: { color: '#e21b1f' },
         stack: 'above',
         symbol: 'none',
         z: 5,
@@ -266,7 +266,7 @@ const seriesValuesData = computed(() => {
         type: 'line',
         data: belowTop,
         lineStyle: { opacity: 0 },
-        areaStyle: { color: 'blue' },
+        areaStyle: { color: '#0072c4' },
         stack: 'below',
         symbol: 'none',
         z: 4,
@@ -426,7 +426,7 @@ const option = computed(() => {
         {
           name: 'Deviation',
           itemStyle: {
-            color: 'rgba(255, 0, 0, 0.7)',
+            color: '#e21b1f',
           },
           icon: 'rect',
         },
