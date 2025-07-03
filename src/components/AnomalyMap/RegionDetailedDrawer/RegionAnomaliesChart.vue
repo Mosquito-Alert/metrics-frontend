@@ -167,7 +167,7 @@ const option = computed(() => {
           },
         },
         {
-          name: 'Anomalies',
+          name: 'Daily Anomalies',
           icon: 'circle',
           itemStyle: {
             color: ANOMALY_COLORS.HIGH,
@@ -249,8 +249,8 @@ const option = computed(() => {
         })),
         showSymbol: false,
         markLine: {
-          // animation: false,
-          animationDuration: 100,
+          animation: false,
+          // animationDuration: 100,
           data: [
             {
               name: "Today's mark",
@@ -305,7 +305,7 @@ const option = computed(() => {
         symbol: 'none',
       },
       {
-        name: 'Anomalies',
+        name: 'Daily Anomalies',
         type: 'scatter',
         // Put this above the confidence band
         z: 10,

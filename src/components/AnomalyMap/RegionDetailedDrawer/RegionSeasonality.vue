@@ -327,7 +327,6 @@ const option = computed(() => {
       },
     },
     legend: {
-      // top: ,
       type: 'scroll',
       selected: {},
       data: [
