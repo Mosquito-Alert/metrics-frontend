@@ -55,11 +55,12 @@ export const usePlaybackStore = defineStore('playbackStore', {
         this.playbackCurrentIndex = 0;
         this.data = null; // Clear previous data
       } else {
-        this.toggleVideoPlayback();
+        // this.toggleVideoPlayback();
         const mapStore = useMapStore();
         const firstDate = subtractDays(mapStore.lastDate, this.playbackDays - 1);
         this.playbackDaysObject = getDatesBetween(firstDate, mapStore.lastDate);
-        this.playbackCurrentDate = this.playbackCurrentDate || firstDate;
+        this.playbackCurrentIndex = Object.keys(this.playbackDaysObject).length - 1; // Set index to the last day
+        this.playbackCurrentDate = this.playbackDaysObject[this.playbackCurrentIndex] || firstDate;
       }
       regionDetailedStore.$reset(); // Reset region detailed store
     },
