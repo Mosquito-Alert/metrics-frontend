@@ -13,7 +13,19 @@
 
     <!-- RIGHT SIDE OPTIONS -->
     <q-page-sticky position="top-right" :offset="[20, 20]" class="map-tools">
-      <div class="sidemap-option" :class="{ active: autonomousCommunitiesActive }">
+      <div class="sidemap-option" :class="{ active: mapStore.showAnomalies }">
+        <div @click="mapStore.showAnomalies = !mapStore.showAnomalies">
+          <span v-if="!mapStore.fetchingDate" class="column items-center">
+            <q-icon :name="'troubleshoot'"></q-icon>
+            <p class="q-pa-none q-ma-none">Anomalies</p>
+          </span>
+          <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
+          <q-tooltip anchor="center left" self="center end">{{
+            showAnomaliesTooltipMsg
+          }}</q-tooltip>
+        </div>
+      </div>
+      <div class="sidemap-option" :class="{ active: mapStore.showAutonomousCommunities }">
         <div @click="mapStore.showAutonomousCommunities = !mapStore.showAutonomousCommunities">
           <span v-if="!mapStore.fetchingDate" class="column items-center">
             <q-icon :name="'layers'"></q-icon>
@@ -25,16 +37,14 @@
           }}</q-tooltip>
         </div>
       </div>
-      <div class="sidemap-option" :class="{ active: showAnomalies }">
-        <div @click="mapStore.showAnomalies = !mapStore.showAnomalies">
+      <div class="sidemap-option" :class="{ active: mapStore.showLabels }">
+        <div @click="mapStore.showLabels = !mapStore.showLabels">
           <span v-if="!mapStore.fetchingDate" class="column items-center">
-            <q-icon :name="'troubleshoot'"></q-icon>
-            <p class="q-pa-none q-ma-none">Anomalies</p>
+            <q-icon :name="'title'"></q-icon>
+            <p class="q-pa-none q-ma-none">Labels</p>
           </span>
           <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
-          <q-tooltip anchor="center left" self="center end">{{
-            showAnomaliesTooltipMsg
-          }}</q-tooltip>
+          <q-tooltip anchor="center left" self="center end">{{ labelsTooltipMsg }}</q-tooltip>
         </div>
       </div>
     </q-page-sticky>
@@ -86,8 +96,6 @@ const regionDetailedStore = useRegionDetailedStore();
 const playbackStore = usePlaybackStore();
 
 const dateFetched = ref(false);
-const autonomousCommunitiesActive = computed(() => mapStore.showAutonomousCommunities);
-const showAnomalies = computed(() => mapStore.showAnomalies);
 // const rangeDate = ref([new Date(), new Date()]);
 
 // * Lifecycle
@@ -107,6 +115,7 @@ const autonomousCommunitiesTooltipMsg = computed(() =>
 const showAnomaliesTooltipMsg = computed(() =>
   mapStore.showAnomalies ? 'Hide anomalies' : 'Show anomalies',
 );
+const labelsTooltipMsg = computed(() => (mapStore.showLabels ? 'Hide labels' : 'Show labels'));
 
 uiStore.appWidth = window.innerWidth;
 const getDrawerWidth = (appWidth: number) => {
