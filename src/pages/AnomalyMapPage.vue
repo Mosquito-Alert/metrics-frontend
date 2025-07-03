@@ -39,17 +39,8 @@
       </div>
     </q-page-sticky>
 
-    <!-- LEGEND AND DATE -->
+    <!-- LEGEND -->
     <q-page-sticky position="bottom-right" :offset="[20, 110]">
-      <div id="map-date" class="text-right q-py-sm">
-        <span
-          class="q-px-lg q-py-sm text-weight-medium text-subtitle1"
-          v-if="!mapStore.fetchingDate"
-        >
-          {{ currentDate }}
-        </span>
-        <q-skeleton type="QBadge" v-if="mapStore.fetchingDate" />
-      </div>
       <MapLegend />
     </q-page-sticky>
 
@@ -108,7 +99,6 @@ onMounted(async () => {
   $q.loading.hide();
 });
 
-const currentDate = computed(() => uiStore.formattedDate);
 const autonomousCommunitiesTooltipMsg = computed(() =>
   mapStore.showAutonomousCommunities
     ? 'Hide autonomous communities borders'
