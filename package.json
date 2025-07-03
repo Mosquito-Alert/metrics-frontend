@@ -1,8 +1,8 @@
 {
-  "name": "anomaly-detection-map",
+  "name": "metrics",
   "version": "0.0.1",
-  "description": "Mosquito Alert anomaly detection",
-  "productName": "Anomaly Detection Map",
+  "description": "Mosquito Alert metrics",
+  "productName": "Metrics | Mosquito Alert",
   "author": "Guillermo Sanz <guillermo.sanz@ceab.csic.es>",
   "type": "module",
   "private": true,

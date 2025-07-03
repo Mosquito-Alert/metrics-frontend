@@ -14,7 +14,6 @@ import { date } from 'quasar';
 import { computed } from 'vue';
 import VChart from 'vue-echarts';
 import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
-import { ANOMALY_COLORS } from 'src/constants/colors';
 import { useUIStore } from 'src/stores/uiStore';
 import { getDayIndexInYear } from 'src/utils/date';
 
@@ -87,10 +86,8 @@ const seriesValuesData = computed(() => {
     .map(Number)
     .sort((a, b) => a - b);
   const mostRecentYear = Math.max(...years);
-  let confidenceBandSeries: any[] = [];
-  let anomaliesSeries: any = { name: 'Anomalies', type: 'scatter', data: [] };
 
-  const series = years.map((year: number) => {
+  const series = years.flatMap((year: number) => {
     const isLastYear = year === mostRecentYear;
     const yearData = anomaliesData.value[year] || [];
     const sortedData = yearData.sort((a, b) => a.dayOfYear - b.dayOfYear);
@@ -110,11 +107,38 @@ const seriesValuesData = computed(() => {
               : 0
           : 0;
 
+      // Prepare data for deviation areas
+      const belowBase = [];
+      const belowTop = [];
+      const aboveBase = [];
+      const aboveTop = [];
+      for (const i in sortedData) {
+        const d = sortedData[i] as {
+          dayOfYear: number;
+          value: number | undefined;
+        };
+        const seasonalityValue = Number(seasonalityData.value[i]?.value || 0);
+        const value = d.value || 0;
+        if (value < seasonalityValue) {
+          // Fill below seasonality area
+          belowTop.push([d.dayOfYear, value - seasonalityValue]); // - trend.value[i]
+          belowBase.push([d.dayOfYear, seasonalityValue]);
+          aboveBase.push([d.dayOfYear, seasonalityValue]); // - trend.value[i]
+          aboveTop.push([d.dayOfYear, 0]);
+        } else {
+          // Fill above seasonality area
+          belowBase.push([d.dayOfYear, seasonalityValue]); // - trend.value[i]
+          belowTop.push([d.dayOfYear, 0]);
+          aboveBase.push([d.dayOfYear, value]); // - trend.value[i]
+          aboveTop.push([d.dayOfYear, -(value - seasonalityValue)]);
+        }
+      }
+
       const markLine = lastPoint
         ? {
             markLine: {
-              // animation: false,
-              animationDuration: 100,
+              animation: false,
+              // animationDuration: 100,
               data: [
                 {
                   name: "Today's mark",
@@ -135,27 +159,61 @@ const seriesValuesData = computed(() => {
           }
         : {};
 
-      // // Confidence band for the last year
-      confidenceBandSeries = [
+      // Above Seasonality Area (red)
+      const aboveBaseSeries = {
+        name: 'Seasonal Deviation',
+        type: 'line',
+        data: aboveBase,
+        lineStyle: { opacity: 0 },
+        stack: 'above',
+        symbol: 'none',
+      };
+
+      const aboveTopSeries = {
+        name: 'Seasonal Deviation',
+        type: 'line',
+        data: aboveTop,
+        lineStyle: { opacity: 0 },
+        areaStyle: { color: '#e21b1f' },
+        stack: 'above',
+        symbol: 'none',
+        z: 5,
+      };
+
+      // Below Seasonality Area (blue)
+      const belowBaseSeries = {
+        name: 'Seasonal Deviation',
+        type: 'line',
+        data: belowBase,
+        lineStyle: { opacity: 0 },
+        stack: 'below',
+        symbol: 'none',
+      };
+
+      const belowTopSeries = {
+        name: 'Seasonal Deviation',
+        type: 'line',
+        data: belowTop,
+        lineStyle: { opacity: 0 },
+        areaStyle: { color: '#0072c4' },
+        stack: 'below',
+        symbol: 'none',
+        z: 4,
+      };
+
+      return [
         {
-          name: 'Uncertainty interval upper bound',
+          name: 'Values Present Year',
           type: 'line',
-          data: sortedData.map((item) => [item.dayOfYear, item.upper_band]),
-          lineStyle: {
-            opacity: 0,
-          },
-          stack: 'confidence-band',
+          data: chartData,
+          z: 10,
+          showSymbol: false,
           symbol: 'none',
-        },
-        {
-          name: 'Confidence band',
-          type: 'line',
-          data: sortedData.map((item) => [item.dayOfYear, item.lower_band]),
+          silent: true,
           lineStyle: {
-            opacity: 0,
-          },
-          areaStyle: {
-            color: '#6dad6d66',
+            color: '#000',
+            width: 1.2,
+            opacity: 1,
           },
           emphasis: {
             focus: 'series',
@@ -164,68 +222,13 @@ const seriesValuesData = computed(() => {
             },
             symbol: 'none',
           },
-          stack: 'confidence-band',
-          symbol: 'none',
+          ...markLine,
         },
+        aboveBaseSeries,
+        aboveTopSeries,
+        belowBaseSeries,
+        belowTopSeries,
       ];
-
-      // Anomalies for the last year
-      anomaliesSeries = {
-        name: 'Anomalies',
-        type: 'scatter',
-        z: 11,
-        showSymbol: false,
-        symbolSize: (value: any, params: any) => {
-          const anomalyDegree = params.data.anomalyDegree || 0;
-          if (anomalyDegree === 0) return 0; // Don't show symbols for non-anomalies
-          return 6;
-        },
-        itemStyle: {
-          color: '#909090',
-          width: 1,
-          borderColor: '#333333',
-          borderWidth: 0.25,
-          opacity: 1,
-        },
-        emphasis: {
-          focus: 'series',
-          itemStyle: {
-            opacity: 0, // Hide hover circle
-          },
-          symbol: 'none',
-        },
-        data: sortedData.map((item) => ({
-          value: item.value as number,
-          anomalyDegree: item.anomaly_degree || 0,
-          itemStyle: {
-            color:
-              ((item.anomaly_degree || 0) as number) > 0 ? ANOMALY_COLORS.HIGH : ANOMALY_COLORS.LOW,
-          },
-        })),
-      };
-
-      return {
-        name: 'Values Present Year',
-        type: 'line',
-        data: chartData,
-        z: 10,
-        showSymbol: false,
-        symbol: 'none',
-        silent: true,
-        lineStyle: {
-          color: '#000',
-          width: 1.2,
-          opacity: 1,
-        },
-        emphasis: {
-          focus: 'series',
-          itemStyle: {
-            opacity: 0, // Hide hover circle
-          },
-          symbol: 'none',
-        },
-        ...markLine,
-      };
     }
 
     // Previous years
@@ -279,7 +282,7 @@ const seriesValuesData = computed(() => {
     },
   };
 
-  return [...series, ...confidenceBandSeries, anomaliesSeries, seasonalitySeries];
+  return [...series, seasonalitySeries];
 });
 
 const option = computed(() => {
@@ -324,9 +327,8 @@ const option = computed(() => {
       },
     },
     legend: {
-      selected: {
-        Anomalies: false,
-      },
+      type: 'scroll',
+      selected: {},
       data: [
         {
           name: 'Seasonality',
@@ -347,19 +349,11 @@ const option = computed(() => {
           },
         },
         {
-          name: 'Confidence band',
+          name: 'Seasonal Deviation',
           itemStyle: {
-            color: '#6dad6d66',
+            color: '#e21b1f',
           },
           icon: 'rect',
-        },
-        {
-          name: 'Anomalies',
-          itemStyle: {
-            color: ANOMALY_COLORS.HIGH,
-            borderWidth: 0.25,
-          },
-          icon: 'circle',
         },
       ],
     },
