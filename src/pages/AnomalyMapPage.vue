@@ -13,6 +13,9 @@
 
     <!-- RIGHT SIDE OPTIONS -->
     <q-page-sticky position="top-right" :offset="[20, 20]" class="map-tools">
+      <span class="sidemap-title">Layers</span>
+      <!-- separator -->
+      <q-separator color="grey-6" />
       <div class="sidemap-option" :class="{ active: mapStore.showAnomalies }">
         <div @click="mapStore.showAnomalies = !mapStore.showAnomalies">
           <span v-if="!mapStore.fetchingDate" class="column items-center">
@@ -149,6 +152,13 @@ window.addEventListener('resize', () => {
   border: 1px solid #393939;
   border-radius: 0.5rem;
   padding: 0.3rem 0.1rem;
+  .sidemap-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    margin: 0.8rem auto;
+  }
   .sidemap-option {
     padding: 0.6rem 0.5rem;
     margin: 0.1rem 0;
