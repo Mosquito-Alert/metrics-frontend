@@ -11,11 +11,11 @@ import { GridComponent, TitleComponent, TooltipComponent } from 'echarts/compone
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { date } from 'quasar';
-import { computed } from 'vue';
-import VChart from 'vue-echarts';
-import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
+import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import { useUIStore } from 'src/stores/uiStore';
 import { getDayIndexInYear } from 'src/utils/date';
+import { computed } from 'vue';
+import VChart from 'vue-echarts';
 
 use([TooltipComponent, LineChart, CanvasRenderer, GridComponent, TitleComponent]);
 
@@ -174,7 +174,7 @@ const seriesValuesData = computed(() => {
         type: 'line',
         data: aboveTop,
         lineStyle: { opacity: 0 },
-        areaStyle: { color: '#e21b1f' },
+        areaStyle: { color: '#e21b1f', opacity: 0.65 },
         stack: 'above',
         symbol: 'none',
         z: 5,
@@ -195,7 +195,7 @@ const seriesValuesData = computed(() => {
         type: 'line',
         data: belowTop,
         lineStyle: { opacity: 0 },
-        areaStyle: { color: '#0072c4' },
+        areaStyle: { color: '#0072c4', opacity: 0.65 },
         stack: 'below',
         symbol: 'none',
         z: 4,
@@ -212,7 +212,7 @@ const seriesValuesData = computed(() => {
           silent: true,
           lineStyle: {
             color: '#000',
-            width: 1.2,
+            width: 1,
             opacity: 1,
           },
           emphasis: {
@@ -351,9 +351,25 @@ const option = computed(() => {
         {
           name: 'Seasonal Deviation',
           itemStyle: {
-            color: '#e21b1f',
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 1,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0.49,
+                  color: '#e21b1fa6',
+                },
+                {
+                  offset: 0.5,
+                  color: '#0072c4a6',
+                },
+              ],
+            },
           },
-          icon: 'rect',
+          icon: 'roundRect',
         },
       ],
     },
