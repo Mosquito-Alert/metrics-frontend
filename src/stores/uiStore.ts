@@ -9,7 +9,7 @@ export const useUIStore = defineStore('uiStore', {
   state: () => ({
     appWidth: window.innerWidth as number,
     regionDetailDrawerWidth: 0,
-    currentTab: routesNames.anomalyMap,
+    currentTab: routesNames.biteIndexMap,
   }),
 
   getters: {
