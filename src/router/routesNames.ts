@@ -1,5 +1,5 @@
 const routesNames = {
-  anomalyMap: 'anomaly-map',
+  biteIndexMap: 'bite-index-map',
   about: 'about',
 };
 

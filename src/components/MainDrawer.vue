@@ -33,15 +33,15 @@
         <q-item
           clickable
           v-ripple
-          @click="navigateTo(routesNames.anomalyMap)"
-          :active="uiStore.currentTab === routesNames.anomalyMap"
+          @click="navigateTo(routesNames.biteIndexMap)"
+          :active="uiStore.currentTab === routesNames.biteIndexMap"
         >
           <q-item-section avatar>
             <q-icon name="map" />
           </q-item-section>
 
           <q-item-section>
-            <q-item-label class="text-subtitle2"> Anomaly Map</q-item-label>
+            <q-item-label class="text-subtitle2"> Bite Index Map</q-item-label>
           </q-item-section>
         </q-item>
 

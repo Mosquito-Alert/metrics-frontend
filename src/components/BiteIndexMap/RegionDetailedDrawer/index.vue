@@ -47,7 +47,7 @@
     </div>
     <!-- * CONTENT -->
     <q-scroll-area ref="drawerScrollArea" class="drawer-content col q-px-md q-py-xs">
-      <RegionAnomaliesChart class="q-pt-sm" />
+      <TimeSeriesChart class="q-pt-sm" />
       <RegionSeasonality />
     </q-scroll-area>
   </div>

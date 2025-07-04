@@ -4,7 +4,7 @@
     <RegionDetailedDrawer v-if="regionDetailedStore.isRegionSelected" />
     <RegionDetailExtraDrawer v-if="regionDetailedStore.showTable" />
     <!-- MAP -->
-    <AnomalyMap v-if="dateFetched" />
+    <BiteIndexMap v-if="dateFetched" />
 
     <!-- SEARCH BAR -->
     <q-page-sticky position="top-left" :offset="[searchboxOffsetLeft, 20]">

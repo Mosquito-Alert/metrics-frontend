@@ -8,12 +8,12 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        component: () => import('pages/AnomalyMapPage.vue'),
+        component: () => import('src/pages/BiteIndexMapPage.vue'),
       },
       {
-        path: routesNames.anomalyMap,
-        name: routesNames.anomalyMap,
-        component: () => import('pages/AnomalyMapPage.vue'),
+        path: routesNames.biteIndexMap,
+        name: routesNames.biteIndexMap,
+        component: () => import('src/pages/BiteIndexMapPage.vue'),
       },
     ],
   },

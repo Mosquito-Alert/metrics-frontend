@@ -170,7 +170,24 @@ const option = computed(() => {
           name: 'Daily Anomalies',
           icon: 'circle',
           itemStyle: {
-            color: ANOMALY_COLORS.HIGH,
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 1,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0.49,
+                  color: ANOMALY_COLORS.HIGH,
+                },
+                {
+                  offset: 0.5,
+                  color: ANOMALY_COLORS.LOW,
+                },
+              ],
+              global: false, // default is false
+            },
             borderWidth: 0.25,
           },
         },
