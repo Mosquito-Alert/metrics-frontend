@@ -26,7 +26,7 @@
         />
       </ol-tile-layer>
 
-      <ol-tile-layer :z-index="7" v-if="mapStore.showLabels">
+      <ol-tile-layer :z-index="7" :visible="mapStore.showLabels">
         <ol-source-xyz
           :url="mapStore.labelsLayer.url"
           :preload="mapStore.labelsLayer.preload"
@@ -214,7 +214,8 @@ const getWmsSource = (styleName: string) =>
     // crossOrigin: 'anonymous',
     projection: mapStore.projection,
     // TODO: Dynamic URL
-    url: 'http://localhost:8080/geoserver/mosquitoalert/wms',
+    url: process.env.GEOSERVER_URL,
+    //'http://localhost:8080/geoserver/mosquitoalert/wms',
     params: {
       LAYERS: `mosquitoalert:${styleName}`,
       SRS: mapStore.projection,

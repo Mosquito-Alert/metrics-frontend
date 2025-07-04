@@ -34,3 +34,6 @@ yarn-error.log*
 
 # VScode directories
 .vscode
+
+# .env files
+.env.prod
