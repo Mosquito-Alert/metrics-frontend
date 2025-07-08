@@ -36,7 +36,9 @@
 
       <ol-zoom-control className="custom-zoom-control" />
       <ol-scaleline-control className="custom-scaleline-control" />
-      <ol-attribution-control />
+      <ol-attribution-control
+        className="custom-attributions-control ol-attribution ol-unselectable ol-control ol-uncollapsible"
+      />
     </ol-map>
   </q-page>
 </template>
@@ -426,20 +428,6 @@ watch(hoveredFeatures, () => {
 });
 </script>
 <style lang="scss">
-.watermark {
-  position: absolute;
-  background-color: transparent;
-  bottom: 110px;
-  right: 45%;
-  height: 1.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  img {
-    height: 100%;
-    width: auto;
-  }
-}
 .custom-tooltip {
   position: relative; /* Needed for the arrow positioning */
   background-color: rgba(0, 0, 0, 0.75); /* dark with transparency */
@@ -521,5 +509,25 @@ watch(hoveredFeatures, () => {
     will-change: contents, width;
     transition: all 0.25s;
   }
+}
+.watermark {
+  position: absolute;
+  bottom: 110px;
+  right: 45%;
+  height: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  img {
+    height: 100%;
+    width: auto;
+  }
+}
+.custom-attributions-control {
+  top: auto !important;
+  bottom: 88px !important;
+  right: 0px !important;
+  left: auto !important;
 }
 </style>

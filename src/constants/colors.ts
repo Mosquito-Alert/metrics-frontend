@@ -31,12 +31,12 @@ export const VALUE_COLOR_HIGH_STOPS = [
 
 // HIGHLIGHT CONTRAST VALUES
 export const VALUE_COLOR_CONTRAST_STOPS = [
-  { min: 0.0, max: 0.1, start: '#08306b', end: '#2171b5' },
-  { min: 0.1, max: 0.2, start: '#2171b5', end: '#ffffff' },
-  { min: 0.2, max: 0.4, start: '#ffffff', end: '#fcae91' },
-  { min: 0.4, max: 0.6, start: '#fcae91', end: '#fb6a4a' },
-  { min: 0.6, max: 0.8, start: '#fb6a4a', end: '#cb181d' },
-  { min: 0.8, max: 1.0, start: '#cb181d', end: '#67000d' },
+  { min: 0.0, max: 0.2, start: '#08306b', end: '#2171b5' },
+  { min: 0.2, max: 0.4, start: '#2171b5', end: '#deebf7' },
+  { min: 0.4, max: 0.5, start: '#deebf7', end: '#ffffff' },
+  { min: 0.5, max: 0.6, start: '#ffffff', end: '#fee0d2' },
+  { min: 0.6, max: 0.8, start: '#fee0d2', end: '#fb6a4a' },
+  { min: 0.8, max: 1.0, start: '#fb6a4a', end: '#67000d' },
 ];
 
 export enum LayerStyleEnum {

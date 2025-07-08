@@ -17,12 +17,12 @@
     </q-page-sticky>
 
     <!-- LEGEND -->
-    <q-page-sticky position="bottom-right" :offset="[20, 110]">
+    <q-page-sticky position="bottom-right" :offset="[20, 115]">
       <MapLegend />
     </q-page-sticky>
 
     <!-- LAYER STYLE SELECTION -->
-    <q-page-sticky v-if="!mapStore.showAnomalies" position="bottom-left" :offset="[20, 110]">
+    <q-page-sticky v-if="!mapStore.showAnomalies" position="bottom-left" :offset="[20, 115]">
       <LayerStyleSelector />
     </q-page-sticky>
 
