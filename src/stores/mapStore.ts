@@ -32,7 +32,7 @@ export const useMapStore = defineStore('mapStore', {
     showAutonomousCommunities: false,
     showAnomalies: false,
     showLabels: true,
-    layerStyle: LayerStyleEnum.HIGH as LayerStyleEnum, // Default layer style
+    layerStyle: LayerStyleEnum.RISE as LayerStyleEnum, // Default layer style
   }),
 
   getters: {},

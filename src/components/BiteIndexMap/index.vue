@@ -284,7 +284,7 @@ watch(
       anomalyLayer.setVisible(true);
     } else {
       valueSource.updateParams({
-        STYLES: LayerStyleNames[LayerStyleEnum.HIGH],
+        STYLES: LayerStyleNames[LayerStyleEnum.RISE],
       });
       anomalyLayer.setVisible(false);
     }

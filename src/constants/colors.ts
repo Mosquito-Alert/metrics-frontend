@@ -9,7 +9,7 @@ export const ANOMALY_COLORS = {
 };
 
 // HIGHLIGHT ALL VALUES
-export const VALUE_COLOR_ALL_STOPS = [
+export const VALUE_COLOR_BALANCE_STOPS = [
   { min: 0.0, max: 0.15, start: '#A9DFBF', end: '#7DCEA0' },
   { min: 0.15, max: 0.3, start: '#7DCEA0', end: '#D5E87A' },
   { min: 0.3, max: 0.45, start: '#D5E87A', end: '#E7D47A' },
@@ -20,7 +20,7 @@ export const VALUE_COLOR_ALL_STOPS = [
 ];
 
 // HIGHLIGHT HIGH VALUES
-export const VALUE_COLOR_HIGH_STOPS = [
+export const VALUE_COLOR_RISE_STOPS = [
   { min: 0.0, max: 0.15, start: '#ffffff', end: '#fef0d9' },
   { min: 0.15, max: 0.3, start: '#fef0d9', end: '#fdd49e' },
   { min: 0.3, max: 0.45, start: '#fdd49e', end: '#fdbb84' },
@@ -30,7 +30,7 @@ export const VALUE_COLOR_HIGH_STOPS = [
 ];
 
 // HIGHLIGHT CONTRAST VALUES
-export const VALUE_COLOR_CONTRAST_STOPS = [
+export const VALUE_COLOR_BINARY_STOPS = [
   { min: 0.0, max: 0.2, start: '#08306b', end: '#2171b5' },
   { min: 0.2, max: 0.4, start: '#2171b5', end: '#deebf7' },
   { min: 0.4, max: 0.5, start: '#deebf7', end: '#ffffff' },
@@ -40,47 +40,47 @@ export const VALUE_COLOR_CONTRAST_STOPS = [
 ];
 
 export enum LayerStyleEnum {
-  ALL = 'all',
-  HIGH = 'high',
-  CONTRAST = 'contrast',
+  BALANCE = 'balance',
+  RISE = 'rise',
+  BINARY = 'binary',
   GRAY = 'gray',
 }
 
 export const LayerStyleNames: Record<LayerStyleEnum, string> = {
-  [LayerStyleEnum.ALL]: 'mosquitoalert:metricstyle-green-red',
-  [LayerStyleEnum.HIGH]: 'mosquitoalert:metricstyle',
-  [LayerStyleEnum.CONTRAST]: 'mosquitoalert:metricstyle-blue-red',
+  [LayerStyleEnum.BALANCE]: 'mosquitoalert:metricstyle-balance',
+  [LayerStyleEnum.RISE]: 'mosquitoalert:metricstyle-rise',
+  [LayerStyleEnum.BINARY]: 'mosquitoalert:metricstyle-binary',
   [LayerStyleEnum.GRAY]: 'mosquitoalert:metricstyle-gray',
 };
 
 export const LayerStyleLabels: Record<LayerStyleEnum, string> = {
-  [LayerStyleEnum.ALL]: 'Balance',
-  [LayerStyleEnum.HIGH]: 'Rise',
-  [LayerStyleEnum.CONTRAST]: 'Binary',
+  [LayerStyleEnum.BALANCE]: 'Balance',
+  [LayerStyleEnum.RISE]: 'Rise',
+  [LayerStyleEnum.BINARY]: 'Binary',
   [LayerStyleEnum.GRAY]: 'Gray',
 };
 
-export const gradientStops = (layerStyle: LayerStyleEnum = LayerStyleEnum.HIGH): string => {
+export const gradientStops = (layerStyle: LayerStyleEnum = LayerStyleEnum.RISE): string => {
   const mapStore = useMapStore();
   let stops;
   switch (layerStyle) {
-    case LayerStyleEnum.ALL:
-      stops = VALUE_COLOR_ALL_STOPS;
+    case LayerStyleEnum.BALANCE:
+      stops = VALUE_COLOR_BALANCE_STOPS;
       break;
-    case LayerStyleEnum.HIGH:
-      stops = VALUE_COLOR_HIGH_STOPS;
+    case LayerStyleEnum.RISE:
+      stops = VALUE_COLOR_RISE_STOPS;
       break;
-    case LayerStyleEnum.CONTRAST:
-      stops = VALUE_COLOR_CONTRAST_STOPS;
+    case LayerStyleEnum.BINARY:
+      stops = VALUE_COLOR_BINARY_STOPS;
       break;
     case LayerStyleEnum.GRAY:
-      stops = VALUE_COLOR_ALL_STOPS; // Assuming gray uses the same stops as ALL
+      stops = VALUE_COLOR_BALANCE_STOPS; // Assuming gray uses the same stops as ALL
       break;
     default:
-      stops = VALUE_COLOR_ALL_STOPS; // Fallback to ALL
+      stops = VALUE_COLOR_BALANCE_STOPS; // Fallback to ALL
   }
   if (mapStore.showAnomalies) {
-    return VALUE_COLOR_HIGH_STOPS.map((range) => {
+    return VALUE_COLOR_RISE_STOPS.map((range) => {
       const start = adjustSaturation(range.start, 0.0);
       const end = adjustSaturation(range.end, 0.0);
       return `${start} ${(range.min * 100).toFixed(0)}%, ${end} ${(range.max * 100).toFixed(0)}%`;
