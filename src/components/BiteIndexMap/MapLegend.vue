@@ -26,7 +26,7 @@
           <div
             class="gradient-box"
             :style="{
-              background: `linear-gradient(to right, ${gradientStops})`,
+              background: `linear-gradient(to right, ${gradientStops(mapStore.layerStyle)})`,
             }"
           ></div>
           <span class="label-right">100%</span>
@@ -36,22 +36,12 @@
   </q-card>
 </template>
 <script setup lang="ts">
-import { VALUE_COLOR_STOPS } from 'src/constants/colors';
+import { gradientStops } from 'src/constants/colors';
 import { useMapStore } from 'src/stores/mapStore';
 import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
-import { adjustSaturation } from 'src/utils/colorConversor';
-import { computed } from 'vue';
 
 const mapStore = useMapStore();
 const regionDetailedStore = useRegionDetailedStore();
-
-const gradientStops = computed(() => {
-  return VALUE_COLOR_STOPS.map((range) => {
-    const start = mapStore.showAnomalies ? adjustSaturation(range.start, 0.0) : range.start;
-    const end = mapStore.showAnomalies ? adjustSaturation(range.end, 0.0) : range.end;
-    return `${start} ${(range.min * 100).toFixed(0)}%, ${end} ${(range.max * 100).toFixed(0)}%`;
-  }).join(', ');
-});
 </script>
 <style lang="scss">
 .q-card {

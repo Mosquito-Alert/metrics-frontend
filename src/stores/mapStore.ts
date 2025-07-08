@@ -3,6 +3,7 @@ import { FeatureLike } from 'ol/Feature';
 import { MVT } from 'ol/format';
 import { Metric } from 'anomaly-detection';
 import { metricsApi } from '../services/apiService';
+import { LayerStyleEnum } from '../constants/colors';
 
 export const useMapStore = defineStore('mapStore', {
   state: () => ({
@@ -31,6 +32,7 @@ export const useMapStore = defineStore('mapStore', {
     showAutonomousCommunities: false,
     showAnomalies: false,
     showLabels: true,
+    layerStyle: LayerStyleEnum.RISE as LayerStyleEnum, // Default layer style
   }),
 
   getters: {},

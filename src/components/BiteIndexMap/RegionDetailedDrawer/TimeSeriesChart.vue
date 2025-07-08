@@ -381,7 +381,7 @@ const option = computed(() => {
   cursor: pointer;
   transition: background-color 0.3s ease;
   &.active {
-    background-color: #f3c954;
+    background-color: $primary2;
     padding-left: 1rem;
     .block {
       padding-right: 0.3rem;
@@ -389,7 +389,7 @@ const option = computed(() => {
   }
 
   &:hover {
-    background-color: #f3c954;
+    background-color: $primary2;
   }
 }
 </style>

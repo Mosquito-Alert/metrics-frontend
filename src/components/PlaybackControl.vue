@@ -105,9 +105,9 @@ watch(
   display: flex;
   align-items: center;
 
-  background-color: #393939cc;
-  color: #e1e1e1;
-  border: 1px solid #393939;
+  background-color: $dark-opacity;
+  color: $dark-mode-text;
+  border: 1px solid $dark;
   // border-radius: 0.5rem;
   padding: 1rem 3rem 0.1rem 2rem;
   // margin: auto 20px;
@@ -119,9 +119,9 @@ watch(
       width: 1.2rem;
       height: 1.2rem;
       margin-right: 2px;
-      background-color: #393939;
-      color: #e1e1e1;
-      border: 1px solid #393939;
+      background-color: $dark;
+      color: $dark-mode-text;
+      border: 1px solid $dark;
       border-radius: 0.5rem;
       color: white;
       i {
@@ -147,7 +147,7 @@ watch(
       justify-content: space-between;
       width: 100%;
       .playback-label {
-        color: #e1e1e1;
+        color: $dark-mode-text;
         margin-bottom: 2px;
       }
       .first-label {
