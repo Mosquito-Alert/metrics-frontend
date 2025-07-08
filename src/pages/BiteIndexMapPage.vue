@@ -22,7 +22,7 @@
     </q-page-sticky>
 
     <!-- LAYER STYLE SELECTION -->
-    <q-page-sticky v-if="!mapStore.showAnomalies" position="bottom-left" :offset="[20, 115]">
+    <q-page-sticky v-if="!mapStore.showAnomalies" position="bottom-left" :offset="[20, 110]">
       <LayerStyleSelector />
     </q-page-sticky>
 

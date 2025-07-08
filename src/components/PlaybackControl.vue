@@ -28,6 +28,23 @@
       >
         <q-tooltip anchor="top middle" self="bottom middle">Go forward 1 day</q-tooltip>
       </q-btn>
+
+      <button class="select-days-button">
+        <p>{{ playbackStore.playbackDays }} days</p>
+        <q-menu>
+          <q-list style="min-width: 100px">
+            <q-item
+              v-for="days in playbackDaysOptions"
+              :key="days"
+              clickable
+              v-close-popup
+              @click="playbackStore.playbackDays = days"
+            >
+              <q-item-section>{{ days }} days</q-item-section>
+            </q-item>
+          </q-list>
+        </q-menu>
+      </button>
     </div>
     <div class="playback-slider">
       <q-slider
@@ -65,9 +82,11 @@ const uiStore = useUIStore();
 const playbackStore = usePlaybackStore();
 const regionDetailedStore = useRegionDetailedStore();
 
-const maxIndex = ref(Object.keys(playbackStore.playbackDaysObject).length - 1);
-const fromDate = ref<string>(playbackStore.playbackDaysObject[0] as string);
-const toDate = ref<string>(playbackStore.playbackDaysObject[maxIndex.value] as string);
+const playbackDaysOptions = ref([30, 60, 90, 180, 365]);
+
+const maxIndex = computed(() => Object.keys(playbackStore.playbackDaysObject).length - 1);
+const fromDate = computed(() => playbackStore.playbackDaysObject[0] as string);
+const toDate = computed(() => playbackStore.playbackDaysObject[maxIndex.value] as string);
 
 const currentLabel = computed(() => {
   const currentDate = playbackStore.playbackDaysObject[playbackStore.playbackCurrentIndex];
@@ -99,6 +118,10 @@ watch(
     playbackStore.updateCurrentDate(newValue);
   },
 );
+watch(
+  () => playbackStore.playbackDays,
+  () => playbackStore.resetPlayback(),
+);
 </script>
 <style lang="scss">
 .playback-control {
@@ -126,6 +149,20 @@ watch(
       color: white;
       i {
         color: white;
+      }
+    }
+    .select-days-button {
+      width: 5rem;
+      height: 2.2rem;
+      margin-left: 1rem;
+      background-color: $dark;
+      color: $dark-mode-text;
+      border: 1px solid $dark;
+      border-radius: 0.5rem;
+      color: white;
+      cursor: pointer;
+      p {
+        margin: 0;
       }
     }
   }
