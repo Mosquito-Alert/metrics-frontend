@@ -43,6 +43,7 @@
 
 <script setup lang="ts">
 import { Feature, MapBrowserEvent, Overlay } from 'ol';
+import { Control } from 'ol/control';
 import { FeatureLike } from 'ol/Feature';
 import MVT from 'ol/format/MVT.js';
 import { Geometry } from 'ol/geom';
@@ -55,6 +56,7 @@ import { TileWMS } from 'ol/source';
 import VectorTileSource from 'ol/source/VectorTile.js';
 import { Fill, Stroke, Style } from 'ol/style';
 import { getCssVar, useQuasar } from 'quasar';
+import { LayerStyleEnum, LayerStyleNames } from 'src/constants/colors';
 import { regionsApi } from 'src/services/apiService';
 import { useMapStore } from 'src/stores/mapStore';
 import { usePlaybackStore } from 'src/stores/playbackStore';
@@ -76,6 +78,14 @@ const $q = useQuasar();
  * Base config
  */
 const center = computed(() => fromLonLat(mapStore.center, mapStore.projection));
+const logoElement = document.createElement('div');
+logoElement.className = 'watermark ol-unselectable ol-control';
+logoElement.innerHTML = `
+    <img src="/src/assets/logo_horizontal_black.png" alt="Mosquito Alert Logo"   />
+`;
+const watermarkControl = new Control({
+  element: logoElement,
+});
 
 /**
  * Feature Layer (and hover layer)
@@ -248,6 +258,17 @@ watch(
   },
 );
 watch(
+  () => mapStore.layerStyle,
+  (newStyle) => {
+    if (!valueSource) {
+      return;
+    }
+    valueSource.updateParams({
+      STYLES: LayerStyleNames[newStyle],
+    });
+  },
+);
+watch(
   () => mapStore.showAnomalies,
   (showAnomalies) => {
     const map = mapRef.value?.map;
@@ -256,12 +277,12 @@ watch(
     }
     if (showAnomalies) {
       valueSource.updateParams({
-        STYLES: 'mosquitoalert:metricstyle-gray',
+        STYLES: LayerStyleNames[LayerStyleEnum.GRAY],
       });
       anomalyLayer.setVisible(true);
     } else {
       valueSource.updateParams({
-        STYLES: '', // default style
+        STYLES: LayerStyleNames[LayerStyleEnum.HIGH],
       });
       anomalyLayer.setVisible(false);
     }
@@ -284,6 +305,8 @@ onMounted(() => {
     padding: [50, 50, 50, 50], // Padding around the feature
     duration: 200, // duration of the zoom animation in milliseconds
   });
+  // add watermark control
+  map.addControl(watermarkControl);
   map.addLayer(valueLayer);
   map.addLayer(anomalyLayer);
   map.addLayer(featureLayer);
@@ -403,6 +426,20 @@ watch(hoveredFeatures, () => {
 });
 </script>
 <style lang="scss">
+.watermark {
+  position: absolute;
+  background-color: transparent;
+  bottom: 110px;
+  right: 45%;
+  height: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  img {
+    height: 100%;
+    width: auto;
+  }
+}
 .custom-tooltip {
   position: relative; /* Needed for the arrow positioning */
   background-color: rgba(0, 0, 0, 0.75); /* dark with transparency */
@@ -418,28 +455,29 @@ watch(hoveredFeatures, () => {
     transform 0.2s ease;
   opacity: 0;
   transform: scale(0.95);
+
+  &.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Add a triangle pointer */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -6px; /* position below the tooltip */
+    left: 10px; /* adjust to align with cursor or center */
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid rgba(0, 0, 0, 0.75); /* same as tooltip background */
+  }
 }
 
-.custom-tooltip.visible {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* Add a triangle pointer */
-.custom-tooltip::after {
-  content: '';
-  position: absolute;
-  bottom: -6px; /* position below the tooltip */
-  left: 10px; /* adjust to align with cursor or center */
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid rgba(0, 0, 0, 0.75); /* same as tooltip background */
-}
 .custom-zoom-control {
   top: auto !important;
-  bottom: 10.5em !important;
+  bottom: 17em !important;
   left: 20px !important;
   right: auto !important;
 
@@ -464,7 +502,7 @@ watch(hoveredFeatures, () => {
 }
 .custom-scaleline-control {
   top: auto !important;
-  bottom: 7.7em !important;
+  bottom: 14.5em !important;
   left: 20px !important;
   right: auto !important;
 
