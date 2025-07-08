@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AnomalyMap: typeof import('./src/components/AnomalyMap/index.vue')['default']
     BiteIndexMap: typeof import('./src/components/BiteIndexMap/index.vue')['default']
     Components: typeof import('./src/components/index.vue')['default']
     CurrentStateLayer: typeof import('./src/components/BiteIndexMap/CurrentStateLayer.vue')['default']
@@ -17,6 +18,7 @@ declare module 'vue' {
     MapLegend: typeof import('./src/components/BiteIndexMap/MapLegend.vue')['default']
     PlaybackControl: typeof import('./src/components/PlaybackControl.vue')['default']
     PlaybackMap: typeof import('./src/components/PlaybackMap/index.vue')['default']
+    RegionAnomaliesChart: typeof import('./src/components/AnomalyMap/RegionDetailedDrawer/RegionAnomaliesChart.vue')['default']
     RegionAnomaliesHistoryTable: typeof import('./src/components/BiteIndexMap/RegionDetailedDrawer/RegionDetailExtraDrawer/RegionAnomaliesHistoryTable.vue')['default']
     RegionDetailedDrawer: typeof import('./src/components/BiteIndexMap/RegionDetailedDrawer/index.vue')['default']
     RegionDetailExtraDrawer: typeof import('./src/components/BiteIndexMap/RegionDetailedDrawer/RegionDetailExtraDrawer/index.vue')['default']

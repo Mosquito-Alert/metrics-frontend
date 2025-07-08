@@ -22,14 +22,14 @@
       </div>
       <div>
         <div class="legend-item legend-gradient">
-          <span class="label-left">0</span>
+          <span class="label-left">0%</span>
           <div
             class="gradient-box"
             :style="{
               background: `linear-gradient(to right, ${gradientStops})`,
             }"
           ></div>
-          <span class="label-right">100</span>
+          <span class="label-right">100%</span>
         </div>
       </div>
     </q-card-section>

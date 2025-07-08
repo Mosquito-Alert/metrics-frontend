@@ -369,7 +369,7 @@ const option = computed(() => {
               ],
             },
           },
-          icon: 'roundRect',
+          icon: 'rect',
         },
       ],
     },
