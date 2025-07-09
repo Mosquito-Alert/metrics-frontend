@@ -1,8 +1,14 @@
 <template>
   <h6 class="q-mt-lg q-my-sm q-mb-none q-ml-sm text-weight-regular" style="color: #333">
-    Seasonality Component
+    Seasonality
   </h6>
-  <v-chart style="height: 300px" :option="option" :loading="loading" />
+  <v-chart
+    ref="chartRef"
+    style="height: 300px"
+    :option="option"
+    :loading="loading"
+    @legendselectchanged="legendSelectChanged"
+  />
 </template>
 
 <script setup lang="ts">
@@ -14,13 +20,15 @@ import { date } from 'quasar';
 import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import { useUIStore } from 'src/stores/uiStore';
 import { getDayIndexInYear } from 'src/utils/date';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import VChart from 'vue-echarts';
 
 use([TooltipComponent, LineChart, CanvasRenderer, GridComponent, TitleComponent]);
 
 const uiStore = useUIStore();
 const regionDetailedStore = useRegionDetailedStore();
+
+const chartRef = ref(null as any);
 
 const loading = computed(() => regionDetailedStore.fetchingRegionMetricSeasonality);
 const seasonalityData = computed(() => {
@@ -314,7 +322,7 @@ const option = computed(() => {
       },
     },
     yAxis: {
-      name: 'Bite Index (%)',
+      // name: 'Bite Probability',
       type: 'value',
       axisLabel: {
         formatter: (val: any) => val.toFixed(0) + '%', // Converts fractions to percentages
@@ -383,4 +391,18 @@ const option = computed(() => {
     series: seriesValuesData.value,
   };
 });
+
+// Ensure that the seasonality never gets deselected
+const legendSelectChanged = (params: any) => {
+  if (params.name === 'Seasonality' && !params.selected['Seasonality']) {
+    const chartInstance = chartRef.value;
+    chartInstance.setOption({
+      legend: {
+        selected: {
+          Seasonality: true,
+        },
+      },
+    });
+  }
+};
 </script>
