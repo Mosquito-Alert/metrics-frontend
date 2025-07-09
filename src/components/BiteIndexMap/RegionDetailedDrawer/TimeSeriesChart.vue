@@ -1,22 +1,6 @@
 <template>
   <div class="bg-white rounded-borders">
-    <div class="timeseries-header">
-      <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Time Series</h6>
-      <q-btn
-        dense
-        flat
-        class="show-table q-px-md"
-        :class="{ active: regionDetailedStore.showTable }"
-        :label="regionDetailedStore.showTable ? 'Hide data' : 'Show data'"
-        :icon="
-          regionDetailedStore.showTable
-            ? 'keyboard_double_arrow_left'
-            : 'keyboard_double_arrow_right'
-        "
-        size="0.8rem"
-        @click="() => (regionDetailedStore.showTable = !regionDetailedStore.showTable)"
-      />
-    </div>
+    <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Time Series</h6>
     <v-chart style="height: 330px" :option="option" :loading="loading" />
   </div>
 </template>
@@ -362,34 +346,3 @@ const option = computed(() => {
   };
 });
 </script>
-<style lang="scss">
-.timeseries-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-}
-.show-table {
-  // position: absolute;
-  // top: 0.5rem;
-  // right: 0.5rem;
-  z-index: 1001;
-  background-color: #f0f0f0;
-  color: #444;
-  border-radius: 4px;
-  border: 1px solid #444;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  &.active {
-    background-color: $primary2;
-    padding-left: 1rem;
-    .block {
-      padding-right: 0.3rem;
-    }
-  }
-
-  &:hover {
-    background-color: $primary2;
-  }
-}
-</style>

@@ -48,9 +48,24 @@
     <!-- * CONTENT -->
     <q-scroll-area ref="drawerScrollArea" class="drawer-content col q-px-md q-py-xs">
       <div class="mainDrawerSection">
-        <h4 class="text-h4 q-mt-md q-mb-sm q-ml-xs text-weight-regular" style="color: #333">
-          Bite Probability
-        </h4>
+        <div class="mainDrawerSectionHeader q-mt-md q-mb-sm">
+          <h4 class="text-h4 q-ml-xs q-my-none text-weight-regular" style="color: #333">
+            Bite Probability
+          </h4>
+          <q-btn
+            dense
+            flat
+            class="show-table q-px-sm q-mr-md"
+            :class="{ active: regionDetailedStore.showTable }"
+            icon="list_alt"
+            size="0.8rem"
+            @click="() => (regionDetailedStore.showTable = !regionDetailedStore.showTable)"
+          >
+            <q-tooltip anchor="center left" self="center end">
+              {{ regionDetailedStore.showTable ? 'Hide table' : 'Show table' }}
+            </q-tooltip>
+          </q-btn>
+        </div>
         <TimeSeriesChart class="q-pt-sm" />
       </div>
       <q-separator class="q-my-md" />
@@ -173,6 +188,33 @@ const width = computed(() => uiStore.regionDetailDrawerWidth);
     font-weight: 400;
     color: #555;
     font-style: italic;
+  }
+
+  .mainDrawerSectionHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    .show-table {
+      z-index: 1001;
+      background-color: #f0f0f0;
+      color: #444;
+      border-radius: 4px;
+      border: 1px solid #444;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      &.active {
+        background-color: $primary2;
+        .block {
+          padding-right: 0.3rem;
+        }
+      }
+
+      &:hover {
+        background-color: $primary2;
+      }
+    }
   }
 }
 </style>
