@@ -282,7 +282,7 @@ watch(
       anomalyLayer.setVisible(true);
     } else {
       valueSource.updateParams({
-        STYLES: LayerStyleNames[LayerStyleEnum.RISE],
+        STYLES: LayerStyleNames[mapStore.layerStyle],
       });
       anomalyLayer.setVisible(false);
     }
