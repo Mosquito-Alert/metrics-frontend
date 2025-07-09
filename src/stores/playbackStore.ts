@@ -28,38 +28,10 @@ export const usePlaybackStore = defineStore('playbackStore', {
   },
 
   actions: {
-    async fetchData(date: string, x: string, y: string, z: string) {
-      this.fetchingData = true; // Set fetching flag to true
-      const response = await metricsApi.timeseriesTilesRetrieve(
-        {
-          date: date,
-          days: this.playbackDays,
-          x: x,
-          y: y,
-          z: z,
-        },
-        { responseType: 'arraybuffer' }, // Ensure we get the data as an ArrayBuffer
-      );
-      const firstDate = subtractDays(date, this.playbackDays - 1);
-      this.playbackDaysObject = getDatesBetween(firstDate, date);
-      this.playbackCurrentDate = this.playbackCurrentDate || firstDate;
-      // this.playbackCurrentIndex = 0; // Reset index to the start
-      this.fetchingData = false; // Reset fetching flag
-      return response.data;
+    resetPlayback() {
+      this.togglePlayback();
+      this.togglePlayback();
     },
-    // async fetchAvailableDates() {
-    //   this.fetchingAvailableDates = true; // Set flag to indicate fetching available dates
-    //   try {
-    //     const response = await metricsApi.datesList();
-    //     this.availableDates = response.data.map((date: string) => ({
-    //       date: new Date(date),
-    //     }));
-    //   } catch (error) {
-    //     console.error('Error fetching available dates:', error);
-    //   } finally {
-    //     this.fetchingAvailableDates = false; // Reset flag after fetching
-    //   }
-    // },
     togglePlayback() {
       const regionDetailedStore = useRegionDetailedStore();
       this.playbackEnabled = !this.playbackEnabled;

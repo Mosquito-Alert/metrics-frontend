@@ -5,20 +5,16 @@ export const subtractDays = (date: string, days: number): string => {
 };
 
 export const getDatesBetween = (start: string, end: string) => {
-  const startDate = new Date(start);
-  const endDate = new Date(end);
+  const startDate = new Date(start + 'T00:00:00Z'); // force UTC midnight
+  const endDate = new Date(end + 'T00:00:00Z'); // force UTC midnight
+
   const result = {} as Record<number, string>;
-  // const result = [] as { value: number; label: string }[];
   let currentDate = startDate;
   let index = 0;
 
-  while (currentDate <= endDate) {
-    // result.push({
-    //   value: index,
-    //   label: currentDate.toISOString().split('T')[0] as string, // Format date as YYYY-MM-DD
-    // });
+  while (currentDate.getTime() <= endDate.getTime()) {
     result[index] = currentDate.toISOString().split('T')[0] as string;
-    currentDate.setDate(currentDate.getDate() + 1);
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
     index++;
   }
 
