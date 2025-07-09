@@ -1,28 +1,22 @@
 <template>
   <div class="bg-white rounded-borders">
-    <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Bite Index Time Series</h6>
-    <q-btn
-      v-if="!regionDetailedStore.showTable"
-      dense
-      flat
-      class="show-table q-px-md"
-      :class="{ active: regionDetailedStore.showTable }"
-      label="Show data"
-      icon-right="keyboard_double_arrow_right"
-      size="0.8rem"
-      @click="() => (regionDetailedStore.showTable = !regionDetailedStore.showTable)"
-    />
-    <q-btn
-      v-if="regionDetailedStore.showTable"
-      dense
-      flat
-      class="show-table q-px-md"
-      :class="{ active: regionDetailedStore.showTable }"
-      label="Hide data"
-      icon="keyboard_double_arrow_left"
-      size="0.8rem"
-      @click="() => (regionDetailedStore.showTable = !regionDetailedStore.showTable)"
-    />
+    <div class="timeseries-header">
+      <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Time Series</h6>
+      <q-btn
+        dense
+        flat
+        class="show-table q-px-md"
+        :class="{ active: regionDetailedStore.showTable }"
+        :label="regionDetailedStore.showTable ? 'Hide data' : 'Show data'"
+        :icon="
+          regionDetailedStore.showTable
+            ? 'keyboard_double_arrow_left'
+            : 'keyboard_double_arrow_right'
+        "
+        size="0.8rem"
+        @click="() => (regionDetailedStore.showTable = !regionDetailedStore.showTable)"
+      />
+    </div>
     <v-chart style="height: 330px" :option="option" :loading="loading" />
   </div>
 </template>
@@ -208,7 +202,7 @@ const option = computed(() => {
       boundaryGap: false,
     },
     yAxis: {
-      name: 'Bite Index (%)',
+      name: 'Bite Probability',
       // min: 0, // Sets the minimum value to 0
       axisLabel: {
         formatter: (val: any) => val.toFixed(0) + '%', // Converts fractions to percentages
@@ -369,10 +363,16 @@ const option = computed(() => {
 });
 </script>
 <style lang="scss">
+.timeseries-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
 .show-table {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  // position: absolute;
+  // top: 0.5rem;
+  // right: 0.5rem;
   z-index: 1001;
   background-color: #f0f0f0;
   color: #444;

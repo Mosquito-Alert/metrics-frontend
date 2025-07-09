@@ -264,7 +264,7 @@ const seriesValuesData = computed(() => {
   });
 
   const seasonalitySeries = {
-    name: 'Seasonality',
+    name: 'Average',
     type: 'line',
     smooth: true,
     data: seasonalityData.value.map((item: any) => item),
@@ -339,7 +339,7 @@ const option = computed(() => {
       selected: {},
       data: [
         {
-          name: 'Seasonality',
+          name: 'Average',
           itemStyle: {
             color: '#006400',
           },
@@ -394,12 +394,12 @@ const option = computed(() => {
 
 // Ensure that the seasonality never gets deselected
 const legendSelectChanged = (params: any) => {
-  if (params.name === 'Seasonality' && !params.selected['Seasonality']) {
+  if (params.name === 'Average' && !params.selected['Average']) {
     const chartInstance = chartRef.value;
     chartInstance.setOption({
       legend: {
         selected: {
-          Seasonality: true,
+          Average: true,
         },
       },
     });

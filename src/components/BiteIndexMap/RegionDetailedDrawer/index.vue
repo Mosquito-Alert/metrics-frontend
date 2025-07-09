@@ -29,7 +29,7 @@
             ><q-tooltip>
               <div v-if="!loading">
                 <p class="text-subtitle1 text-weight-light q-pa-none q-ma-none">
-                  Bite Index:
+                  Bite Probability:
                   <span class="text-weight-medium">{{ metric.value }}%</span>
                 </p>
                 <p class="text-subtitle2 text-weight-light q-pa-none q-ma-none">
@@ -47,8 +47,19 @@
     </div>
     <!-- * CONTENT -->
     <q-scroll-area ref="drawerScrollArea" class="drawer-content col q-px-md q-py-xs">
-      <TimeSeriesChart class="q-pt-sm" />
-      <RegionSeasonality />
+      <div class="mainDrawerSection">
+        <h4 class="text-h4 q-mt-md q-mb-sm q-ml-xs text-weight-regular" style="color: #333">
+          Bite Probability
+        </h4>
+        <TimeSeriesChart class="q-pt-sm" />
+      </div>
+      <q-separator class="q-my-md" />
+      <div class="secondaryDrawerSection">
+        <h5 class="text-h5 q-mt-md q-mb-sm q-ml-xs text-weight-regular" style="color: #333">
+          Additional Insights
+        </h5>
+        <RegionSeasonality />
+      </div>
     </q-scroll-area>
   </div>
 </template>
@@ -141,12 +152,6 @@ const resetSelectedRegionMetricId = () => {
 const width = computed(() => uiStore.regionDetailDrawerWidth);
 </script>
 <style lang="scss">
-.close-drawer {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 1002;
-}
 .region-detail-drawer {
   z-index: 1000;
   position: absolute;
@@ -156,10 +161,18 @@ const width = computed(() => uiStore.regionDetailDrawerWidth);
   height: 100vh;
   display: flex;
   flex-direction: column;
-}
-.date-label {
-  font-weight: 400;
-  color: #555;
-  font-style: italic;
+
+  .close-drawer {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1002;
+  }
+
+  .date-label {
+    font-weight: 400;
+    color: #555;
+    font-style: italic;
+  }
 }
 </style>

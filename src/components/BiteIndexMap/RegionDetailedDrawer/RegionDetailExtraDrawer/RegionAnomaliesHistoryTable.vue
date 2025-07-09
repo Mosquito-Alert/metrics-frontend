@@ -56,7 +56,7 @@ const columns: QTableProps['columns'] = [
     name: 'value',
     field: 'value',
     required: true,
-    label: 'Bite Index (%)',
+    label: 'Bite Probability (%)',
     format: (val: number, row: any): string => (val ? `${(val * 100).toFixed(2)}%` : 'N/A'),
     align: 'center',
   },

@@ -41,7 +41,7 @@
           </q-item-section>
 
           <q-item-section>
-            <q-item-label class="text-subtitle2"> Bite Index Map</q-item-label>
+            <q-item-label class="text-subtitle2"> Bite Probability Map</q-item-label>
           </q-item-section>
         </q-item>
 

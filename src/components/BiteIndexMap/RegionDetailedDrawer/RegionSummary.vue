@@ -11,7 +11,7 @@
   >
     <div class="col-5 row justify-center items-center">
       <div class="col">
-        <span class="text-weight-light">Bite Index</span>
+        <span class="text-weight-light">Bite Probability</span>
         <q-space />
         <q-badge :label="status" :color="statusColorName" v-if="!loading"></q-badge>
       </div>
