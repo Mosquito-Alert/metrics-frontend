@@ -1,7 +1,19 @@
 <template>
-  <h6 class="q-mt-lg q-my-sm q-mb-none q-ml-sm text-weight-regular" style="color: #333">
-    Seasonality
-  </h6>
+  <div class="seasonality-header">
+    <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Seasonality</h6>
+    <div>
+      <div class="seasonality-selector q-mr-md">
+        <button
+          v-for="option in seasonalitySelectorOptions"
+          :key="option.value"
+          class="seasonality-selector-option"
+          @click="seasonalitySelector = option.value"
+        >
+          {{ option.label }}
+        </button>
+      </div>
+    </div>
+  </div>
   <v-chart
     ref="chartRef"
     style="height: 300px"
@@ -29,6 +41,11 @@ const uiStore = useUIStore();
 const regionDetailedStore = useRegionDetailedStore();
 
 const chartRef = ref(null as any);
+const seasonalitySelectorOptions = [
+  { label: 'Deviation', value: 'Deviation' },
+  { label: 'Previous Years', value: 'Previous Years' },
+];
+const seasonalitySelector = ref('Deviation'); // Example toggle model, adjust as needed
 
 const loading = computed(() => regionDetailedStore.fetchingRegionMetricSeasonality);
 const seasonalityData = computed(() => {
@@ -336,7 +353,10 @@ const option = computed(() => {
     },
     legend: {
       type: 'scroll',
-      selected: {},
+      selected: {
+        'Values Previous Years': seasonalitySelector.value === 'Previous Years',
+        'Seasonal Deviation': seasonalitySelector.value === 'Deviation',
+      },
       data: [
         {
           name: 'Average',
@@ -406,3 +426,30 @@ const legendSelectChanged = (params: any) => {
   }
 };
 </script>
+<style lang="scss">
+.seasonality-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  .seasonality-selector {
+    .seasonality-selector-option {
+      width: 6.5rem;
+      height: 1.7rem;
+      font-size: 0.7rem;
+      margin-left: 0.55rem;
+      padding: 0;
+      border: 0px solid transparent;
+      border-radius: 0.3rem;
+      color: #444;
+      font-weight: 600;
+      background-color: #f0f0f0;
+
+      cursor: pointer;
+      &:hover {
+        background-color: $primary2;
+        transition: background-color 0.3s ease;
+      }
+    }
+  }
+}
+</style>
