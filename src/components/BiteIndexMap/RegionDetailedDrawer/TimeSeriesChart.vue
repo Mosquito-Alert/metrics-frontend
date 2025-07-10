@@ -1,6 +1,18 @@
 <template>
   <div class="bg-white rounded-borders">
-    <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Time Series</h6>
+    <div class="timeseries-header">
+      <h6 class="q-my-sm q-ml-sm text-weight-regular" style="color: #333">Time Series</h6>
+      <div class="timeseries-selector q-mr-md">
+        <button
+          v-for="option in chartDaysSelector"
+          :key="option.value"
+          class="timeseries-selector-option"
+          @click="startDataZoom = option.value"
+        >
+          {{ option.label }}
+        </button>
+      </div>
+    </div>
     <v-chart style="height: 330px" :option="option" :loading="loading" />
   </div>
 </template>
@@ -8,7 +20,7 @@
 <script setup lang="ts">
 import VChart from 'vue-echarts';
 import { date, getCssVar } from 'quasar';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { use } from 'echarts/core';
 import {
   DataZoomComponent,
@@ -23,7 +35,7 @@ import { LineChart, ScatterChart } from 'echarts/charts';
 import { ANOMALY_COLORS } from 'src/constants/colors';
 import { Metric } from 'anomaly-detection';
 import { trendDataCorrection } from 'src/utils/trendDataCorrection';
-import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
+import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import { useMapStore } from 'src/stores/mapStore';
 import { useUIStore } from 'src/stores/uiStore';
 
@@ -55,9 +67,16 @@ const trend = computed(() => {
   return trendDataCorrection(data, trendDate.value);
 });
 const loading = computed(() => anomaliesLoading.value || trendLoading.value);
+const startDataZoom = ref(365 * 2); // Default to the last 2 years
 const percentageLastMonth = computed(() => {
-  return 100 - ((365 * 2) / anomaliesData.value.length) * 100; // Assuming the last month has 30 days
+  return 100 - (startDataZoom.value / anomaliesData.value.length) * 100; // Assuming the last month has 30 days
 });
+const chartDaysSelector = computed(() => [
+  { label: '6M', value: 180 },
+  { label: '1Y', value: 365 },
+  { label: '3Y', value: 1095 },
+  { label: 'Max', value: anomaliesData.value.length },
+]);
 
 // Calculates the indexes for today and the beginning of the year, to mark the dates on the chart
 const indexes = computed(() => {
@@ -346,3 +365,31 @@ const option = computed(() => {
   };
 });
 </script>
+<style lang="scss">
+.timeseries-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  .timeseries-selector {
+    .timeseries-selector-option {
+      width: 1.7rem;
+      height: 1.7rem;
+      font-size: 0.7rem;
+      margin-left: 0.55rem;
+      padding: 0;
+      border: 0px solid transparent;
+      border-radius: 0.3rem;
+      color: #444;
+      font-weight: 600;
+      background-color: #f0f0f0;
+
+      cursor: pointer;
+      &:hover {
+        background-color: $primary2;
+        transition: background-color 0.3s ease;
+      }
+    }
+  }
+}
+</style>
