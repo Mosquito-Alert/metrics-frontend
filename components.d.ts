@@ -30,6 +30,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchBox: typeof import('./src/components/BiteIndexMap/SearchBox.vue')['default']
+    StatusPresentation: typeof import('./src/components/BiteIndexMap/RegionDetailedDrawer/StatusPresentation.vue')['default']
     TimeSeriesChart: typeof import('./src/components/BiteIndexMap/RegionDetailedDrawer/TimeSeriesChart.vue')['default']
   }
 }

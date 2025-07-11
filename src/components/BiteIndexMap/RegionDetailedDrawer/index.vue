@@ -13,42 +13,23 @@
         {{ municipalityName }}
       </p>
       <div class="row q-mb-sm">
-        <div class="col-10">
+        <div class="col-8">
           <p class="text-h6 text-weight-regular" style="color: #333">{{ provinceName }}</p>
           <p class="text-subtitle-1 text-weight-regular q-ma-none" style="color: #333">
             {{ date.formatDate(mapStore.lastDate, 'MMM D, YYYY') }}
             <span class="date-label">(Last available data)</span>
           </p>
         </div>
-        <div class="col self-end">
-          <q-badge
-            :label="status"
-            :color="statusColorName"
-            class="q-py-sm q-px-md q-mt-xs"
-            v-if="!loading"
-            ><q-tooltip>
-              <div v-if="!loading">
-                <p class="text-subtitle1 text-weight-light q-pa-none q-ma-none">
-                  Bite Probability:
-                  <span class="text-weight-medium">{{ metric.value }}%</span>
-                </p>
-                <p class="text-subtitle2 text-weight-light q-pa-none q-ma-none">
-                  Confidence levels:
-                  <span class="text-weight-regular"
-                    >[{{ metric.lower_value }}%, {{ metric.upper_value }}%]</span
-                  >
-                </p>
-              </div>
-            </q-tooltip>
-          </q-badge>
+        <div class="col self-end justify-end">
+          <StatusPresentation v-if="!loading" />
           <q-skeleton class="text-h6 full-width" v-if="loading" />
         </div>
       </div>
     </div>
     <!-- * CONTENT -->
     <q-scroll-area ref="drawerScrollArea" class="drawer-content col q-px-md q-py-xs">
-      <div class="mainDrawerSection">
-        <div class="mainDrawerSectionHeader q-mt-md q-mb-sm">
+      <div class="main-drawer-section">
+        <div class="main-drawer-section-header q-mt-md q-mb-sm">
           <h4 class="text-h4 q-ml-xs q-my-none text-weight-regular" style="color: #333">
             Bite Probability
           </h4>
@@ -78,20 +59,13 @@
     </q-scroll-area>
   </div>
 </template>
-
 <script setup lang="ts">
-import { MetricDetail } from 'anomaly-detection';
 import { date } from 'quasar';
 import { historyPageSize } from 'src/constants/config';
 import { useMapStore } from 'src/stores/mapStore';
+import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import { useUIStore } from 'src/stores/uiStore';
-import {
-  AnomalyClassificationEnum,
-  anomalyClassificationStyle,
-  classifyAnomaly,
-} from 'src/utils/anomalyClassification';
 import { computed, ref, watch } from 'vue';
-import { useRegionDetailedStore } from '../../../stores/regionDetailedStore';
 
 const uiStore = useUIStore();
 const regionDetailedStore = useRegionDetailedStore();
@@ -108,9 +82,6 @@ const updateDataHook = async () => {
   await regionDetailedStore.fetchSelectedMetricHistory({ page: 1, pageSize: historyPageSize });
 };
 
-const metric = computed<MetricDetail>(
-  () => regionDetailedStore.getFormattedRegionMetric as MetricDetail,
-);
 const loading = computed(() => regionDetailedStore.fetchingRegionMetric);
 
 watch(
@@ -144,21 +115,6 @@ const provinceName = computed(() => {
   return selectedRegionMetric.region.province;
 });
 
-const status = computed(() => {
-  if (
-    Object.keys(metric).length === 0 ||
-    metric.value.anomaly_degree === undefined ||
-    metric.value.anomaly_degree === null
-  ) {
-    return;
-  }
-
-  return classifyAnomaly(metric.value.anomaly_degree) as AnomalyClassificationEnum;
-});
-const statusColorName = computed(() => {
-  return anomalyClassificationStyle(status.value || AnomalyClassificationEnum.N_A);
-});
-
 const resetSelectedRegionMetricId = () => {
   regionDetailedStore.$reset();
   mapStore.selectedFeatures = [];
@@ -177,42 +133,46 @@ const width = computed(() => uiStore.regionDetailDrawerWidth);
   display: flex;
   flex-direction: column;
 
-  .close-drawer {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    z-index: 1002;
+  .drawer-header {
+    .close-drawer {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1002;
+    }
+
+    .date-label {
+      font-weight: 400;
+      color: #555;
+      font-style: italic;
+    }
   }
 
-  .date-label {
-    font-weight: 400;
-    color: #555;
-    font-style: italic;
-  }
+  .main-drawer-section {
+    .main-drawer-section-header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
 
-  .mainDrawerSectionHeader {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-
-    .show-table {
-      z-index: 1001;
-      background-color: #f0f0f0;
-      color: #444;
-      border-radius: 4px;
-      border: 1px solid #444;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      &.active {
-        background-color: $primary2;
-        .block {
-          padding-right: 0.3rem;
+      .show-table {
+        z-index: 1001;
+        background-color: #f0f0f0;
+        color: #444;
+        border-radius: 4px;
+        border: 1px solid #444;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        &.active {
+          background-color: $primary2;
+          .block {
+            padding-right: 0.3rem;
+          }
         }
-      }
 
-      &:hover {
-        background-color: $primary2;
+        &:hover {
+          background-color: $primary2;
+        }
       }
     }
   }
