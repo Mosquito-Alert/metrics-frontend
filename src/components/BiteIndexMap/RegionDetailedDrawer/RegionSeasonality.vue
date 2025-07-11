@@ -7,7 +7,7 @@
           v-for="option in seasonalitySelectorOptions"
           :key="option.value"
           class="seasonality-selector-option"
-          @click="seasonalitySelector = option.value"
+          @click="seasonalitySelectOption(option.value)"
         >
           {{ option.label }}
         </button>
@@ -46,6 +46,11 @@ const seasonalitySelectorOptions = [
   { label: 'Previous Years', value: 'Previous Years' },
 ];
 const seasonalitySelector = ref('Deviation'); // Example toggle model, adjust as needed
+const updateDataZoom = ref(0.23); // Dummy ref to trigger reactivity
+const seasonalitySelectOption = (value: string) => {
+  seasonalitySelector.value = value;
+  updateDataZoom.value = Math.random();
+};
 
 const loading = computed(() => regionDetailedStore.fetchingRegionMetricSeasonality);
 const seasonalityData = computed(() => {
@@ -311,6 +316,7 @@ const seriesValuesData = computed(() => {
 });
 
 const option = computed(() => {
+  updateDataZoom.value; // Trigger reactivity
   return {
     xAxis: {
       type: 'category',

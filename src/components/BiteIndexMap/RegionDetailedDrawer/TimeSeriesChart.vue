@@ -7,7 +7,7 @@
           v-for="option in chartDaysSelector"
           :key="option.value"
           class="timeseries-selector-option"
-          @click="startDataZoom = option.value"
+          @click="timeseriesSelectOption(option.value)"
         >
           {{ option.label }}
         </button>
@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import VChart from 'vue-echarts';
 import { date, getCssVar } from 'quasar';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { use } from 'echarts/core';
 import {
   DataZoomComponent,
@@ -68,6 +68,7 @@ const trend = computed(() => {
 });
 const loading = computed(() => anomaliesLoading.value || trendLoading.value);
 const startDataZoom = ref(365 * 2); // Default to the last 2 years
+const updateDataZoom = ref(0.23); // Dummy ref to trigger reactivity
 const percentageLastMonth = computed(() => {
   return 100 - (startDataZoom.value / anomaliesData.value.length) * 100; // Assuming the last month has 30 days
 });
@@ -77,6 +78,10 @@ const chartDaysSelector = computed(() => [
   { label: '3Y', value: 1095 },
   { label: 'Max', value: anomaliesData.value.length },
 ]);
+const timeseriesSelectOption = (value: number) => {
+  startDataZoom.value = value;
+  updateDataZoom.value = Math.random();
+};
 
 // Calculates the indexes for today and the beginning of the year, to mark the dates on the chart
 const indexes = computed(() => {
@@ -106,6 +111,7 @@ const indexes = computed(() => {
 });
 
 const option = computed(() => {
+  updateDataZoom.value; // Trigger reactivity
   return {
     tooltip: {
       trigger: 'axis',
