@@ -8,7 +8,7 @@
     <q-circular-progress
       show-value
       size="60px"
-      :value="(regionDetailedStore.lastRegionMetric?.value as number) * 100"
+      :value="(regionDetailedStore.currentRegionMetric?.value as number) * 100"
       :color="mapStore.showAnomalies ? 'grey' : 'orange'"
       track-color="white"
       class="value-status"

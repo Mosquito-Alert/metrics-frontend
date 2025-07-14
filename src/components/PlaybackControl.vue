@@ -114,11 +114,11 @@ const compactWithDrawerStyle = computed<CSSProperties>(() => {
 
 watch(
   () => playbackStore.playbackCurrentIndex,
-  (newValue) => {
+  async (newValue) => {
     playbackStore.updateCurrentDate(newValue);
-    // await regionDetailedStore.fetchCurrentMetric(
-    //   (regionDetailedStore.lastRegionMetric?.region.id || '').toString(),
-    // );
+    await regionDetailedStore.fetchCurrentMetric(
+      (regionDetailedStore.lastRegionMetric?.region.code || '').toString(),
+    );
   },
 );
 watch(

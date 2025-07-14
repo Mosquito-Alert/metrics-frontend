@@ -89,7 +89,7 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
         console.error('Error fetching selected region:', error);
       }
     },
-    async fetchCurrentMetric(regionId: string): Promise<void> {
+    async fetchCurrentMetric(regionCode: string): Promise<void> {
       const playbackStore = usePlaybackStore();
       const mapStore = useMapStore();
       if (playbackStore.playbackCurrentDate === mapStore.lastDate) {
@@ -102,7 +102,7 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
         this.fetchingCurrentRegionMetric = true;
         // const response = await metricsApi.retrieve({ id: metricUuid });
         const response = await metricsApi.list({
-          regionCode: regionId,
+          regionCode: regionCode,
           dateFrom: playbackStore.playbackCurrentDate,
           dateTo: playbackStore.playbackCurrentDate,
           page: 1,
