@@ -3,13 +3,14 @@
     <q-badge
       :label="status"
       :color="statusColorName"
-      class="status-info q-py-sm q-px-md q-mt-xs q-mr-md"
+      text-color="dark"
+      class="status-info q-py-sm q-px-md q-mt-xs q-mr-md text-weight-medium"
     />
     <q-circular-progress
       show-value
       size="60px"
       :value="(regionDetailedStore.currentRegionMetric?.value as number) * 100"
-      :color="mapStore.showAnomalies ? 'grey' : 'orange'"
+      color="orange"
       track-color="white"
       class="value-status"
     >
@@ -42,7 +43,6 @@
 <script lang="ts" setup>
 import { MetricDetail } from 'anomaly-detection';
 import MosquitoIcon from 'src/assets/mosquito.svg?raw';
-import { useMapStore } from 'src/stores/mapStore';
 import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import {
   AnomalyClassificationEnum,
@@ -52,7 +52,6 @@ import {
 import { computed } from 'vue';
 
 const regionDetailedStore = useRegionDetailedStore();
-const mapStore = useMapStore();
 
 const metric = computed<MetricDetail>(
   () => regionDetailedStore.getFormattedCurrentRegionMetric as MetricDetail,
@@ -81,7 +80,8 @@ const statusColorName = computed(() => {
   justify-content: center;
   .value-status {
     svg circle.q-circular-progress__track[stroke] {
-      stroke: #39393922;
+      // stroke: #39393922;
+      stroke: $dark-mode-text;
     }
     // svg circle.q-circular-progress__circle[stroke] {
     //  stroke: orange;
@@ -96,7 +96,8 @@ const statusColorName = computed(() => {
       .mosquito-icon svg {
         width: 1.5rem;
         height: 1.5rem;
-        color: #393939;
+        // color: #393939;
+        color: white;
       }
     }
   }

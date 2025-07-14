@@ -18,7 +18,11 @@
     <template v-slot:body-cell-anomaly="props">
       <q-td :props="props">
         <div>
-          <q-badge :color="anomalyClassificationStyle(props.value)" :label="props.value" />
+          <q-badge
+            :color="anomalyClassificationStyle(props.value)"
+            class="text-weight-medium"
+            :label="props.value"
+          />
         </div>
       </q-td>
     </template>

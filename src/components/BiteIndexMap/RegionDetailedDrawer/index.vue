@@ -1,6 +1,6 @@
 <template>
   <div class="region-detail-drawer bg-white overflow-hidden" :style="{ width: width + 'px' }">
-    <div class="drawer-header q-pt-lg q-pb-sm q-px-lg q-ma-none" style="background-color: #f9e7b5">
+    <div class="drawer-header q-pt-lg q-pb-sm q-px-lg q-ma-none">
       <q-btn
         dense
         flat
@@ -14,8 +14,10 @@
       </p>
       <div class="row q-mb-sm">
         <div class="col">
-          <p class="text-h6 text-weight-regular" style="color: #333">{{ provinceName }}</p>
-          <p class="text-subtitle-1 text-weight-regular q-ma-none" style="color: #333">
+          <p class="text-h6 text-weight-regular" style="color: 'white'">
+            {{ provinceName }}
+          </p>
+          <p class="text-subtitle-1 text-weight-regular q-ma-none" style="color: 'white'">
             {{ date.formatDate(uiStore.getDate, 'MMM D, YYYY') }}
           </p>
         </div>
@@ -29,7 +31,7 @@
     <q-scroll-area ref="drawerScrollArea" class="drawer-content col q-px-md q-py-xs">
       <div class="main-drawer-section">
         <div class="main-drawer-section-header q-mt-md q-mb-sm">
-          <h4 class="text-h4 q-ml-xs q-my-none text-weight-regular" style="color: #333">
+          <h4 class="text-h4 q-ml-xs q-my-none text-weight-regular" style="color: 'white'">
             Bite Probability
           </h4>
           <q-btn
@@ -133,6 +135,9 @@ const width = computed(() => uiStore.regionDetailDrawerWidth);
   flex-direction: column;
 
   .drawer-header {
+    // background-color: #edb20c; // #f9e7b5
+    background-color: $dark-opacity;
+    color: white;
     .close-drawer {
       position: absolute;
       top: 1rem;
@@ -142,7 +147,8 @@ const width = computed(() => uiStore.regionDetailDrawerWidth);
 
     .date-label {
       font-weight: 400;
-      color: #555;
+      // color: #555;
+      color: white;
       font-style: italic;
     }
   }
