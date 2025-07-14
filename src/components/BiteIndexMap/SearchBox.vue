@@ -116,7 +116,7 @@ const fetchMetricFromRegion = async (regionCode: string): Promise<Metric | null>
     });
     if (response.status === 200 && response.data.results.length > 0) {
       const metric = response.data.results[0] as Metric;
-      //   mapStore.selectedRegionMetricId = metric ? metric.id : '';
+      //   mapStore.lastRegionMetricId = metric ? metric.id : '';
       return metric;
     } else {
       throw new Error('No metrics found for the selected region');

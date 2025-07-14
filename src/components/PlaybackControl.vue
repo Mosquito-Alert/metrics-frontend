@@ -102,7 +102,7 @@ const playIcon = computed(() => {
 });
 
 const compactWithDrawerStyle = computed<CSSProperties>(() => {
-  return regionDetailedStore.selectedRegionMetricId
+  return regionDetailedStore.lastRegionMetricId
     ? {
         width: uiStore.playbackWidth + 'px',
         position: 'absolute',
@@ -116,6 +116,9 @@ watch(
   () => playbackStore.playbackCurrentIndex,
   (newValue) => {
     playbackStore.updateCurrentDate(newValue);
+    // await regionDetailedStore.fetchCurrentMetric(
+    //   (regionDetailedStore.lastRegionMetric?.region.id || '').toString(),
+    // );
   },
 );
 watch(

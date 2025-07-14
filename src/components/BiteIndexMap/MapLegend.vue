@@ -1,6 +1,6 @@
 <template>
   <q-card>
-    <q-card-section v-if="mapStore.showAnomalies || regionDetailedStore.selectedRegionMetricId">
+    <q-card-section v-if="mapStore.showAnomalies || regionDetailedStore.lastRegionMetricId">
       <div class="text-subtitle2 text-weight-bold text-uppercase q-ma-none q-pa-none q-mb-md">
         Bite Probability Anomalies
       </div>

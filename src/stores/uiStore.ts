@@ -29,7 +29,7 @@ export const useUIStore = defineStore('uiStore', {
     },
     playbackWidth: (state) => {
       const regionDetailedStore = useRegionDetailedStore();
-      return regionDetailedStore.selectedRegionMetricId
+      return regionDetailedStore.lastRegionMetricId
         ? state.appWidth - state.regionDetailDrawerWidth
         : state.appWidth;
     },

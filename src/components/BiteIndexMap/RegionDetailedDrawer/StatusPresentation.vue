@@ -1,11 +1,15 @@
 <template>
   <div class="status-presentation">
-    <!-- :value="95" -->
+    <q-badge
+      :label="status"
+      :color="statusColorName"
+      class="status-info q-py-sm q-px-md q-mt-xs q-mr-md"
+    />
     <q-circular-progress
       show-value
-      size="70px"
-      :value="(regionDetailedStore.selectedRegionMetric?.value as number) * 100"
-      color="orange"
+      size="60px"
+      :value="(regionDetailedStore.lastRegionMetric?.value as number) * 100"
+      :color="mapStore.showAnomalies ? 'grey' : 'orange'"
       track-color="white"
       class="value-status"
     >
@@ -13,9 +17,6 @@
         <div class="mosquito-icon" v-html="MosquitoIcon" />
       </div>
     </q-circular-progress>
-    <span class="anomaly-status" :style="{ backgroundColor: anomalyStatusColor }">
-      <q-icon :name="statusIcon" size="1.5rem" color="white" />
-    </span>
     <q-tooltip>
       <div>
         <p class="text-subtitle1 text-weight-light q-pa-none q-ma-none">
@@ -40,55 +41,51 @@
 </template>
 <script lang="ts" setup>
 import { MetricDetail } from 'anomaly-detection';
-import { ANOMALY_COLORS } from 'src/constants/colors';
-import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
-import { computed } from 'vue';
 import MosquitoIcon from 'src/assets/mosquito.svg?raw';
+import { useMapStore } from 'src/stores/mapStore';
+import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
+import {
+  AnomalyClassificationEnum,
+  anomalyClassificationStyle,
+  classifyAnomaly,
+} from 'src/utils/anomalyClassification';
+import { computed } from 'vue';
 
 const regionDetailedStore = useRegionDetailedStore();
-
-const statusIcon = computed(() => {
-  const anomalyDegree = regionDetailedStore.getFormattedRegionMetric?.anomaly_degree;
-  if (anomalyDegree === undefined || anomalyDegree === null) {
-    return 'check_circle';
-  } else if (anomalyDegree < 0) {
-    return 'keyboard_arrow_down';
-  } else if (anomalyDegree > 0) {
-    return 'keyboard_arrow_up';
-  } else {
-    return 'check';
-  }
-});
+const mapStore = useMapStore();
 
 const metric = computed<MetricDetail>(
-  () => regionDetailedStore.getFormattedRegionMetric as MetricDetail,
+  () => regionDetailedStore.getFormattedCurrentRegionMetric as MetricDetail,
 );
-const anomalyStatusColor = computed(() => {
-  const anomalyDegree = metric.value.anomaly_degree;
-  if (anomalyDegree === undefined || anomalyDegree === null) {
-    return ANOMALY_COLORS.USUAL_LIGHT;
-  } else if (anomalyDegree < 0) {
-    return ANOMALY_COLORS.LOW;
-  } else if (anomalyDegree > 0) {
-    return ANOMALY_COLORS.HIGH;
-  } else {
-    return ANOMALY_COLORS.USUAL;
+
+const status = computed(() => {
+  if (
+    Object.keys(metric).length === 0 ||
+    metric.value.anomaly_degree === undefined ||
+    metric.value.anomaly_degree === null
+  ) {
+    return;
   }
+
+  return classifyAnomaly(metric.value.anomaly_degree) as AnomalyClassificationEnum;
+});
+const statusColorName = computed(() => {
+  return anomalyClassificationStyle(status.value || AnomalyClassificationEnum.N_A);
 });
 </script>
 <style lang="scss">
 .status-presentation {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: center;
   .value-status {
-    svg circle.q-circular-progress__circle[stroke] {
-      stroke: orange;
-    }
     svg circle.q-circular-progress__track[stroke] {
       stroke: #39393922;
     }
+    // svg circle.q-circular-progress__circle[stroke] {
+    //  stroke: orange;
+    // }
     .value-status-content {
       display: flex;
       flex-direction: column;
@@ -102,11 +99,6 @@ const anomalyStatusColor = computed(() => {
         color: #393939;
       }
     }
-  }
-  .anomaly-status {
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 4px;
   }
 }
 </style>

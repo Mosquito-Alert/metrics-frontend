@@ -13,12 +13,28 @@ import { GeoJSON } from 'ol/format';
 import { useMapStore } from './mapStore';
 import { usePlaybackStore } from './playbackStore';
 
+const _getFormattedRegionMetric = (metric: MetricDetail | null): MetricDetail | null => {
+  if (!metric) return null;
+  const { value, predicted_value, lower_value, upper_value, anomaly_degree } = metric;
+  const roundPercent = (value: number): number => Math.round(value * 1000) / 10;
+  return {
+    ...metric,
+    value: value ? roundPercent(value) : 0,
+    predicted_value: predicted_value ? roundPercent(predicted_value) : 0,
+    lower_value: lower_value ? roundPercent(lower_value) : 0,
+    upper_value: upper_value ? roundPercent(upper_value) : 0,
+    anomaly_degree: anomaly_degree ? roundPercent(anomaly_degree) : 0,
+  };
+};
+
 export const useRegionDetailedStore = defineStore('regionDetailedStore', {
   state: () => ({
-    selectedRegionMetricId: '',
+    lastRegionMetricId: '',
     selectedRegion: null as Municipality | null,
-    selectedRegionMetric: null as MetricDetail | null,
-    fetchingRegionMetric: true,
+    lastRegionMetric: null as MetricDetail | null,
+    fetchingLastRegionMetric: true,
+    currentRegionMetric: null as MetricDetail | null,
+    fetchingCurrentRegionMetric: true,
     selectedRegionMetricsHistory: null as PaginatedMetricList | null,
     fetchingRegionMetricsHistory: true,
     selectedRegionMetricsAll: null as PaginatedMetricList | null,
@@ -31,21 +47,11 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
   }),
 
   getters: {
-    isRegionSelected: (state): boolean => state.selectedRegionMetricId !== '',
-    getFormattedRegionMetric: (state): MetricDetail | null => {
-      if (!state.selectedRegionMetric) return null;
-      const { value, predicted_value, lower_value, upper_value, anomaly_degree } =
-        state.selectedRegionMetric;
-      const roundPercent = (value: number): number => Math.round(value * 1000) / 10;
-      return {
-        ...state.selectedRegionMetric,
-        value: value ? roundPercent(value) : 0,
-        predicted_value: predicted_value ? roundPercent(predicted_value) : 0,
-        lower_value: lower_value ? roundPercent(lower_value) : 0,
-        upper_value: upper_value ? roundPercent(upper_value) : 0,
-        anomaly_degree: anomaly_degree ? roundPercent(anomaly_degree) : 0,
-      };
-    },
+    isRegionSelected: (state): boolean => state.lastRegionMetricId !== '',
+    getFormattedLastRegionMetric: (state): MetricDetail | null =>
+      _getFormattedRegionMetric(state.lastRegionMetric),
+    getFormattedCurrentRegionMetric: (state): MetricDetail | null =>
+      _getFormattedRegionMetric(state.currentRegionMetric),
   },
 
   actions: {
@@ -68,13 +74,43 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
         console.error('Error fetching selected region:', error);
       }
     },
-    async fetchSelectedMetric(metricUuid: string): Promise<void> {
+    async fetchLastMetric(metricUuid: string): Promise<void> {
       try {
-        this.fetchingRegionMetric = true;
+        this.fetchingLastRegionMetric = true;
         const response = await metricsApi.retrieve({ id: metricUuid });
         if (response.status === 200 && response.data) {
-          this.selectedRegionMetric = response.data;
-          this.fetchingRegionMetric = false;
+          this.lastRegionMetric = response.data;
+          this.fetchingLastRegionMetric = false;
+          this.fetchCurrentMetric(this.lastRegionMetric.region.code);
+        } else {
+          throw new Error('Failed to fetch selected region metric');
+        }
+      } catch (error) {
+        console.error('Error fetching selected region:', error);
+      }
+    },
+    async fetchCurrentMetric(regionId: string): Promise<void> {
+      const playbackStore = usePlaybackStore();
+      const mapStore = useMapStore();
+      if (playbackStore.playbackCurrentDate === mapStore.lastDate) {
+        // If playback is on the last date, use the last region metric
+        this.currentRegionMetric = this.lastRegionMetric;
+        this.fetchingCurrentRegionMetric = false;
+        return;
+      }
+      try {
+        this.fetchingCurrentRegionMetric = true;
+        // const response = await metricsApi.retrieve({ id: metricUuid });
+        const response = await metricsApi.list({
+          regionCode: regionId,
+          dateFrom: playbackStore.playbackCurrentDate,
+          dateTo: playbackStore.playbackCurrentDate,
+          page: 1,
+          pageSize: 1,
+        });
+        if (response.status === 200 && response.data) {
+          this.currentRegionMetric = response.data.results[0] || (null as any);
+          this.fetchingCurrentRegionMetric = false;
         } else {
           throw new Error('Failed to fetch selected region metric');
         }
@@ -91,17 +127,17 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
       page?: number;
       pageSize?: number;
     }): Promise<void> {
-      if (!this.selectedRegionMetric || !this.selectedRegionMetric?.region) return;
+      if (!this.lastRegionMetric || !this.lastRegionMetric?.region) return;
       // Get the date from 30 days before the selected date
-      const dateFrom = new Date(this.selectedRegionMetric?.date || new Date());
+      const dateFrom = new Date(this.lastRegionMetric?.date || new Date());
       dateFrom.setDate(dateFrom.getDate() - daysSince);
       const dateStringFrom = dateFrom.toISOString().split('T')[0] || '';
       try {
         this.fetchingRegionMetricsHistory = true;
         const response = await metricsApi.list({
-          regionCode: this.selectedRegionMetric?.region?.code,
+          regionCode: this.lastRegionMetric?.region?.code,
           dateFrom: dateStringFrom,
-          dateTo: this.selectedRegionMetric.date,
+          dateTo: this.lastRegionMetric.date,
           page: page,
           pageSize: pageSize,
         });
@@ -119,18 +155,18 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
       // TODO: Improve this to fetch all metrics (change API to support this)
       const daysSince = 10 * 365; // Last 10 years
       const pageSize = 10000000; // Large page size to fetch all metrics
-      if (!this.selectedRegionMetric || !this.selectedRegionMetric?.region) return;
+      if (!this.lastRegionMetric || !this.lastRegionMetric?.region) return;
 
-      const dateFrom = new Date(this.selectedRegionMetric?.date || new Date());
+      const dateFrom = new Date(this.lastRegionMetric?.date || new Date());
       dateFrom.setDate(dateFrom.getDate() - daysSince);
       const dateStringFrom = dateFrom.toISOString().split('T')[0] || '';
 
       try {
         this.fetchingRegionMetricsAll = true;
         const response = await metricsApi.list({
-          regionCode: this.selectedRegionMetric?.region?.code,
+          regionCode: this.lastRegionMetric?.region?.code,
           dateFrom: dateStringFrom,
-          dateTo: this.selectedRegionMetric.date,
+          dateTo: this.lastRegionMetric.date,
           page: 1,
           pageSize: pageSize,
           ordering: 'date',
@@ -146,12 +182,12 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
       }
     },
     async fetchSelectedMetricTrend(): Promise<void> {
-      if (!this.selectedRegionMetric || !this.selectedRegionMetric?.region) return;
+      if (!this.lastRegionMetric || !this.lastRegionMetric?.region) return;
 
       try {
         this.fetchingRegionMetricTrend = true;
         const response = await metricsApi.trendRetrieve({
-          id: this.selectedRegionMetric?.id,
+          id: this.lastRegionMetric?.id,
         });
         if (response.status === 200 && response.data) {
           this.selectedRegionMetricTrend = response.data;
@@ -164,12 +200,12 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
       }
     },
     async fetchSelectedMetricSeasonality(): Promise<void> {
-      if (!this.selectedRegionMetric || !this.selectedRegionMetric?.region) return;
+      if (!this.lastRegionMetric || !this.lastRegionMetric?.region) return;
 
       try {
         this.fetchingRegionMetricSeasonality = true;
         const response = await metricsApi.seasonalityRetrieve({
-          id: this.selectedRegionMetric?.id,
+          id: this.lastRegionMetric?.id,
         });
         if (response.status === 200 && response.data) {
           this.selectedRegionMetricSeasonality = response.data;
@@ -183,7 +219,7 @@ export const useRegionDetailedStore = defineStore('regionDetailedStore', {
     },
     async selectRegionMetric(metricId: string) {
       const playbackStore = usePlaybackStore();
-      this.selectedRegionMetricId = metricId;
+      this.lastRegionMetricId = metricId;
       if (!playbackStore.playbackPaused) {
         playbackStore.pause();
       }

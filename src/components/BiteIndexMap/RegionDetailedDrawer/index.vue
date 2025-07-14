@@ -13,7 +13,7 @@
         {{ municipalityName }}
       </p>
       <div class="row q-mb-sm">
-        <div class="col-8">
+        <div class="col">
           <p class="text-h6 text-weight-regular" style="color: #333">{{ provinceName }}</p>
           <p class="text-subtitle-1 text-weight-regular q-ma-none" style="color: #333">
             {{ date.formatDate(mapStore.lastDate, 'MMM D, YYYY') }}
@@ -74,18 +74,18 @@ const mapStore = useMapStore();
 const drawerScrollArea = ref(null as any);
 
 const updateDataHook = async () => {
-  if (!regionDetailedStore.selectedRegionMetricId) return;
-  await regionDetailedStore.fetchSelectedMetric(regionDetailedStore.selectedRegionMetricId!);
+  if (!regionDetailedStore.lastRegionMetricId) return;
+  await regionDetailedStore.fetchLastMetric(regionDetailedStore.lastRegionMetricId!);
   await regionDetailedStore.fetchSelectedMetricSeasonality();
   await regionDetailedStore.fetchSelectedMetricAll();
   await regionDetailedStore.fetchSelectedMetricTrend();
   await regionDetailedStore.fetchSelectedMetricHistory({ page: 1, pageSize: historyPageSize });
 };
 
-const loading = computed(() => regionDetailedStore.fetchingRegionMetric);
+const loading = computed(() => regionDetailedStore.fetchingLastRegionMetric);
 
 watch(
-  () => regionDetailedStore.selectedRegionMetricId,
+  () => regionDetailedStore.lastRegionMetricId,
   async (newValue, oldValue) => {
     if (newValue !== oldValue) {
       // Also, reset the scroll position of the drawer
@@ -100,19 +100,19 @@ watch(
 
 const municipalityName = computed(() => {
   const defaultTitle = 'Municipality Unknown';
-  const selectedRegionMetric = regionDetailedStore.selectedRegionMetric;
-  if (!selectedRegionMetric) {
+  const lastRegionMetric = regionDetailedStore.lastRegionMetric;
+  if (!lastRegionMetric) {
     return defaultTitle;
   }
-  return selectedRegionMetric.region.name;
+  return lastRegionMetric.region.name;
 });
 const provinceName = computed(() => {
   const defaultTitle = 'Province Unknown';
-  const selectedRegionMetric = regionDetailedStore.selectedRegionMetric;
-  if (!selectedRegionMetric) {
+  const lastRegionMetric = regionDetailedStore.lastRegionMetric;
+  if (!lastRegionMetric) {
     return defaultTitle;
   }
-  return selectedRegionMetric.region.province;
+  return lastRegionMetric.region.province;
 });
 
 const resetSelectedRegionMetricId = () => {

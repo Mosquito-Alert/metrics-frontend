@@ -1,6 +1,6 @@
 export enum AnomalyClassificationEnum {
-  High = 'High',
-  Low = 'Low',
+  High = 'Over-expected',
+  Low = 'Under-expected',
   Usual = 'Usual',
   N_A = 'N/A',
 }
