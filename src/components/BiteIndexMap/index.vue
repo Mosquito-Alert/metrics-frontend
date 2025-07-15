@@ -220,24 +220,32 @@ watch(
 /**
  * WMS Layers (Metric Value and Anomaly)
  */
-const getWmsSource = (styleName: string) =>
-  new TileWMS({
-    // crossOrigin: 'anonymous',
-    projection: mapStore.projection,
-    url: process.env.GEOSERVER_URL,
-    params: {
-      LAYERS: `mosquitoalert:${styleName}`,
-      SRS: mapStore.projection,
-      viewparams: 'date:' + mapStore.lastDate,
-    },
-  });
-const valueSource = getWmsSource('metric');
+const valueSource = new TileWMS({
+  // crossOrigin: 'anonymous',
+  projection: mapStore.projection,
+  url: process.env.GEOSERVER_URL,
+  params: {
+    LAYERS: 'mosquitoalert:metric',
+    SRS: mapStore.projection,
+    viewparams: 'date:' + mapStore.lastDate,
+  },
+});
 const valueLayer = new TileLayer({
   className: 'wms-layer',
   zIndex: 3,
   source: valueSource,
 });
-const anomalySource = getWmsSource('metric-anomaly');
+const anomalySource = new TileWMS({
+  // crossOrigin: 'anonymous',
+  projection: mapStore.projection,
+  url: process.env.GEOSERVER_URL,
+  params: {
+    LAYERS: 'mosquitoalert:metric',
+    SRS: mapStore.projection,
+    viewparams: 'date:' + mapStore.lastDate,
+    STYLES: 'anomalystyle',
+  },
+});
 const anomalyLayer = new TileLayer({
   className: 'anomaly-layer',
   zIndex: 4,
