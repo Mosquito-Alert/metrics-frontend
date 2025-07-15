@@ -243,7 +243,7 @@ const anomalySource = new TileWMS({
     LAYERS: 'mosquitoalert:metric',
     SRS: mapStore.projection,
     viewparams: 'date:' + mapStore.lastDate,
-    STYLES: 'anomalystyle',
+    STYLES: 'metricstyle-anomaly',
   },
 });
 const anomalyLayer = new TileLayer({
