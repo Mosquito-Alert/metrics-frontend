@@ -18,6 +18,7 @@ export const usePlaybackStore = defineStore('playbackStore', {
     fetchingData: false as boolean, // Flag to indicate if data is being fetched
     availableDates: [] as { date: string }[], // Array to hold available dates for playback
     fetchingAvailableDates: false as boolean, // Flag to indicate if available dates should be fetched
+    renderCompleted: false as boolean, // Flag to indicate if the WMS render is completed
   }),
 
   getters: {
@@ -58,23 +59,50 @@ export const usePlaybackStore = defineStore('playbackStore', {
         this.playbackFinished = false; // Reset playback finished flag
       }
     },
-    play() {
-      const delay = this.playbackSpeed * 1000; // Convert seconds to milliseconds
-      // Update the current index and date every delay seconds. But between each update,
-      // we need to check if playback is paused or not.
-      const interval = setInterval(() => {
-        if (this.playbackPaused || !this.playbackEnabled) {
-          clearInterval(interval);
-          return;
-        }
-        if (this.playbackCurrentIndex == Object.keys(this.playbackDaysObject).length - 1) {
-          clearInterval(interval); // Stop playback when reaching the end
-          this.playbackPaused = true; // Pause playback at the end
-          return;
-        }
+    async play() {
+      const baseDelay = this.playbackSpeed * 1000; // Typically 750ms
+      this.playbackPaused = false;
+
+      while (
+        !this.playbackPaused &&
+        this.playbackEnabled &&
+        this.playbackCurrentIndex < Object.keys(this.playbackDaysObject).length - 1
+      ) {
         this.playbackCurrentIndex++;
-        this.updateCurrentDate(this.playbackCurrentIndex);
-      }, delay);
+        this.renderCompleted = false; // Reset before rendering
+        this.updateCurrentDate(this.playbackCurrentIndex); // Triggers WMS update
+
+        await this.waitForRenderOrTimeout(baseDelay);
+
+        // Add a post-render buffer
+        await this.delay(200);
+      }
+
+      if (this.playbackCurrentIndex === Object.keys(this.playbackDaysObject).length - 1) {
+        this.playbackPaused = true;
+      }
+    },
+
+    delay(ms: number) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    },
+
+    waitForRenderOrTimeout(timeout: number) {
+      return new Promise<void>((resolve) => {
+        const start = Date.now();
+
+        const check = () => {
+          const elapsed = Date.now() - start;
+
+          if (this.renderCompleted || elapsed >= timeout) {
+            resolve();
+          } else {
+            requestAnimationFrame(check); // Check again soon
+          }
+        };
+
+        check();
+      });
     },
     pause() {
       this.playbackPaused = true; // Set playback to paused
