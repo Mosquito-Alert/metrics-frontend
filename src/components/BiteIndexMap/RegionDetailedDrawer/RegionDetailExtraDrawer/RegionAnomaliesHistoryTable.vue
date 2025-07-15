@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Metric, PaginatedMetricList } from 'anomaly-detection';
+import { Metric, PaginatedMetricList } from 'metrics';
 import { date, QTableProps } from 'quasar';
 import { anomalyClassificationStyle, classifyAnomaly } from 'src/utils/anomalyClassification';
 import { historyPageSize } from 'src/constants/config';

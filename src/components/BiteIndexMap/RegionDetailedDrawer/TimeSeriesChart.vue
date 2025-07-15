@@ -33,7 +33,7 @@ import {
 import { CanvasRenderer } from 'echarts/renderers';
 import { LineChart, ScatterChart } from 'echarts/charts';
 import { ANOMALY_COLORS } from 'src/constants/colors';
-import { Metric } from 'anomaly-detection';
+import { Metric } from 'metrics';
 import { trendDataCorrection } from 'src/utils/trendDataCorrection';
 import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import { useMapStore } from 'src/stores/mapStore';

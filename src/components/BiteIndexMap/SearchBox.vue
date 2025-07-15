@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { Metric } from 'anomaly-detection';
+import { Metric } from 'metrics';
 import { metricsApi, regionsApi } from 'src/services/apiService';
 import { useUIStore } from 'src/stores/uiStore';
 import { computed, ref, watch } from 'vue';

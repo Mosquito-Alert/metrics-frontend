@@ -1,4 +1,4 @@
-import { MetricTrend } from 'anomaly-detection';
+import { MetricTrend } from 'metrics';
 
 /**
  * Corrects the trend data by associating each value with its corresponding date,

@@ -6,7 +6,7 @@ import {
   MetricTrend,
   Municipality,
   PaginatedMetricList,
-} from 'anomaly-detection';
+} from 'metrics';
 import { historyPageSize } from '../constants/config';
 import { FeatureLike } from 'ol/Feature';
 import { GeoJSON } from 'ol/format';

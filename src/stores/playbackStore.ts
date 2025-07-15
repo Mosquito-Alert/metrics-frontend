@@ -1,4 +1,4 @@
-import { Metric } from 'anomaly-detection';
+import { Metric } from 'metrics';
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { formattedDate, getDatesBetween, subtractDays } from '../utils/date';
 import { useRegionDetailedStore } from './regionDetailedStore';

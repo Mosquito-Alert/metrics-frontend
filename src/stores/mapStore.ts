@@ -1,7 +1,7 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { FeatureLike } from 'ol/Feature';
 import { MVT } from 'ol/format';
-import { Metric } from 'anomaly-detection';
+import { Metric } from 'metrics';
 import { metricsApi } from '../services/apiService';
 import { LayerStyleEnum } from '../constants/colors';
 

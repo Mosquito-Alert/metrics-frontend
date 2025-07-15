@@ -41,7 +41,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { MetricDetail } from 'anomaly-detection';
+import { MetricDetail } from 'metrics';
 import MosquitoIcon from 'src/assets/mosquito.svg?raw';
 import { useRegionDetailedStore } from 'src/stores/regionDetailedStore';
 import {
