@@ -13,7 +13,7 @@
         </button>
       </div>
     </div>
-    <v-chart style="height: 330px" :option="option" :loading="loading" />
+    <v-chart style="height: 330px" :option="option" :loading="loading" autoresize />
   </div>
 </template>
 

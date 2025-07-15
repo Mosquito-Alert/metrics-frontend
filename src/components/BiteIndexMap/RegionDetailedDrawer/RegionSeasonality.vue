@@ -19,6 +19,7 @@
     style="height: 300px"
     :option="option"
     :loading="loading"
+    autoresize
     @legendselectchanged="legendSelectChanged"
   />
 </template>
