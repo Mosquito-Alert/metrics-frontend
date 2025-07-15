@@ -7,6 +7,7 @@
       :loadTilesWhileInteracting="true"
       @click="selectFeature"
       @pointermove="hoverFeature"
+      @rendercomplete="playbackStore.renderCompleted = true"
       :controls="[]"
     >
       <ol-view
