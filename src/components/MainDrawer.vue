@@ -16,10 +16,7 @@
         <q-item v-ripple class="q-mb-lg">
           <q-item-section avatar>
             <q-avatar square>
-              <img
-                src="~assets/mosquito_alert_squared_logo.png"
-                style="width: 40px; height: 40px"
-              />
+              <img src="/icons/mosquito_alert_squared_logo.png" style="width: 40px; height: 40px" />
             </q-avatar>
           </q-item-section>
           <q-item-section>

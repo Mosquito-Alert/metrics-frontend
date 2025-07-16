@@ -82,7 +82,7 @@ const center = computed(() => fromLonLat(mapStore.center, mapStore.projection));
 const logoElement = document.createElement('div');
 logoElement.className = 'watermark ol-unselectable ol-control';
 logoElement.innerHTML = `
-    <img src="src/assets/logo_horizontal_black.png" alt="Mosquito Alert Logo"   />
+    <img src="/icons/logo_horizontal_black.png" alt="Mosquito Alert Logo"   />
 `;
 const watermarkControl = new Control({
   element: logoElement,
